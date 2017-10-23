@@ -15,9 +15,24 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Ventana {
 
+	/**
+	 * Lock de la ventana.
+	 */
 	private final Lock cerrojo = new ReentrantLock(true);
+	
+	/**
+	 * Indica cuando un pedido esta listo para ser servido al cliente.
+	 */
 	private final Condition pedidoListo = cerrojo.newCondition();
+	
+	/**
+	 * Indica cuando un pedido esta en proceso por el Chef.
+	 */
 	private final Condition enProceso = cerrojo.newCondition();
+	
+	/**
+	 * Indica al Chef que hay un nuevo pedido.
+	 */
 	private final Condition nuevoPedido = cerrojo.newCondition();
 	
 	/**
@@ -35,14 +50,18 @@ public class Ventana {
 	 */
 	public Ventana() {
 	}
-
 	
+	/**
+	 * Solicita (el mozo) un pedido al Chef.
+	 * @param pedido
+	 * @throws InterruptedException
+	 */
 	public void solicitar(int pedido) throws InterruptedException {
 		cerrojo.lock();
 		try {
-			System.out.println("Solicitar pedido "+pedido);
+			System.out.println("Solicitar pedido #"+pedido);
 			while (this.pedido != 0) {
-				System.out.println("Esperar proceso de pedido "+this.pedido);
+				System.out.println("Esperar proceso de pedido #"+this.pedido);
 				enProceso.await();
 			}
 			this.pedido = pedido;
@@ -53,12 +72,16 @@ public class Ventana {
 		}
 	}
 	
+	/**
+	 * Sirve el pedido al cliente (mozo).
+	 * @throws InterruptedException
+	 */
 	public void servir() throws InterruptedException {
 		cerrojo.lock();
 		try {
-			System.out.println("Servir pedido "+this.pedido);
+			System.out.println("Servir pedido #"+this.pedido);
 			while (!listo) {
-				System.out.println("Esperar que el pedido este listo "+this.pedido);
+				System.out.println("Esperar que el pedido este listo #"+this.pedido);
 				pedidoListo.await();
 			}
 			listo = false;
@@ -67,10 +90,15 @@ public class Ventana {
 		}
 	}
 	
+	/**
+	 * Chef entrega un pedido listo a la ventana para ser servido.
+	 * @param pedido
+	 * @throws InterruptedException
+	 */
 	public void entregar(int pedido) throws InterruptedException {
 		cerrojo.lock();
 		try {
-			System.out.println("Entregar pedido "+this.pedido);
+			System.out.println("Entregar pedido #"+this.pedido);
 			this.pedido = 0;
 			listo = true;
 			pedidoListo.signal();
@@ -80,6 +108,11 @@ public class Ventana {
 		}
 	}
 	
+	/**
+	 * Chef toma pedido solicitado por el mozo.
+	 * @return
+	 * @throws InterruptedException
+	 */
 	public int tomar() throws InterruptedException {
 		int nroPedido;
 		cerrojo.lock();

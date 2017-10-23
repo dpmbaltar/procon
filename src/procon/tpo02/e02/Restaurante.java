@@ -8,9 +8,6 @@ import java.util.ArrayDeque;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadLocalRandom;
-
-import procon.tpo02.e01.MonitorSemaf;
 
 /**
  * Restaurante familiar.
@@ -22,10 +19,27 @@ public class Restaurante {
 	/**
 	 * Limite de pedidos.
 	 */
-	public static final int LIMITE = 50;
-	private Semaphore mutex;
-	private Semaphore vacio;
-	private Semaphore lleno;
+	private static final int LIMITE = 50;
+	
+	/**
+	 * Control de acceso a pedidos.
+	 */
+	private Semaphore mutexPedidos;
+	
+	/**
+	 * Control de pedidos vacios.
+	 */
+	private Semaphore vacioPedidos;
+	
+	/**
+	 * Control de pedidos tomados.
+	 */
+	private Semaphore llenoPedidos;
+	
+	/**
+	 * Pedidos de los clientes.
+	 */
+	private ArrayDeque<Integer> pedidos;
 
 	/**
 	 * Determina si el restaurante esta abierto.
@@ -33,15 +47,14 @@ public class Restaurante {
 	private boolean abierto = false;
 	
 	/**
-	 * Pedidos de los clientes.
-	 */
-	private ArrayDeque<Integer> pedidos;
-	
-	/**
 	 * Recurso compartido entre el Chef y el Mozo.
 	 */
 	private Ventana ventana;
 	
+	/**
+	 * Restaurante.
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		Restaurante res = new Restaurante();
 		res.abrir();
@@ -53,19 +66,19 @@ public class Restaurante {
 	public Restaurante() {
 		ventana = new Ventana();
 		pedidos = new ArrayDeque<Integer>(LIMITE);
-		mutex = new Semaphore(1);
-		vacio = new Semaphore(LIMITE);
-		lleno = new Semaphore(0);
+		mutexPedidos = new Semaphore(1);
+		vacioPedidos = new Semaphore(LIMITE);
+		llenoPedidos = new Semaphore(0);
 	}
 	
 	/**
 	 * Abre/inicia el restaurante por una cierta cantidad de tiempo.
 	 */
 	public void abrir() {
+		abierto = true;
 		Thread chef = new Thread(new Chef(this), "Chef");
 		Thread mozo = new Thread(new Mozo(this), "Mozo");
 		Thread clientes = new Thread(new Clientes(this));
-		abierto = true;
 		
 		chef.start();
 		mozo.start();
@@ -102,11 +115,11 @@ public class Restaurante {
 	 */
 	public void agregarPedido(int pedido) {
 		try {
-			vacio.acquire();
-			mutex.acquire();
+			vacioPedidos.acquire();
+			mutexPedidos.acquire();
 			pedidos.add(pedido);
-			mutex.release();
-			lleno.release();
+			mutexPedidos.release();
+			llenoPedidos.release();
 		} catch (InterruptedException e) {
 			System.out.println(e.getMessage());
 		}
@@ -119,11 +132,11 @@ public class Restaurante {
 	public int obtenerPedido() {
 		int pedido = 0;
 		try {
-			lleno.acquire();
-			mutex.acquire();
+			llenoPedidos.acquire();
+			mutexPedidos.acquire();
 			pedido = pedidos.remove();
-			mutex.release();
-			vacio.release();
+			mutexPedidos.release();
+			vacioPedidos.release();
 		} catch (InterruptedException e) {
 			System.out.println(e.getMessage());
 		}

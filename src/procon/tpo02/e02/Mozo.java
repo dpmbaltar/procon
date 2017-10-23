@@ -5,7 +5,7 @@
 package procon.tpo02.e02;
 
 /**
- * Mozo.
+ * Simula al Mozo.
  * 
  * @author Diego P. M. Baltar <dpmbaltar@gmail.com>
  */
@@ -35,6 +35,10 @@ public class Mozo implements Runnable {
 		}
 	}
 	
+	/**
+	 * Atiende los pedidos de los clientes.
+	 * @throws InterruptedException
+	 */
 	public void atender() throws InterruptedException {
 		Ventana ventana = restaurante.getVentana();
 		ventana.solicitar(restaurante.obtenerPedido());

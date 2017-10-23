@@ -38,7 +38,7 @@ public class Clientes implements Runnable {
 			}
 			
 			restaurante.agregarPedido(numeroPedido);
-			//System.out.println(numeroPedido);
+			System.out.println("Nuevo cliente para el pedido #"+numeroPedido);
 			numeroPedido++;
 		}
 	}
