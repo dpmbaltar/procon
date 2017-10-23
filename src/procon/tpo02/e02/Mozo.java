@@ -14,10 +14,24 @@ import java.util.Random;
  */
 public class Mozo implements Runnable {
 
+	/**
+	 * Ventana de comunicación chef-mozo.
+	 */
 	private Ventana ventana;
 	
-	public Mozo(Ventana ventana) {
+	/**
+	 * Pedidos de los clientes.
+	 */
+	private ArrayDeque<Integer> pedidos;
+	
+	/**
+	 * Constructor.
+	 * @param ventana la ventana pasa comidas
+	 * @param pedidos los pedidos de los clientes
+	 */
+	public Mozo(Ventana ventana, ArrayDeque<Integer> pedidos) {
 		this.ventana = ventana;
+		this.pedidos = pedidos;
 	}
 	
 	@Override
@@ -26,7 +40,7 @@ public class Mozo implements Runnable {
 			try {
 				atender();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 		}
 	}

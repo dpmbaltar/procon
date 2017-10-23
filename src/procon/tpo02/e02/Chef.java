@@ -11,10 +11,17 @@ package procon.tpo02.e02;
  */
 public class Chef implements Runnable {
 
-	private Ventana ventana;
+	/**
+	 * Ventana de comunicación chef-mozo.
+	 */
+	private Restaurante restaurante;
 	
-	public Chef(Ventana ventana) {
-		this.ventana = ventana;
+	/**
+	 * Constructor.
+	 * @param restaurante el restaurante
+	 */
+	public Chef(Restaurante restaurante) {
+		this.restaurante = restaurante;
 	}
 	
 	@Override
@@ -29,8 +36,8 @@ public class Chef implements Runnable {
 	}
 	
 	public void preparar() throws InterruptedException {
-		int pedido = ventana.tomar();
+		int pedido = restaurante.getVentana().tomar();
 		Thread.sleep(500);
-		ventana.entregar(pedido);
+		restaurante.getVentana().entregar(pedido);
 	}
 }
