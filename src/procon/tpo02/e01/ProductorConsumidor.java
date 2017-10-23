@@ -107,10 +107,10 @@ public class ProductorConsumidor {
 		private void ponerDato(int dato) {
 			try {
 				//System.out.println("Esperando espacio para "+dato);
-				vacio.adquireM();
+				vacio.acquireM();
 				//System.out.println("Espacio adquirido para "+dato);
 				//System.out.println("Esperando acceso al buffer para "+dato);
-				mutex.adquireM();
+				mutex.acquireM();
 				//System.out.println("Acceso al buffer adquirido para "+dato);
 				datos.add(dato);
 				mostrarEstado();
@@ -146,10 +146,10 @@ public class ProductorConsumidor {
 			int dato;
 			try {
 				//System.out.println("Esperando datos para consumir...");
-				lleno.adquireM();
+				lleno.acquireM();
 				//System.out.println("Datos encontrados");
 				//System.out.println("Esperando acceso al buffer...");
-				mutex.adquireM();
+				mutex.acquireM();
 				//System.out.println("Acceso al buffer adquirido");
 				dato = datos.remove();
 				mostrarEstado();

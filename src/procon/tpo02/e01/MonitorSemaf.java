@@ -44,15 +44,15 @@ public class MonitorSemaf {
 	 * Adquiere un permiso.
 	 * @throws InterruptedException
 	 */
-	public synchronized void adquireM() throws InterruptedException {
-		adquireM(1);
+	public synchronized void acquireM() throws InterruptedException {
+		acquireM(1);
 	}
 	
 	/**
 	 * Adquiere n permisos.
 	 * @param n cantidad de permisos
 	 */
-	public synchronized void adquireM(int n) throws InterruptedException {
+	public synchronized void acquireM(int n) throws InterruptedException {
 		if (n < 0) throw new IllegalArgumentException("Cantidad de permisos negativos");
 		while (!tienePermisos(n)) wait();
 		permisos-= n;
