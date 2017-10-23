@@ -4,12 +4,14 @@
  */
 package procon.tpo02.e02;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
- * Mozo.
+ * Simula el ingreso de clientes (pedidos) cada cierta cantidad de tiempo.
  * 
  * @author Diego P. M. Baltar <dpmbaltar@gmail.com>
  */
-public class Mozo implements Runnable {
+public class Clientes implements Runnable {
 	
 	/**
 	 * Restaurante.
@@ -20,24 +22,24 @@ public class Mozo implements Runnable {
 	 * Constructor.
 	 * @param restaurante el restaurante
 	 */
-	public Mozo(Restaurante restaurante) {
+	public Clientes(Restaurante restaurante) {
 		this.restaurante = restaurante;
 	}
 	
 	@Override
 	public void run() {
+		int numeroPedido = 1;
 		while (restaurante.estaAbierto()) {
+			int intervalo = ThreadLocalRandom.current().nextInt(1, 8) * 100;
+			
 			try {
-				atender();
+				Thread.sleep(intervalo);
 			} catch (InterruptedException e) {
-				System.out.println(e.getMessage());
 			}
+			
+			restaurante.agregarPedido(numeroPedido);
+			//System.out.println(numeroPedido);
+			numeroPedido++;
 		}
-	}
-	
-	public void atender() throws InterruptedException {
-		Ventana ventana = restaurante.getVentana();
-		ventana.solicitar(restaurante.obtenerPedido());
-		ventana.servir();
 	}
 }

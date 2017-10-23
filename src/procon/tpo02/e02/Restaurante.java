@@ -7,7 +7,10 @@ package procon.tpo02.e02;
 import java.util.ArrayDeque;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
+
+import procon.tpo02.e01.MonitorSemaf;
 
 /**
  * Restaurante familiar.
@@ -15,6 +18,14 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author Diego P. M. Baltar <dpmbaltar@gmail.com>
  */
 public class Restaurante {
+	
+	/**
+	 * Limite de pedidos.
+	 */
+	public static final int LIMITE = 50;
+	private Semaphore mutex;
+	private Semaphore vacio;
+	private Semaphore lleno;
 
 	/**
 	 * Determina si el restaurante esta abierto.
@@ -40,8 +51,11 @@ public class Restaurante {
 	 * Constructor.
 	 */
 	public Restaurante() {
-		pedidos = new ArrayDeque<Integer>();
 		ventana = new Ventana();
+		pedidos = new ArrayDeque<Integer>(LIMITE);
+		mutex = new Semaphore(1);
+		vacio = new Semaphore(LIMITE);
+		lleno = new Semaphore(0);
 	}
 	
 	/**
@@ -50,11 +64,11 @@ public class Restaurante {
 	public void abrir() {
 		Thread chef = new Thread(new Chef(this), "Chef");
 		Thread mozo = new Thread(new Mozo(this), "Mozo");
-		Thread clientes = new Thread(new Clientes());
+		Thread clientes = new Thread(new Clientes(this));
 		abierto = true;
 		
-		//chef.start();
-		//mozo.start();
+		chef.start();
+		mozo.start();
 		clientes.start();
 		
 		Timer tiempo = new Timer();
@@ -75,14 +89,6 @@ public class Restaurante {
 	}
 	
 	/**
-	 * Devuelve los pedidos sin atender.
-	 * @return
-	 */
-	public ArrayDeque<Integer> getPedidos() {
-		return pedidos;
-	}
-	
-	/**
 	 * Devuelve una referencia a la ventana del chef-mozo.
 	 * @return
 	 */
@@ -91,25 +97,37 @@ public class Restaurante {
 	}
 	
 	/**
-	 * Simula el ingreso de clientes (pedidos) cada cierta cantidad de tiempo.
+	 * Agrega un pedido de los clientes al estado pendiente.
+	 * @param pedido
 	 */
-	private class Clientes implements Runnable {
-
-		@Override
-		public void run() {
-			int pedido = 1;
-			while (abierto) {
-				int intervalo = ThreadLocalRandom.current().nextInt(1, 8) * 100;
-				
-				try {
-					Thread.sleep(intervalo);
-				} catch (InterruptedException e) {
-				}
-				
-				pedidos.add(pedido);
-				System.out.println(pedido);
-				pedido++;
-			}
+	public void agregarPedido(int pedido) {
+		try {
+			vacio.acquire();
+			mutex.acquire();
+			pedidos.add(pedido);
+			mutex.release();
+			lleno.release();
+		} catch (InterruptedException e) {
+			System.out.println(e.getMessage());
 		}
+	}
+	
+	/**
+	 * Obtiene un pedido pendiente de los clientes.
+	 * @return
+	 */
+	public int obtenerPedido() {
+		int pedido = 0;
+		try {
+			lleno.acquire();
+			mutex.acquire();
+			pedido = pedidos.remove();
+			mutex.release();
+			vacio.release();
+		} catch (InterruptedException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return pedido;
 	}
 }

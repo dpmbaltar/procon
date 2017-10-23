@@ -4,6 +4,8 @@
  */
 package procon.tpo02.e02;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * Chef.
  * 
@@ -12,7 +14,7 @@ package procon.tpo02.e02;
 public class Chef implements Runnable {
 
 	/**
-	 * Ventana de comunicación chef-mozo.
+	 * Restaurante.
 	 */
 	private Restaurante restaurante;
 	
@@ -26,18 +28,19 @@ public class Chef implements Runnable {
 	
 	@Override
 	public void run() {
-		while (true) {
+		while (restaurante.estaAbierto()) {
 			try {
 				preparar();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 		}
 	}
 	
 	public void preparar() throws InterruptedException {
+		int milis = ThreadLocalRandom.current().nextInt(1, 5) * 100;
 		int pedido = restaurante.getVentana().tomar();
-		Thread.sleep(500);
+		Thread.sleep(milis);
 		restaurante.getVentana().entregar(pedido);
 	}
 }

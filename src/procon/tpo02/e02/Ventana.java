@@ -34,12 +34,8 @@ public class Ventana {
 	 * Constructor.
 	 */
 	public Ventana() {
-		
 	}
-	
-	private boolean hayPedido() {
-		return pedido != 0 && !listo;
-	}
+
 	
 	public void solicitar(int pedido) throws InterruptedException {
 		cerrojo.lock();
