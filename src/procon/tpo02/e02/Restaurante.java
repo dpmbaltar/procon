@@ -110,6 +110,24 @@ public class Restaurante {
 	}
 	
 	/**
+	 * Indica si hay pedidos pendientes.
+	 * @return
+	 */
+	public boolean hayPedidos() {
+		boolean hayPedidos = false;
+		
+		try {
+			mutexPedidos.acquire();
+			hayPedidos = !pedidos.isEmpty();
+			mutexPedidos.release();
+		} catch (InterruptedException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return hayPedidos;
+	}
+	
+	/**
 	 * Agrega un pedido de los clientes al estado pendiente.
 	 * @param pedido
 	 */

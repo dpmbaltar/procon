@@ -85,6 +85,7 @@ public class Ventana {
 				pedidoListo.await();
 			}
 			listo = false;
+			System.out.println("Pedido servido #"+this.pedido);
 		} finally {
 			cerrojo.unlock();
 		}

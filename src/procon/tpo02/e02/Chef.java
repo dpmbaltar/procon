@@ -28,7 +28,7 @@ public class Chef implements Runnable {
 	
 	@Override
 	public void run() {
-		while (restaurante.estaAbierto()) {
+		while (restaurante.estaAbierto() || restaurante.hayPedidos()) {
 			try {
 				preparar();
 			} catch (InterruptedException e) {

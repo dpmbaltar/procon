@@ -26,7 +26,7 @@ public class Mozo implements Runnable {
 	
 	@Override
 	public void run() {
-		while (restaurante.estaAbierto()) {
+		while (restaurante.estaAbierto() || restaurante.hayPedidos()) {
 			try {
 				atender();
 			} catch (InterruptedException e) {
