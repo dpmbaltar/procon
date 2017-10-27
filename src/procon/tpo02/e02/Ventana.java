@@ -76,18 +76,20 @@ public class Ventana {
     public void solicitar(int pedido) throws InterruptedException {
         cerrojo.lock();
         try {
-            System.out.println("Mozo: Intentar solicitar pedido #" + pedido);
-            // Esperar si ya se solicito un pedido y aún no se terminó de hacer
-            // TODO: probar utilizar condicion "pedidoListo"
-            while (this.pedido > 0) {
-                System.out.println("Mozo: Esperar que se termine el pedido #" + this.pedido);
-                // pedidoEnProceso.await();
-                pedidoListo.await();
+            if (pedido > 0) {
+                System.out.println("Mozo: Intentar solicitar pedido #" + pedido);
+                // Esperar si ya se solicito un pedido y aún no se terminó de hacer
+                // TODO: probar utilizar condicion "pedidoListo"
+                while (this.pedido > 0) {
+                    System.out.println("Mozo: Esperar que se termine el pedido #" + this.pedido);
+                    // pedidoEnProceso.await();
+                    pedidoListo.await();
+                }
+                this.pedido = pedido;
+                System.out.println("Mozo: Avisar de nuevo pedido #" + pedido);
+                // Avisar del pedido nuevo
+                pedidoNuevo.signal();
             }
-            this.pedido = pedido;
-            System.out.println("Mozo: Avisar de nuevo pedido #" + pedido);
-            // Avisar del pedido nuevo
-            pedidoNuevo.signal();
         } finally {
             cerrojo.unlock();
         }
@@ -125,7 +127,7 @@ public class Ventana {
     public void entregar(int pedido) throws InterruptedException {
         cerrojo.lock();
         try {
-            if (pedido > 0) {
+            if (this.pedido > 0) {
                 System.out.println("Chef: Entregar pedido #" + pedido);
                 listo = true;
                 pedidoListo.signal();

@@ -19,7 +19,7 @@ public class Restaurante {
     /**
      * Limite de pedidos.
      */
-    private static final int LIMITE = 50;
+    private static final int LIMITE = 100;
 
     /**
      * Control de acceso a pedidos.
@@ -67,9 +67,9 @@ public class Restaurante {
     public Restaurante() {
         ventana = new Ventana();
         pedidos = new ArrayDeque<>(LIMITE);
-        mutexPedidos = new Semaphore(1);
-        vacioPedidos = new Semaphore(LIMITE);
-        llenoPedidos = new Semaphore(0);
+        mutexPedidos = new Semaphore(1, true);
+        vacioPedidos = new Semaphore(LIMITE, true);
+        llenoPedidos = new Semaphore(0, true);
     }
 
     /**
@@ -90,9 +90,11 @@ public class Restaurante {
             @Override
             public void run() {
                 cerrar();
+                if (llenoPedidos.hasQueuedThreads())
+                    mozo.interrupt();
                 tiempo.cancel();
             }
-        }, 8000);
+        }, 2000);
     }
 
     /**
@@ -147,11 +149,15 @@ public class Restaurante {
      */
     public void agregarPedido(int pedido) {
         try {
+            System.out.println("Restaurante: Agregar pedido (adquirir vacioPedidos: restan "
+                    + vacioPedidos.availablePermits() + ")");
             vacioPedidos.acquire();
             mutexPedidos.acquire();
             pedidos.add(pedido);
             mutexPedidos.release();
             llenoPedidos.release();
+            System.out.println("Restaurante: Agregado pedido (liberado llenoPedidos: restan "
+                    + llenoPedidos.availablePermits() + ")");
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
         }
@@ -165,17 +171,19 @@ public class Restaurante {
     public int obtenerPedido() {
         int pedido = 0;
         try {
-            System.out.println("Restaurante: Obtener pedido");
+            System.out.println("Restaurante: Obtener pedido (adquirir llenoPedidos: restan "
+                    + llenoPedidos.availablePermits() + ")");
+            System.out.println(estaAbierto());
             llenoPedidos.acquire();
             mutexPedidos.acquire();
             pedido = pedidos.remove();
             mutexPedidos.release();
             vacioPedidos.release();
+            System.out.println("Restaurante: Obtenido pedido (liberar vacioPedidos: restan "
+                    + vacioPedidos.availablePermits() + ")");
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
         }
-
-        System.out.println("Restaurante: Pedido obtenido #" + pedido);
 
         return pedido;
     }
