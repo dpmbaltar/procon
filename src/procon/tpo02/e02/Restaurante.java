@@ -94,7 +94,7 @@ public class Restaurante {
                     mozo.interrupt();
                 tiempo.cancel();
             }
-        }, 2000);
+        }, 6000);
     }
 
     /**
@@ -136,7 +136,7 @@ public class Restaurante {
             hayPedidos = !pedidos.isEmpty();
             mutexPedidos.release();
         } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
+            // e.printStackTrace();
         }
 
         return hayPedidos;
@@ -149,17 +149,13 @@ public class Restaurante {
      */
     public void agregarPedido(int pedido) {
         try {
-            System.out.println("Restaurante: Agregar pedido (adquirir vacioPedidos: restan "
-                    + vacioPedidos.availablePermits() + ")");
             vacioPedidos.acquire();
             mutexPedidos.acquire();
             pedidos.add(pedido);
             mutexPedidos.release();
             llenoPedidos.release();
-            System.out.println("Restaurante: Agregado pedido (liberado llenoPedidos: restan "
-                    + llenoPedidos.availablePermits() + ")");
         } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
+            // e.printStackTrace();
         }
     }
 
@@ -171,18 +167,13 @@ public class Restaurante {
     public int obtenerPedido() {
         int pedido = 0;
         try {
-            System.out.println("Restaurante: Obtener pedido (adquirir llenoPedidos: restan "
-                    + llenoPedidos.availablePermits() + ")");
-            System.out.println(estaAbierto());
             llenoPedidos.acquire();
             mutexPedidos.acquire();
             pedido = pedidos.remove();
             mutexPedidos.release();
             vacioPedidos.release();
-            System.out.println("Restaurante: Obtenido pedido (liberar vacioPedidos: restan "
-                    + vacioPedidos.availablePermits() + ")");
         } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
+            // e.printStackTrace();
         }
 
         return pedido;

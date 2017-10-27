@@ -46,6 +46,6 @@ public class Clientes implements Runnable {
             }
         }
 
-        System.out.println("Clientes: No entran más pedidos");
+        System.out.println("Clientes: No entran más pedidos (último: #" + (numeroPedido - 1) + ")");
     }
 }

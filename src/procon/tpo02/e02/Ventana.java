@@ -26,11 +26,6 @@ public class Ventana {
     private final Condition pedidoListo = cerrojo.newCondition();
 
     /**
-     * Indica (al mozo) que un pedido esta en proceso por el Chef.
-     */
-    private final Condition pedidoEnProceso = cerrojo.newCondition();
-
-    /**
      * Indica (al Chef) que hay un nuevo pedido.
      */
     private final Condition pedidoNuevo = cerrojo.newCondition();
@@ -61,7 +56,7 @@ public class Ventana {
         try {
             abierto = false;
             pedidoNuevo.signal();
-            System.out.println("No se toman más pedidos");
+            System.out.println("Ventana: No se toman más pedidos");
         } finally {
             cerrojo.unlock();
         }
@@ -77,12 +72,9 @@ public class Ventana {
         cerrojo.lock();
         try {
             if (pedido > 0) {
-                System.out.println("Mozo: Intentar solicitar pedido #" + pedido);
                 // Esperar si ya se solicito un pedido y aún no se terminó de hacer
-                // TODO: probar utilizar condicion "pedidoListo"
                 while (this.pedido > 0) {
                     System.out.println("Mozo: Esperar que se termine el pedido #" + this.pedido);
-                    // pedidoEnProceso.await();
                     pedidoListo.await();
                 }
                 this.pedido = pedido;
@@ -104,7 +96,6 @@ public class Ventana {
         cerrojo.lock();
         try {
             if (pedido > 0) {
-                System.out.println("Mozo: Intentar servir pedido #" + this.pedido);
                 while (!listo) {
                     System.out.println("Mozo: Esperar que el pedido este listo #" + this.pedido);
                     pedidoListo.await();
@@ -128,10 +119,9 @@ public class Ventana {
         cerrojo.lock();
         try {
             if (this.pedido > 0) {
-                System.out.println("Chef: Entregar pedido #" + pedido);
+                System.out.println("Chef: Entregar pedido #" + this.pedido);
                 listo = true;
                 pedidoListo.signal();
-                // pedidoEnProceso.signal();
             }
         } finally {
             cerrojo.unlock();
@@ -149,14 +139,17 @@ public class Ventana {
 
         cerrojo.lock();
         try {
-            // Tomar pedidos sólo cuando esta abierto
+            // Esperar por nuevos pedidos sólo cuando esta abierto y no hay pedidos en
+            // proceso
             while (pedido <= 0 && abierto) {
                 System.out.println("Chef: Esperar por un nuevo pedido...");
                 pedidoNuevo.await();
             }
-            pedidoActual = pedido;
-            if (pedido > 0)
+            // Tomar pedidos sólo cuando esta abierto
+            if (abierto) {
+                pedidoActual = pedido;
                 System.out.println("Chef: Pedido tomado #" + pedidoActual);
+            }
         } finally {
             cerrojo.unlock();
         }
