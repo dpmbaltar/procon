@@ -27,22 +27,24 @@ public class Clientes implements Runnable {
         this.restaurante = restaurante;
     }
 
+    /**
+     * Agrega nuevos pedidos cada cierto período de tiempo.
+     */
     @Override
     public void run() {
         int numeroPedido = 1;
         while (restaurante.estaAbierto()) {
             int intervalo = ThreadLocalRandom.current().nextInt(1, 8) * 100;
+            restaurante.agregarPedido(numeroPedido++);
+            System.out.println("Clientes: Nuevo pedido #" + numeroPedido);
 
             try {
                 Thread.sleep(intervalo);
             } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-
-            restaurante.agregarPedido(numeroPedido);
-            System.out.println("Nuevo cliente para el pedido #" + numeroPedido);
-            numeroPedido++;
         }
-        
-        System.out.println("No entran más clientes");
+
+        System.out.println("Clientes: No entran más pedidos");
     }
 }
