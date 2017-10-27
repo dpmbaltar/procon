@@ -34,7 +34,7 @@ public class Mozo implements Runnable {
                 System.out.println(e.getMessage());
             }
         }
-        
+
         System.out.println("Mozo: terminado");
     }
 
@@ -44,8 +44,12 @@ public class Mozo implements Runnable {
      * @throws InterruptedException
      */
     public void atender() throws InterruptedException {
+        int pedido;
         Ventana ventana = restaurante.getVentana();
-        ventana.solicitar(restaurante.obtenerPedido());
+        pedido = restaurante.obtenerPedido();
+        System.out.println("Mozo: Obteniendo pedido #" + pedido);
+        ventana.solicitar(pedido);
+        System.out.println("Mozo: Sirviendo pedido");
         ventana.servir();
     }
 }

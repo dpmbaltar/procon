@@ -21,22 +21,22 @@ public class Ventana {
     private final Lock cerrojo = new ReentrantLock(true);
 
     /**
-     * Indica cuando un pedido esta listo para ser servido al cliente.
+     * Indica (al Mozo) que un pedido esta listo para ser servido al cliente.
      */
     private final Condition pedidoListo = cerrojo.newCondition();
 
     /**
-     * Indica cuando un pedido esta en proceso por el Chef.
+     * Indica (al mozo) que un pedido esta en proceso por el Chef.
      */
-    private final Condition enProceso = cerrojo.newCondition();
+    private final Condition pedidoEnProceso = cerrojo.newCondition();
 
     /**
-     * Indica al Chef que hay un nuevo pedido.
+     * Indica (al Chef) que hay un nuevo pedido.
      */
-    private final Condition nuevoPedido = cerrojo.newCondition();
+    private final Condition pedidoNuevo = cerrojo.newCondition();
 
     /**
-     * Numero de pedido en proceso.
+     * Número de pedido en proceso; cuando es 0 indica que no hay pedido en proceso.
      */
     private int pedido = 0;
 
@@ -45,19 +45,22 @@ public class Ventana {
      */
     private boolean listo = false;
 
+    private boolean abierto = true;
+
     /**
      * Constructor.
      */
     public Ventana() {
     }
-    
+
     /**
      * Cierra la ventana (no se toman más pedidos).
      */
     public void cerrar() {
         cerrojo.lock();
         try {
-            nuevoPedido.signal();
+            abierto = false;
+            pedidoNuevo.signal();
             System.out.println("No se toman más pedidos");
         } finally {
             cerrojo.unlock();
@@ -67,20 +70,24 @@ public class Ventana {
     /**
      * Solicita (el mozo) un pedido al Chef.
      *
-     * @param pedido
+     * @param pedido el número de pedido
      * @throws InterruptedException
      */
     public void solicitar(int pedido) throws InterruptedException {
         cerrojo.lock();
         try {
-            System.out.println("Mozo: Solicitar pedido #" + pedido);
+            System.out.println("Mozo: Intentar solicitar pedido #" + pedido);
+            // Esperar si ya se solicito un pedido y aún no se terminó de hacer
+            // TODO: probar utilizar condicion "pedidoListo"
             while (this.pedido > 0) {
-                System.out.println("Mozo: Esperar proceso de pedido #" + this.pedido);
-                enProceso.await();
+                System.out.println("Mozo: Esperar que se termine el pedido #" + this.pedido);
+                // pedidoEnProceso.await();
+                pedidoListo.await();
             }
             this.pedido = pedido;
-            System.out.println("Mozo: Avisar de nuevo pedido");
-            nuevoPedido.signal();
+            System.out.println("Mozo: Avisar de nuevo pedido #" + pedido);
+            // Avisar del pedido nuevo
+            pedidoNuevo.signal();
         } finally {
             cerrojo.unlock();
         }
@@ -95,7 +102,7 @@ public class Ventana {
         cerrojo.lock();
         try {
             if (pedido > 0) {
-                System.out.println("Mozo: Servir pedido #" + this.pedido);
+                System.out.println("Mozo: Intentar servir pedido #" + this.pedido);
                 while (!listo) {
                     System.out.println("Mozo: Esperar que el pedido este listo #" + this.pedido);
                     pedidoListo.await();
@@ -111,17 +118,18 @@ public class Ventana {
 
     /**
      * Chef entrega un pedido listo a la ventana para ser servido.
-     *
+     * 
+     * @param pedido el número de pedido a entragar
      * @throws InterruptedException
      */
-    public void entregar() throws InterruptedException {
+    public void entregar(int pedido) throws InterruptedException {
         cerrojo.lock();
         try {
             if (pedido > 0) {
                 System.out.println("Chef: Entregar pedido #" + pedido);
                 listo = true;
                 pedidoListo.signal();
-                enProceso.signal();
+                // pedidoEnProceso.signal();
             }
         } finally {
             cerrojo.unlock();
@@ -135,20 +143,22 @@ public class Ventana {
      * @throws InterruptedException
      */
     public int tomar() throws InterruptedException {
-        int nroPedido;
+        int pedidoActual = 0;
+
         cerrojo.lock();
         try {
-            System.out.println("Chef: Tomar pedido");
-            while (pedido <= 0) {
-                System.out.println("Chef: Esperar un nuevo pedido...");
-                nuevoPedido.await();
+            // Tomar pedidos sólo cuando esta abierto
+            while (pedido <= 0 && abierto) {
+                System.out.println("Chef: Esperar por un nuevo pedido...");
+                pedidoNuevo.await();
             }
-            nroPedido = pedido;
-            if (pedido > 0) System.out.println("Chef: Pedido tomado");
+            pedidoActual = pedido;
+            if (pedido > 0)
+                System.out.println("Chef: Pedido tomado #" + pedidoActual);
         } finally {
             cerrojo.unlock();
         }
 
-        return nroPedido;
+        return pedidoActual;
     }
 }

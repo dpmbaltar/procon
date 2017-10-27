@@ -8,8 +8,6 @@ import java.util.ArrayDeque;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Restaurante familiar.
@@ -167,6 +165,7 @@ public class Restaurante {
     public int obtenerPedido() {
         int pedido = 0;
         try {
+            System.out.println("Restaurante: Obtener pedido");
             llenoPedidos.acquire();
             mutexPedidos.acquire();
             pedido = pedidos.remove();
@@ -175,6 +174,8 @@ public class Restaurante {
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
         }
+
+        System.out.println("Restaurante: Pedido obtenido #" + pedido);
 
         return pedido;
     }

@@ -36,7 +36,7 @@ public class Chef implements Runnable {
                 System.out.println(e.getMessage());
             }
         }
-        
+
         System.out.println("Chef: terminado");
     }
 
@@ -48,9 +48,11 @@ public class Chef implements Runnable {
      */
     public void preparar() throws InterruptedException {
         Ventana ventana = restaurante.getVentana();
+        System.out.println("Chef: Tomando pedido");
         int pedido = ventana.tomar();
         int demora = ThreadLocalRandom.current().nextInt(1, 5) * 100;
         Thread.sleep(demora);
-        ventana.entregar();
+        System.out.println("Chef: Entregando pedido");
+        ventana.entregar(pedido);
     }
 }
