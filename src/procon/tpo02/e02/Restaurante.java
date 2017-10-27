@@ -19,7 +19,12 @@ public class Restaurante {
     /**
      * Limite de pedidos.
      */
-    private static final int LIMITE = 100;
+    private static final int LIMITE = 50;
+    
+    /**
+     * Cantidad de tiempo abierto (1 segundos: 1 hora).
+     */
+    private final int tiempoAbierto = 6;
 
     /**
      * Control de acceso a pedidos.
@@ -77,6 +82,8 @@ public class Restaurante {
      */
     public void abrir() {
         abierto = true;
+        System.out.println("Restaurante: Abierto");
+        
         Thread mozo = new Thread(new Mozo(this), "Mozo");
         Thread chef = new Thread(new Chef(this), "Chef");
         Thread clientes = new Thread(new Clientes(this));
@@ -94,7 +101,7 @@ public class Restaurante {
                     mozo.interrupt();
                 tiempo.cancel();
             }
-        }, 6000);
+        }, tiempoAbierto * 1000);
     }
 
     /**

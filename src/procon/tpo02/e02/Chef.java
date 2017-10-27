@@ -16,7 +16,7 @@ public class Chef implements Runnable {
     /**
      * Restaurante.
      */
-    private Restaurante restaurante;
+    private final Restaurante restaurante;
 
     /**
      * Constructor.
@@ -27,13 +27,17 @@ public class Chef implements Runnable {
         this.restaurante = restaurante;
     }
 
+    /**
+     * Prepara pedidos solicitados por el Mozo, siempre que esté abierto o
+     * queden pedidos pendientes.
+     */
     @Override
     public void run() {
         while (restaurante.estaAbierto() || restaurante.hayPedidos()) {
             try {
                 preparar();
             } catch (InterruptedException e) {
-                System.out.println(e.getMessage());
+                // e.printStackTrace();
             }
         }
 

@@ -14,7 +14,7 @@ public class Mozo implements Runnable {
     /**
      * Restaurante.
      */
-    private Restaurante restaurante;
+    private final Restaurante restaurante;
 
     /**
      * Constructor.
@@ -25,13 +25,17 @@ public class Mozo implements Runnable {
         this.restaurante = restaurante;
     }
 
+    /**
+     * Atiende los pedidos de los clientes mientras esté abierto, o queden
+     * pedidos pendientes.
+     */
     @Override
     public void run() {
         while (restaurante.estaAbierto() || restaurante.hayPedidos()) {
             try {
                 atender();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // e.printStackTrace();
             }
         }
 
@@ -39,7 +43,8 @@ public class Mozo implements Runnable {
     }
 
     /**
-     * Atiende los pedidos de los clientes.
+     * Atiende los pedidos de los clientes; solicitando al Chef/sirviendo los
+     * pedidos.
      *
      * @throws InterruptedException
      */

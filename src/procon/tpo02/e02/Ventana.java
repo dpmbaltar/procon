@@ -40,6 +40,9 @@ public class Ventana {
      */
     private boolean listo = false;
 
+    /**
+     * Indica si se toman nuevos pedidos.
+     */
     private boolean abierto = true;
 
     /**
@@ -79,7 +82,6 @@ public class Ventana {
                 }
                 this.pedido = pedido;
                 System.out.println("Mozo: Avisar de nuevo pedido #" + pedido);
-                // Avisar del pedido nuevo
                 pedidoNuevo.signal();
             }
         } finally {
@@ -95,12 +97,13 @@ public class Ventana {
     public void servir() throws InterruptedException {
         cerrojo.lock();
         try {
+            // Servir sólo si hay peidos esperando
             if (pedido > 0) {
                 while (!listo) {
-                    System.out.println("Mozo: Esperando que el pedido este listo #" + this.pedido);
+                    System.out.println("Mozo: Esperando que el pedido este listo #" + pedido);
                     pedidoListo.await();
                 }
-                System.out.println("Mozo: Servir pedido #" + this.pedido);
+                System.out.println("Mozo: Servir pedido #" + pedido);
                 pedido = 0;
                 listo = false;
             }
