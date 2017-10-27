@@ -74,7 +74,7 @@ public class Ventana {
             if (pedido > 0) {
                 // Esperar si ya se solicito un pedido y aún no se terminó de hacer
                 while (this.pedido > 0) {
-                    System.out.println("Mozo: Esperar que se termine el pedido #" + this.pedido);
+                    System.out.println("Mozo: Esperando que se termine el pedido #" + this.pedido);
                     pedidoListo.await();
                 }
                 this.pedido = pedido;
@@ -97,10 +97,10 @@ public class Ventana {
         try {
             if (pedido > 0) {
                 while (!listo) {
-                    System.out.println("Mozo: Esperar que el pedido este listo #" + this.pedido);
+                    System.out.println("Mozo: Esperando que el pedido este listo #" + this.pedido);
                     pedidoListo.await();
                 }
-                System.out.println("Mozo: Pedido servido #" + this.pedido);
+                System.out.println("Mozo: Servir pedido #" + this.pedido);
                 pedido = 0;
                 listo = false;
             }
@@ -142,13 +142,13 @@ public class Ventana {
             // Esperar por nuevos pedidos sólo cuando esta abierto y no hay pedidos en
             // proceso
             while (pedido <= 0 && abierto) {
-                System.out.println("Chef: Esperar por un nuevo pedido...");
+                System.out.println("Chef: Esperando por un nuevo pedido...");
                 pedidoNuevo.await();
             }
             // Tomar pedidos sólo cuando esta abierto
             if (abierto) {
                 pedidoActual = pedido;
-                System.out.println("Chef: Pedido tomado #" + pedidoActual);
+                System.out.println("Chef: Tomar pedido #" + pedidoActual);
             }
         } finally {
             cerrojo.unlock();

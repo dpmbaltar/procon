@@ -35,8 +35,8 @@ public class Clientes implements Runnable {
         int numeroPedido = 1;
         while (restaurante.estaAbierto()) {
             int intervalo = ThreadLocalRandom.current().nextInt(1, 8) * 100;
-            restaurante.agregarPedido(numeroPedido);
             System.out.println("Clientes: Nuevo pedido #" + numeroPedido);
+            restaurante.agregarPedido(numeroPedido);
             numeroPedido++;
 
             try {
