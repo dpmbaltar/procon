@@ -6,6 +6,7 @@ package procon.tpo02.e01;
 
 import java.util.ArrayDeque;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Programa Productor-Consumidor.
@@ -98,8 +99,14 @@ public class ProductorConsumidor {
         @Override
         public void run() {
             Random generadorDatos = new Random();
+            int intervalo = ThreadLocalRandom.current().nextInt(100, 1000);
             while (true) {
                 ponerDato(generadorDatos.nextInt(100));
+                try {
+                    Thread.sleep(intervalo);
+                } catch (InterruptedException e) {
+                    // e.printStackTrace();
+                }
             }
         }
 
@@ -128,8 +135,14 @@ public class ProductorConsumidor {
 
         @Override
         public void run() {
+            int intervalo = ThreadLocalRandom.current().nextInt(100, 1000);
             while (true) {
                 sacarDato();
+                try {
+                    Thread.sleep(intervalo);
+                } catch (InterruptedException e) {
+                    // e.printStackTrace();
+                }
             }
         }
 
