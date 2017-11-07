@@ -53,7 +53,7 @@ public class TramoCompartido {
                 }
             }
 
-            System.out.println(nombre+" entra al tramo compartido desde B.");
+            System.out.println(nombre+" entra al tramo compartido desde "+tramo);
             ocupar(tren);
         } finally {
             cierre.unlock();
@@ -69,12 +69,20 @@ public class TramoCompartido {
             String nombre = tren.getNombre();
             char tramo = tren.getTramo();
 
-            if (tramo == 'A' && cantidadB > 0) {
-                cantidadB--;
-                esperarB.signal();
-            } else if (tramo == 'B' && cantidadA > 0) {
-                cantidadA--;
-                esperarA.signal();
+            if (tramo == 'A') {
+                if (cantidadB > 0) {
+                    cantidadB--;
+                    esperarB.signal();
+                } else {
+                    esperarA.signal();
+                }
+            } else if (tramo == 'B') {
+                if (cantidadA > 0) {
+                    cantidadA--;
+                    esperarA.signal();
+                } else {
+                    esperarB.signal();
+                }
             }
 
             System.out.println(nombre+" sale del tramo compartido.");
