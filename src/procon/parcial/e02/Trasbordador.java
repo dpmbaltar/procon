@@ -1,29 +1,77 @@
+/**
+ * Parcial - Ejercicio 2
+ */
 package procon.parcial.e02;
 
 import java.util.ArrayDeque;
 import java.util.concurrent.Semaphore;
 
+/**
+ * El trasbordador que lleva autos de un lado del río al otro.
+ */
 public class Trasbordador {
 
+    /**
+     * La capacidad del trasbordador.
+     */
     public static final int CAPACIDAD = 10;
-    private boolean funcionando = true;
+
+    /**
+     * Indica si el trasbordador está en funcionamiento.
+     */
+    private boolean funcionando = false;
+
+    /**
+     * Contenedor de autos.
+     */
     private ArrayDeque<String> autos;
+
+    /**
+     * Semáforo para controlar el acceso al contenedor de autos.
+     */
     private final Semaphore mutex = new Semaphore(1);
+
+    /**
+     * Semáforo para controlar cuando ir al otro lado.
+     */
     private final Semaphore ir = new Semaphore(0);
+
+    /**
+     * Semáforo para controlar cuando volver del otro lado.
+     */
     private final Semaphore volver = new Semaphore(0);
-    private final Semaphore descarga = new Semaphore(0);
+
+    /**
+     * Semáforo para controlar la carga de autos.
+     */
     private final Semaphore carga = new Semaphore(CAPACIDAD);
 
+    /**
+     * Semáforo para controlar la descarga de autos.
+     */
+    private final Semaphore descarga = new Semaphore(0);
+
+    /**
+     * Constructor.
+     */
     public Trasbordador() {
         autos = new ArrayDeque<>(CAPACIDAD);
     }
 
+    /**
+     * Lleva autos al otro lado del río.
+     * @throws InterruptedException
+     */
     public void ir() throws InterruptedException {
         ir.acquire();
         System.out.println("Ir al otro lado...");
         descarga.release(CAPACIDAD);
     }
 
+    /**
+     * Vuelve vacío del otro lado del río.
+     * @throws InterruptedException
+     */
     public void volver() throws InterruptedException {
         volver.acquire();
         System.out.println("Volver del otro lado...");
@@ -66,17 +114,21 @@ public class Trasbordador {
         return funcionando;
     }
 
-    public void setFuncionando(boolean funcionando) {
-        this.funcionando = funcionando;
+    public void iniciar() {
+        funcionando = true;
+    }
+
+    public void terminar() {
+        funcionando = false;
     }
 
     private void visualizarEstado() {
         StringBuilder estado = new StringBuilder("[");
         for (int i = 0; i < CAPACIDAD; i++) {
             if (i < autos.size())
-                estado.append("#");
+                estado.append("=");
             else
-                estado.append("_");
+                estado.append(" ");
         }
         estado.append("]")
                 .append(" ")
