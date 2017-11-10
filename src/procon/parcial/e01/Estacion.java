@@ -21,6 +21,7 @@ public class Estacion {
         TramoCompartido tramoCompartido = new TramoCompartido();
         for (int i = 1; i <= 10; i++) {
             tren = new Tren(tramoCompartido);
+            tren. setOrden(i);
             tren.setNombre("Tren #"+i);
             if (r.nextInt(10) < 5) {
                 tren.setTramo('A');

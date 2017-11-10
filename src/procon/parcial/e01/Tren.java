@@ -7,19 +7,23 @@ import java.util.Random;
  */
 public class Tren implements Runnable {
 
+    private int orden;
     private char tramo;
     private String nombre;
-    private TramoCompartido tramoCompartido;
+    private final TramoCompartido tramoCompartido;
 
     public Tren(TramoCompartido tc) {
         tramoCompartido = tc;
     }
 
+    /**
+     * Pasa por el tramo compartido, con una cierta demora.
+     */
     @Override
     public void run() {
         try {
             int demora = (new Random()).nextInt(10) * 100;
-            tramoCompartido.entrar(this);
+            tramoCompartido.entrar(nombre, tramo, orden);
             Thread.sleep(demora);
             tramoCompartido.salir();
         } catch (InterruptedException e) {}
@@ -39,5 +43,13 @@ public class Tren implements Runnable {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public int getOrden() {
+        return orden;
+    }
+
+    public void setOrden(int orden) {
+        this.orden = orden;
     }
 }

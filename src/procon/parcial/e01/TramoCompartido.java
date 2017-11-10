@@ -17,44 +17,68 @@ public class TramoCompartido {
      * El tren que está pasando por la vía compartida.
      */
     private Tren tren;
+    private String nombre;
+    private char tramo;
+    private int orden;
 
+    /**
+     * Cantidad en espera en el tramo A.
+     */
     private int cantidadA = 0;
+    
+    /**
+     * Cantidad en espera en el tramo O.
+     */
     private int cantidadB = 0;
 
-    private ReentrantLock cierre = new ReentrantLock();
-    private Condition esperarA = cierre.newCondition();
-    private Condition esperarB = cierre.newCondition();
+    /**
+     * Lock.
+     */
+    private final ReentrantLock cierre = new ReentrantLock(true);
+    
+    /**
+     * Condición para indicar que un tren está esperando en el tramo A.
+     */
+    private final Condition esperarA = cierre.newCondition();
+    
+    /**
+     * Condición para indicar que un tren está esperando en el tramo B.
+     */
+    private final Condition esperarB = cierre.newCondition();
 
-    private void ocupar(Tren t) {
-        tren = t;
+    private void ocupar(String n, char t, int o) {
+        nombre = n;
+        tramo = t;
+        orden = o;
         ocupado = true;
     }
 
     private void desocupar() {
-        tren = null;
+        nombre = "";
+        tramo = ' ';
+        orden = 0;
         ocupado = false;
     }
 
-    public void entrar(Tren tren) throws InterruptedException {
+    public void entrar(String nombre, char tramo, int orden) throws InterruptedException {
         cierre.lock();
         try {
-            String nombre = tren.getNombre();
-            char tramo = tren.getTramo();
-
             while (ocupado) {
                 if (tramo == 'A') {
                     System.out.println(nombre+" espera en A...");
                     cantidadA++;
+                    System.out.println(cantidadA+" esperan en A...");
                     esperarA.await();
                 } else if (tramo == 'B') {
                     System.out.println(nombre+" espera en B...");
                     cantidadB++;
+                    System.out.println(cantidadB+" esperan en B...");
                     esperarB.await();
                 }
             }
 
             System.out.println(nombre+" entra al tramo compartido desde "+tramo);
-            ocupar(tren);
+            ocupar(nombre, tramo, orden);
         } finally {
             cierre.unlock();
         }
@@ -66,21 +90,20 @@ public class TramoCompartido {
     public void salir() {
         cierre.lock();
         try {
-            String nombre = tren.getNombre();
-            char tramo = tren.getTramo();
-
             if (tramo == 'A') {
                 if (cantidadB > 0) {
                     cantidadB--;
                     esperarB.signal();
-                } else {
+                } else if (cantidadA > 0) {
+                    cantidadA--;
                     esperarA.signal();
                 }
             } else if (tramo == 'B') {
                 if (cantidadA > 0) {
                     cantidadA--;
                     esperarA.signal();
-                } else {
+                } else if (cantidadB > 0) {
+                    cantidadB--;
                     esperarB.signal();
                 }
             }
