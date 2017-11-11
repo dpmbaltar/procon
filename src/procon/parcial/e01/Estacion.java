@@ -12,27 +12,45 @@
 package procon.parcial.e01;
 
 import java.util.Random;
+import procon.parcial.e01.lock.TramoCompartido;
 
+/**
+ * Simula una estación por donde pasan los trenes por un tramo compartido.
+ */
 public class Estacion {
 
+    /**
+     * Cantidad de trenes que pasarán por el tramo compartido.
+     */
+    private static final int CANTIDAD_DE_TRENES = 10;
+
     public static void main(String[] args) {
-        Random r = new Random();
-        Tren tren;
+        int demora;
+        Random random = new Random();
+        String nombre = "";
         TramoCompartido tramoCompartido = new TramoCompartido();
-        for (int i = 1; i <= 10; i++) {
+        Tren tren;
+
+        // Crear trenes e iniciarlos cada cierto tiempo
+        for (int i = 1; i <= CANTIDAD_DE_TRENES; i++) {
+            nombre = "Tren-"+i;
             tren = new Tren(tramoCompartido);
-            tren. setOrden(i);
-            tren.setNombre("Tren #"+i);
-            if (r.nextInt(10) < 5) {
+            tren.setNombre(nombre);
+
+            // Asignar tramo aleatoreamente
+            if (random.nextInt(10) < 5) {
                 tren.setTramo('A');
             } else {
                 tren.setTramo('B');
             }
 
+            // Iniciar ejecución
             (new Thread(tren)).start();
 
+            // Esperar por un tiempo antes del nuevo tren
             try {
-                Thread.sleep(r.nextInt(10) * 100);
+                demora = random.nextInt(10) * 100;
+                Thread.sleep(demora);
             } catch (InterruptedException e) {}
         }
     }
