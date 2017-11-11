@@ -17,11 +17,15 @@ public class TramoCompartido {
     private boolean ocupado = false;
 
     /**
+     * El tramo de donde viene el tren que está pasando por la vía compartida.
+     */
+    private char tramo;
+
+    /**
      * El tren que está pasando por la vía compartida.
      */
-    private Tren tren;
     private String nombre;
-    private char tramo;
+    private Tren tren;
 
     /**
      * Cantidad en espera en el tramo A.
@@ -64,10 +68,13 @@ public class TramoCompartido {
      * @param tramo
      * @throws InterruptedException
      */
-    public void entrar(String nombre, char tramo) throws InterruptedException {
+    public void entrar(Tren tren) throws InterruptedException {
         cierre.lock();
         try {
-            while (ocupado) {
+            String nombre = tren.getNombre();
+            char tramo = tren.getTramo();
+            // Esperar si está el tramo ocupado, según el tramo de origen
+            while (this.ocupado) {
                 if (tramo == 'A') {
                     System.out.println(nombre+" espera en A...");
                     cantidadA++;
@@ -80,7 +87,8 @@ public class TramoCompartido {
             }
 
             System.out.println(nombre+" entra al tramo compartido desde "+tramo);
-            ocupar(nombre, tramo);
+            this.ocupado = true;
+            this.tren = tren;
         } finally {
             cierre.unlock();
         }
@@ -92,6 +100,8 @@ public class TramoCompartido {
     public void salir() {
         cierre.lock();
         try {
+            String nombre = tren.getNombre();
+            char tramo = tren.getTramo();
             if (tramo == 'A') {
                 if (cantidadB > 0) {
                     cantidadB--;
@@ -111,21 +121,17 @@ public class TramoCompartido {
             }
 
             System.out.println(nombre+" sale del tramo compartido.");
-            desocupar();
+            ocupado = false;
+            tren = null;
         } finally {
             cierre.unlock();
         }
     }
 
-    private void ocupar(String n, char t) {
-        nombre = n;
-        tramo = t;
-        ocupado = true;
-    }
-
-    private void desocupar() {
-        nombre = "";
-        tramo = ' ';
-        ocupado = false;
+    private char tramoOpuesto(char tramo) {
+        char opuesto = ' ';
+        if (tramo == 'A') opuesto = 'B';
+        else if (tramo == 'B') opuesto = 'A';
+        return opuesto;
     }
 }

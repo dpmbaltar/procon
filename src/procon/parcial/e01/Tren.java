@@ -38,7 +38,7 @@ public class Tren implements Runnable {
     public void run() {
         try {
             int demora = (new Random()).nextInt(10) * 100;
-            tramoCompartido.entrar(nombre, tramo);
+            tramoCompartido.entrar(this);
             Thread.sleep(demora);
             tramoCompartido.salir();
         } catch (InterruptedException e) {}
