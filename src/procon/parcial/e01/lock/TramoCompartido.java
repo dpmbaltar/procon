@@ -12,30 +12,14 @@ import procon.parcial.e01.Tren;
 public class TramoCompartido {
 
     /**
-     * Indica si la vía esta ocupada.
-     */
-    private boolean ocupado = false;
-
-    /**
-     * El tramo de donde viene el tren que está pasando por la vía compartida.
-     */
-    private char tramo;
-
-    /**
      * El tren que está pasando por la vía compartida.
      */
-    private String nombre;
     private Tren tren;
 
     /**
-     * Cantidad en espera en el tramo A.
+     * El tren que le corresponde pasar tan pronto el tramo esté disponible.
      */
-    private int cantidadA = 0;
-
-    /**
-     * Cantidad en espera en el tramo O.
-     */
-    private int cantidadB = 0;
+    private Tren trenSiguiente;
 
     /**
      * Cola de trenes en espera desde el tramo A.
@@ -48,24 +32,31 @@ public class TramoCompartido {
     private final ArrayDeque<Tren> tramoB = new ArrayDeque<>();
 
     /**
-     * Lock.
+     * Cerrojo.
      */
-    private final ReentrantLock cierre = new ReentrantLock(true);
+    private final ReentrantLock cierre = new ReentrantLock();
 
     /**
      * Condición para indicar que un tren está esperando en el tramo A.
      */
-    private final Condition esperarA = cierre.newCondition();
+    private final Condition esperaA = cierre.newCondition();
 
     /**
      * Condición para indicar que un tren está esperando en el tramo B.
      */
-    private final Condition esperarB = cierre.newCondition();
+    private final Condition esperaB = cierre.newCondition();
+
+    /**
+     * Constructor.
+     */
+    public TramoCompartido() {
+        tren = null;
+        trenSiguiente = null;
+    }
 
     /**
      * Simula entrar un tren al tramo compartido.
-     * @param nombre
-     * @param tramo
+     * @param tren el tren que va a entrar
      * @throws InterruptedException
      */
     public void entrar(Tren tren) throws InterruptedException {
@@ -73,21 +64,23 @@ public class TramoCompartido {
         try {
             String nombre = tren.getNombre();
             char tramo = tren.getTramo();
+
             // Esperar si está el tramo ocupado, según el tramo de origen
-            while (this.ocupado) {
+            while (estaOcupado() || !esSiguiente(tren)) {
                 if (tramo == 'A') {
-                    System.out.println(nombre+" espera en A...");
-                    cantidadA++;
-                    esperarA.await();
+                    System.out.println(nombre+" espera en tramo A...");
+                    if (!tramoA.contains(tren)) // Evitar duplicado
+                        tramoA.add(tren);
+                    esperaA.await();
                 } else if (tramo == 'B') {
-                    System.out.println(nombre+" espera en B...");
-                    cantidadB++;
-                    esperarB.await();
+                    System.out.println(nombre+" espera en tramo B...");
+                    if (!tramoB.contains(tren)) // Evitar duplicado
+                        tramoB.add(tren);
+                    esperaB.await();
                 }
             }
 
             System.out.println(nombre+" entra al tramo compartido desde "+tramo);
-            this.ocupado = true;
             this.tren = tren;
         } finally {
             cierre.unlock();
@@ -95,43 +88,58 @@ public class TramoCompartido {
     }
 
     /**
-     * Simula salir un tren del tramo compartido.
+     * Simula salir el tren que entró al tramo compartido.
      */
     public void salir() {
         cierre.lock();
         try {
             String nombre = tren.getNombre();
             char tramo = tren.getTramo();
+
+            // Avisar al tramo opuesto para entrar, si hay trenes en espera
+            // Sino, avisar al siguiente del tramo actual
             if (tramo == 'A') {
-                if (cantidadB > 0) {
-                    cantidadB--;
-                    esperarB.signal();
-                } else if (cantidadA > 0) {
-                    cantidadA--;
-                    esperarA.signal();
+                if (!tramoB.isEmpty()) {
+                    trenSiguiente = tramoB.remove();
+                    esperaB.signal();
+                } else if (!tramoA.isEmpty()) {
+                    trenSiguiente = tramoA.remove();
+                    esperaA.signal();
+                } else {
+                    trenSiguiente = null;
                 }
             } else if (tramo == 'B') {
-                if (cantidadA > 0) {
-                    cantidadA--;
-                    esperarA.signal();
-                } else if (cantidadB > 0) {
-                    cantidadB--;
-                    esperarB.signal();
+                if (!tramoA.isEmpty()) {
+                    trenSiguiente = tramoA.remove();
+                    esperaA.signal();
+                } else if (!tramoB.isEmpty()) {
+                    trenSiguiente = tramoB.remove();
+                    esperaB.signal();
+                } else {
+                    trenSiguiente = null;
                 }
             }
 
-            System.out.println(nombre+" sale del tramo compartido.");
-            ocupado = false;
+            System.out.println(nombre+" sale del tramo compartido ("+tramo+").");
             tren = null;
         } finally {
             cierre.unlock();
         }
     }
 
-    private char tramoOpuesto(char tramo) {
-        char opuesto = ' ';
-        if (tramo == 'A') opuesto = 'B';
-        else if (tramo == 'B') opuesto = 'A';
-        return opuesto;
+    /**
+     * Determina si el tramo está ocupado.
+     */
+    private boolean estaOcupado() {
+        return tren != null;
+    }
+
+    /**
+     * Determina si el tren dado es el siguiente a pasar.
+     * @param tren el tren a verificar
+     * @return
+     */
+    private boolean esSiguiente(Tren tren) {
+        return trenSiguiente == null || trenSiguiente.equals(tren);
     }
 }
