@@ -1,7 +1,6 @@
 package procon.parcial.e01;
 
 import java.util.Random;
-import procon.parcial.e01.lock.TramoCompartido;
 
 /**
  * Representa un tren.

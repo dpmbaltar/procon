@@ -1,15 +1,14 @@
-package procon.parcial.e01.lock;
+package procon.parcial.e01;
 
 import java.util.ArrayDeque;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import procon.parcial.e01.Tren;
 
 /**
  * Representa el tramo compartido por tramos A y B.
  * Implementación con Lock.
  */
-public class TramoCompartido {
+public class TramoCompartidoConCerrojo implements TramoCompartido {
 
     /**
      * El tren que está pasando por la vía compartida.
@@ -49,7 +48,7 @@ public class TramoCompartido {
     /**
      * Constructor.
      */
-    public TramoCompartido() {
+    public TramoCompartidoConCerrojo() {
         tren = null;
         trenSiguiente = null;
     }
@@ -59,6 +58,7 @@ public class TramoCompartido {
      * @param tren el tren que va a entrar
      * @throws InterruptedException
      */
+    @Override
     public void entrar(Tren tren) throws InterruptedException {
         cierre.lock();
         try {
@@ -90,6 +90,7 @@ public class TramoCompartido {
     /**
      * Simula salir el tren que entró al tramo compartido.
      */
+    @Override
     public void salir() {
         cierre.lock();
         try {
