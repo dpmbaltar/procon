@@ -28,7 +28,8 @@ public class Trasbordo {
      * Constructor
      */
     public Trasbordo() {
-        trasbordador = new Trasbordador();
+        //trasbordador = new TrasbordadorConSemaforo();
+        trasbordador = new TrasbordadorConMonitor();
     }
 
     /**
