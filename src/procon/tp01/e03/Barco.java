@@ -14,8 +14,12 @@ public class Barco {
         this.matricula = matricula;
     }
 
+    public int calcularModuloEspecial() {
+        return 0;
+    }
+
     public int calcularModulo() {
-        return eslora * 10;
+        return (eslora * 10) + calcularModuloEspecial();
     }
 
     public Year getAnioFabr() {
