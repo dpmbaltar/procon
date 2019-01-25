@@ -4,8 +4,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import procon.tp01.e01.Resta;
-import procon.tp01.e01.Suma;
+import procon.tp00.repaso.e01.Resta;
+import procon.tp00.repaso.e01.Suma;
 
 public class PruebaOperacionBinaria {
 

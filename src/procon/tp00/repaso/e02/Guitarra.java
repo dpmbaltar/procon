@@ -1,4 +1,4 @@
-package procon.tp01.e02;
+package procon.tp00.repaso.e02;
 
 class Guitarra extends Instrumento {
     

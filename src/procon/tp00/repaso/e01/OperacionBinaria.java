@@ -1,4 +1,4 @@
-package procon.tp01.e01;
+package procon.tp00.repaso.e01;
 
 public abstract class OperacionBinaria {
     protected double valor1;

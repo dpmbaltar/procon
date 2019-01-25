@@ -1,4 +1,4 @@
-package procon.tp01.e02;
+package procon.tp00.repaso.e02;
 
 //Un tipo de Guitarra
 class Ukelele extends Guitarra {
