@@ -6,7 +6,8 @@ public class Barbero extends Persona {
     
     private Barberia barberia;
     
-    public Barbero(Barberia barberia) {
+    public Barbero(String nombre, Barberia barberia) {
+        super(nombre);
         this.barberia = barberia;
     }
 

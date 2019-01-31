@@ -1,6 +1,13 @@
 package procon.clase04.barberia;
 
 public class Cliente extends Persona {
+    
+    private Barberia barberia;
+    
+    public Cliente(String nombre, Barberia barberia) {
+        super(nombre);
+        this.barberia = barberia;
+    }
 
     @Override
     public boolean esCliente() {
@@ -9,7 +16,11 @@ public class Cliente extends Persona {
 
     @Override
     public void run() {
-        // TODO Auto-generated method stub
-
+        try {
+            barberia.entrar(this);
+            barberia.salir(this);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
