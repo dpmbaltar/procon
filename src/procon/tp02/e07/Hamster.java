@@ -22,6 +22,21 @@ public class Hamster implements Runnable {
     private String nombre;
 
     /**
+     * Indica si el hamster comió.
+     */
+    private boolean comio = false;
+    
+    /**
+     * Indica si el hamster se ejercitó.
+     */
+    private boolean ejercito = false;
+    
+    /**
+     * Indica si el hamster descansó.
+     */
+    private boolean descanso = false;
+
+    /**
      * Constructor.
      */
     public Hamster() {
@@ -41,7 +56,7 @@ public class Hamster implements Runnable {
      * Constructor con nombre y jaula.
      *
      * @param nombre el nombre del hamster.
-     * @param jaula la jaula donde convivirá el hamster.
+     * @param jaula  la jaula donde convivirá el hamster.
      */
     public Hamster(String nombre, Jaula jaula) {
         this.nombre = nombre;
@@ -50,13 +65,20 @@ public class Hamster implements Runnable {
 
     /**
      * Simula comer, ejercitarse y descansar, siempre que esté en una jaula.
+     * Para que el hamster pueda realizar las 3 cosas en cualquier orden según
+     * esté habilitado el recurso a utilizar, se modifican los métodos usar() de
+     * los recursos para que devuelvan true/false según pudo utilizarlo o no, y
+     * se envuelven las acciones dentro de un loop hasta que el hamster haya
+     * realizado las 3 acciones.
      */
     @Override
     public void run() {
         try {
-            comer();
-            ejercitarse();
-            descansar();
+            while (!comio || !ejercito || !descanso) {
+                comer();
+                ejercitarse();
+                descansar();
+            }
         } catch (NullPointerException e) {
             System.out.println(
                     "¡El hamster " + nombre + " no está en una jaula!");
@@ -67,21 +89,27 @@ public class Hamster implements Runnable {
      * Come del plato de la jaula.
      */
     protected void comer() throws NullPointerException {
-        jaula.getPlato().usar();
+        if (!comio) {
+            comio = jaula.getPlato().usar();
+        }
     }
 
     /**
      * Se ejercita en la rueda de la jaula.
      */
     protected void ejercitarse() throws NullPointerException {
-        jaula.getRueda().usar();
+        if (!ejercito) {
+            ejercito = jaula.getRueda().usar();
+        }
     }
 
     /**
      * Descansa en la hamaca de la jaula.
      */
     protected void descansar() throws NullPointerException {
-        jaula.getHamaca().usar();
+        if (!descanso) {
+            descanso = jaula.getHamaca().usar();
+        }
     }
 
     /**

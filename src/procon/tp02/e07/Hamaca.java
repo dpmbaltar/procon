@@ -29,22 +29,27 @@ public class Hamaca {
     /**
      * Simula el uso de la hamaca (puede tardar de 1 a 3 segundos).
      */
-    public void usar() {
+    public boolean usar() {
+        boolean utilizado = false;
         int segundos = ThreadLocalRandom.current().nextInt(10, 30) * 100;
         String hamster = Thread.currentThread().getName();
 
         try {
-            semaforo.acquire();
-            System.out.println(
-                    "El hamster " + hamster + " comienza a descansar...");
-            System.out.println("El hamster " + hamster
-                    + " está descansando en la hamaca...");
-            Thread.sleep(segundos);
-            System.out.println(
-                    "El hamster " + hamster + " termina de descansar...");
-            semaforo.release();
+            if (semaforo.tryAcquire()) {
+                utilizado = true;
+                System.out.println(
+                        "El hamster " + hamster + " comienza a descansar...");
+                System.out.println("El hamster " + hamster
+                        + " está descansando en la hamaca...");
+                Thread.sleep(segundos);
+                System.out.println(
+                        "El hamster " + hamster + " termina de descansar...");
+                semaforo.release();
+            }
         } catch (InterruptedException e) {
             System.out.println("¡El hamster " + hamster + " fue interrumpido!");
         }
+
+        return utilizado;
     }
 }
