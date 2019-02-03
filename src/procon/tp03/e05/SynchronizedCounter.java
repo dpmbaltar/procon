@@ -1,6 +1,6 @@
 package procon.tp03.e05;
 
-public class SynchronizedCounter {
+public class SynchronizedCounter implements Counter {
 
     private int c = 0;
 
@@ -8,7 +8,11 @@ public class SynchronizedCounter {
         c++;
     }
 
-    public void decrement() {
+    /**
+     * Se agregó el modificador synchronized al método, ya que al no estar
+     * sincronizado, se producían inconsistencias en la variable contadora.
+     */
+    public synchronized void decrement() {
         c--;
     }
 

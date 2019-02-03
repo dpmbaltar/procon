@@ -1,10 +1,14 @@
 package procon.tp03.e05;
 
-public class SynchronizedObjectCounter {
+public class SynchronizedObjectCounter implements Counter {
 
-    private int c = 0;
+    private Integer c = new Integer(0);
 
     public void increment() {
+        // Se cambio la siguiente sentencia, ya que al usar un objeto distinto
+        // que el que usa decrement(), se producen bloqueos con disintos locks
+        // y producen inconsistencia en la variable contadora
+        // synchronized (c) {
         synchronized (this) {
             c++;
         }
@@ -17,6 +21,8 @@ public class SynchronizedObjectCounter {
     }
 
     public int value() {
-        return c;
+        synchronized (this) {
+            return c;
+        }
     }
 }
