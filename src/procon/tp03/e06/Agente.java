@@ -15,7 +15,7 @@ public class Agente implements Runnable {
     @Override
     public void run() {
         while (true) {
-            sala.colocar(r.nextInt(3)+1);
+            sala.colocar(r.nextInt(3) + 1);
         }
     }
 }

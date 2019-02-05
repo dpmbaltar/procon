@@ -15,7 +15,7 @@ public class Fumador implements Runnable {
         while (true) {
             try {
                 sala.entraFumar(id);
-                System.out.println("Fumador "+id+" está fumando.");
+                System.out.println("Fumador " + id + " está fumando.");
                 Thread.sleep(1000);
                 sala.terminaFumar();
             } catch (InterruptedException e) {
