@@ -4,33 +4,24 @@ public class Personal extends Thread {
     private String nombre;
     private Saludo saludo;
     private boolean esJefe;
-    static int llegaron = 0;
-    private int numEmp;
 
-    Personal(Saludo s, String n) {
-        esJefe = false;
-        nombre = n;
-        saludo = s;
+    Personal(Saludo saludo, String nombre) {
+        this(saludo, nombre, false);
     }
 
-    Personal(Saludo s, String n, int x) {
-        esJefe = true;
-        nombre = n;
-        saludo = s;
-        numEmp = x;
+    Personal(Saludo saludo, String nombre, boolean esJefe) {
+        this.esJefe = esJefe;
+        this.nombre = nombre;
+        this.saludo = saludo;
     }
 
     public void run() {
         System.out.println("(" + nombre + " llega)");
+        saludo.marcar();
         if (esJefe) {
-            while (llegaron < numEmp) {
-                System.out.println("(Esperando...)");
-            }
             saludo.saludoJefe();
         } else {
-            synchronized (this) {
-                llegaron++;
-            }
+            saludo.esperarJefe(nombre);
         }
     }
 }
