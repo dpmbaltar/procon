@@ -2,7 +2,9 @@ package procon.tp03.e06;
 
 public class DisparaSala {
     public static void main(String[] args) {
-        SalaFumadores sala = new SalaFumadoresMonitor();
+        //SalaFumadores sala = new SalaFumadoresSemaphore();
+        //SalaFumadores sala = new SalaFumadoresMonitor();
+        SalaFumadores sala = new SalaFumadoresLock();
         Fumador f1 = new Fumador(1, sala);
         Fumador f2 = new Fumador(2, sala);
         Fumador f3 = new Fumador(3, sala);
