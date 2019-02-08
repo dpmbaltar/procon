@@ -5,69 +5,71 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ServicioImpresionLock implements ServicioImpresion {
-    public static enum Tipo {
-        A, B;
-    }
+import procon.tp04.e03.Impresora.Tipo;
 
-    private static final int CANTIDAD_A = 3;
-    private static final int CANTIDAD_B = 2;
-    private int imprimiendoA = 0;
-    private int imprimiendoB = 0;
-    private final ArrayDeque<Impresion> colaA = new ArrayDeque<>();
-    private final ArrayDeque<Impresion> colaB = new ArrayDeque<>();
+/**
+ * Implementación de un servicio de impresión con Locks.
+ */
+public class ServicioImpresionLock implements ServicioImpresion {
     private final Lock bloqueo = new ReentrantLock();
-    private final Condition libreA = bloqueo.newCondition();
-    private final Condition libreB = bloqueo.newCondition();
+    private final Condition nuevaImpresionA = bloqueo.newCondition();
+    private final Condition nuevaImpresionB = bloqueo.newCondition();
+    private final ArrayDeque<Impresion> colaImpresionA = new ArrayDeque<>();
+    private final ArrayDeque<Impresion> colaImpresionB = new ArrayDeque<>();
 
     public void solicitar(Impresion impresion) {
         bloqueo.lock();
         try {
             switch (impresion.getTipo()) {
             case A:
-                colaA.add(impresion);
-                while (imprimiendoA >= CANTIDAD_A
-                        || !colaA.peek().equals(impresion))
-                    libreA.await();
-                colaA.remove();
-                imprimiendoA++;
+                colaImpresionA.add(impresion);
+                nuevaImpresionA.signalAll();
                 break;
             case B:
-                colaB.add(impresion);
-                while (imprimiendoB >= CANTIDAD_B
-                        || !colaB.peek().equals(impresion))
-                    libreB.await();
-                colaB.remove();
-                imprimiendoB++;
+                colaImpresionB.add(impresion);
+                nuevaImpresionB.signalAll();
+                break;
+            case CUALQUIERA:
+                if (colaImpresionA.size() < colaImpresionB.size()) {
+                    impresion.setTipo(Tipo.A);
+                    colaImpresionA.add(impresion);
+                } else {
+                    impresion.setTipo(Tipo.B);
+                    colaImpresionB.add(impresion);
+                }
                 break;
             default:
-                //TODO: (impresion.getTipo() == null) case default
-                break;
+                System.out.println("¡Esto nunca debería ocurrir!");
             }
-            System.out.println("Iniciando " + impresion);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } finally {
             bloqueo.unlock();
         }
     }
 
-    public void finalizar(Impresion impresion) {
+    public Impresion imprimir(Impresora impresora) {
+        Impresion impresion = null;
         bloqueo.lock();
         try {
-            switch (impresion.getTipo()) {
+            switch (impresora.getTipo()) {
             case A:
-                imprimiendoA--;
-                libreA.signalAll();
+                while (colaImpresionA.isEmpty())
+                    nuevaImpresionA.await();
+                impresion = colaImpresionA.remove();
                 break;
             case B:
-                imprimiendoB--;
-                libreB.signalAll();
+                while (colaImpresionB.isEmpty())
+                    nuevaImpresionB.await();
+                impresion = colaImpresionB.remove();
                 break;
+            default:
+                System.out.println("¡Esto nunca debería ocurrir!");
             }
-            System.out.println("Finalizado " + impresion);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             bloqueo.unlock();
         }
+
+        return impresion;
     }
 }
