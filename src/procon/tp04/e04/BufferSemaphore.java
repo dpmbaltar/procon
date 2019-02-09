@@ -8,30 +8,31 @@ public class BufferSemaphore<E> implements Buffer<E> {
     private static final int CAPACIDAD = 8;
     private final ArrayDeque<E> buffer = new ArrayDeque<>();
     private final Semaphore mutex = new Semaphore(1);
-    private final Semaphore agregar = new Semaphore(1);
-    private final Semaphore sacar = new Semaphore(0);
+    private final Semaphore puedeAgregar = new Semaphore(1);
+    private final Semaphore puedeSacar = new Semaphore(0);
 
     @Override
     public void agregar(E elemento) throws InterruptedException {
-        agregar.acquire();
+        puedeAgregar.acquire();
         mutex.acquire();
         buffer.add(elemento);
         if (buffer.size() < CAPACIDAD)
-            agregar.release();
-        sacar.release();
+            puedeAgregar.release();
+        if (buffer.size() == 1)
+            puedeSacar.release();
         mutex.release();
     }
 
     @Override
     public E sacar() throws InterruptedException {
-        E elemento;
-        sacar.acquire();
+        E elemento = null;
+        puedeSacar.acquire();
         mutex.acquire();
         elemento = buffer.remove();
         if (buffer.size() > 0)
-            sacar.release();
+            puedeSacar.release();
         if (buffer.size() == (CAPACIDAD - 1))
-            agregar.release();
+            puedeAgregar.release();
         mutex.release();
 
         return elemento;
