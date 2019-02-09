@@ -6,7 +6,9 @@ public class Main {
 
     public static void main(String[] args) {
         //Buffer<Integer> buffer = new BufferMonitor<>();
-        Buffer<Integer> buffer = new BufferSemaphore<>();
+        //Buffer<Integer> buffer = new BufferSemaphore<>();
+        //Buffer<Integer> buffer = new BufferUnlimitedSemaphore<>();
+        Buffer<Integer> buffer = new BufferUnlimitedMonitor<>();
         Thread productor, consumidor;
         productor = new Thread(new Productor<Integer>(buffer) {
             private int elemento = 0;
