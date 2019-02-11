@@ -12,28 +12,50 @@ public class Miembro implements Runnable {
         this.almacen = almacen;
     }
 
+    public synchronized String getNombre() {
+        return nombre;
+    }
+
     @Override
     public void run() {
         try {
+            Thread hiloFermentacion;
+            Fermentacion fermentacion = null;
+            UnidadFermentacion unidadFerm;
             int litrosFabricados = 0;
+            int espera = -1;
+            int estapa = 0;
 
             while (litrosFabricados < 10) {
-                // almacen.entrar(this);
                 // almacen.probarVinoSiHay();
-                if (almacen.iniciarMezcla()) {
-                    Thread.sleep(150);
-                    litrosFabricados+= almacen.finalizarMezcla();
-                    almacen.iniciarFermentacion();
-                    Thread.sleep(4000);
-                    almacen.finalizarFermentacion();
+                switch (estapa) {
+                case 0: // Prepara mezcla
+                    if (almacen.iniciarMezcla()) {
+                        Thread.sleep(150);
+                        litrosFabricados += almacen.finalizarMezcla();
+                        estapa++;
+                    }
+                    break;
+                case 1: // Inicia fermentación
+                    unidadFerm = almacen.adquirirUnidadFermentacion();
+                    if (unidadFerm != null) {
+                        fermentacion = new Fermentacion(this, unidadFerm);
+                        hiloFermentacion = new Thread(fermentacion);
+                        hiloFermentacion.start();
+                        estapa++;
+                    }
+                    break;
+                case 2: // Finaliza fermentación
+                    if (fermentacion.estaFinalizada()) {
+                        // almacen.liberarUnidadFermentacion(unidadFerm);
+                        estapa++;
+                    }
+                    break;
+                case 3: // espera pasiva
                     almacen.esperarPruebaVino();
+                    break;
                 }
-                
-//                else {
-//                    almacen.probarVino();
-//                }
-//                almacen.salir(this);
-//                almacen.esperarPruebaVino();
+                // almacen.probarVino();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

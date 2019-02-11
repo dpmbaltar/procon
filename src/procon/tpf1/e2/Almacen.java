@@ -14,7 +14,7 @@ public class Almacen {
     private final Semaphore vinoParaProbar = new Semaphore(0);
     private int estacionesMezcla;
     private int jarras;
-    private int unidadesFermentacion;
+    private UnidadFermentacion[] unidadesFermentacion;
     private int envasesJugo;
     private int paquetesLevadura;
     private boolean vinoListo = false;
@@ -31,7 +31,9 @@ public class Almacen {
     public Almacen(int estacionesMezcla, int unidadesFermentacion, int jarras,
             int envasesJugo, int paquetesLevadura) {
         this.estacionesMezcla = estacionesMezcla;
-        this.unidadesFermentacion = unidadesFermentacion;
+        this.unidadesFermentacion = new UnidadFermentacion[unidadesFermentacion];
+        for (int i = 1; i <= unidadesFermentacion; i++)
+            this.unidadesFermentacion[i] = new UnidadFermentacion(i);
         this.jarras = jarras;
         this.envasesJugo = envasesJugo;
         this.paquetesLevadura = paquetesLevadura;
@@ -45,16 +47,16 @@ public class Almacen {
     public void reponer(int envasesJugo, int paquetesLevadura)
             throws InterruptedException {
         debeReponer.acquire();
-        //mutex.acquire();
-        //if (this.envasesJugo < 2 || this.paquetesLevadura < 1) {
-            //this.envasesJugo += envasesJugo;
-            //this.paquetesLevadura += paquetesLevadura;
-            envaseJugo.release(envasesJugo);
-            paqueteLevadura.release(paquetesLevadura);
-        //}
+        // mutex.acquire();
+        // if (this.envasesJugo < 2 || this.paquetesLevadura < 1) {
+        // this.envasesJugo += envasesJugo;
+        // this.paquetesLevadura += paquetesLevadura;
+        envaseJugo.release(envasesJugo);
+        paqueteLevadura.release(paquetesLevadura);
+        // }
         System.out.println(
                 Thread.currentThread().getName() + ">>> repone ingredientes");
-        //mutex.release();
+        // mutex.release();
     }
 
     public void entrar(Miembro miembro) throws InterruptedException {
@@ -97,18 +99,37 @@ public class Almacen {
         return 10;
     }
 
-    public void iniciarFermentacion() throws InterruptedException {
+    public UnidadFermentacion adquirirUnidadFermentacion()
+            throws InterruptedException {
+        UnidadFermentacion unidadAdquirida = null;
+
+        return unidadAdquirida;
+    }
+    
+    public void liberarUnidadFermentacion(UnidadFermentacion uf)
+            throws InterruptedException {
+        unidadesFermentacion[uf.getId() - 1] = uf;
+    }
+
+    public boolean iniciarFermentacion() throws InterruptedException {
+        boolean inicioFermentacion = false;
         unidadFermentacion.acquire();
         System.out.println(
                 Thread.currentThread().getName() + ">>> inicia fermentación");
         jarra.release();
+
+        return inicioFermentacion;
     }
 
     public void finalizarFermentacion() throws InterruptedException {
-        //jarra.acquire();
+        // jarra.acquire();
         System.out.println(
                 Thread.currentThread().getName() + ">>> finaliza fermentación");
         unidadFermentacion.release();
+    }
+
+    public void esperarPruebaVino() {
+
     }
 
     public void salir() {
@@ -127,7 +148,4 @@ public class Almacen {
             wait();
     }
 
-    public void esperarPruebaVino() {
-
-    }
 }
