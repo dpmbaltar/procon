@@ -1,6 +1,12 @@
 package procon.tpf1.e2;
 
+import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Almacen {
 
@@ -18,6 +24,12 @@ public class Almacen {
     private int envasesJugo;
     private int paquetesLevadura;
     private boolean vinoListo = false;
+    private int cantidadMiembros = 0;
+
+    private final Lock cerrojo = new ReentrantLock();
+    private final Condition hayVinoFabricado = cerrojo.newCondition();
+
+    private final ArrayDeque<Vino> vinosFabricados = new ArrayDeque<>();
 
     /**
      * Constructor con las especificaciónes del almacen.
@@ -105,7 +117,7 @@ public class Almacen {
 
         return unidadAdquirida;
     }
-    
+
     public void liberarUnidadFermentacion(UnidadFermentacion uf)
             throws InterruptedException {
         unidadesFermentacion[uf.getId() - 1] = uf;
@@ -143,9 +155,33 @@ public class Almacen {
         }
     }
 
-    public synchronized void probarVino() throws InterruptedException {
-        while (!vinoListo)
-            wait();
+    /**
+     * Simula probar un vino por un miembro. Si hay vinos fabricados los prueba,
+     * sino espera hasta que: (1) le avisen que hay vino para probar; (2) pasa
+     * una cierta cantidad de tiempo (aproximadamente lo que tarda la
+     * fermentación de un vino). De esta forma, si el miembro que va a probar
+     * algún vino tenía su propio vino fermentando, de no haber otro vino
+     * fabricado para probar transcurrido este tiempo, entonces sale de la
+     * espera y continúa su etapa de fabricación en vez de quedarse "dormido"
+     * hasta que otro miembro termine un vino.
+     * 
+     * @param miembro
+     * @throws InterruptedException
+     */
+    public void probarVino(Miembro miembro) throws InterruptedException {
+        cerrojo.lock();
+        try {
+            if (vinosFabricados.isEmpty()) {
+                hayVinoFabricado.await(4, TimeUnit.SECONDS);
+            }
+            if (!vinosFabricados.isEmpty()) {
+                Iterator<Vino> iterador = vinosFabricados.iterator();
+                while (iterador.hasNext())
+                    iterador.next().probar(miembro);
+            }
+        } finally {
+            cerrojo.unlock();
+        }
     }
 
 }

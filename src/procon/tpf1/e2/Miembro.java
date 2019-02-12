@@ -19,9 +19,9 @@ public class Miembro implements Runnable {
     @Override
     public void run() {
         try {
-            Thread hiloFermentacion;
+            Thread hiloFermentacion = null;
             Fermentacion fermentacion = null;
-            UnidadFermentacion unidadFerm;
+            UnidadFermentacion unidadFerm = null;
             int litrosFabricados = 0;
             int espera = -1;
             int estapa = 0;
@@ -47,7 +47,11 @@ public class Miembro implements Runnable {
                     break;
                 case 2: // Finaliza fermentación
                     if (fermentacion.estaFinalizada()) {
-                        // almacen.liberarUnidadFermentacion(unidadFerm);
+                        almacen.liberarUnidadFermentacion(unidadFerm);
+                        hiloFermentacion = null;
+                        fermentacion = null;
+                        unidadFerm = null;
+                        // ???
                         estapa++;
                     }
                     break;
