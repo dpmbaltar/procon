@@ -186,7 +186,8 @@ public class Almacen {
                     vino = iterador.next();
                     if (vino.probar(miembro))
                         System.out.println(
-                                miembro.getNombre() + ">>> prueba vino de ");
+                                miembro.getNombre() + ">>> prueba vino de "
+                                        + vino.getFabricante().getNombre());
 
                     if (vino.getCantidadProbaron() >= cantidadMiembros) {
                         iterador.remove();

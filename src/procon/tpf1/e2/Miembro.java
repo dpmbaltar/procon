@@ -59,7 +59,8 @@ public class Miembro implements Runnable {
                     almacen.esperarPruebaVino();
                     break;
                 }
-                // almacen.probarVino();
+
+                almacen.probarVinos(this);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
