@@ -20,8 +20,8 @@ public class Vino {
         return probadores.size();
     }
 
-    public synchronized void probar(Miembro miembro) {
-        probadores.add(miembro);
+    public synchronized boolean probar(Miembro miembro) {
+        return probadores.add(miembro);
     }
 
 }

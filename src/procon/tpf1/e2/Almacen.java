@@ -28,6 +28,7 @@ public class Almacen {
 
     private final Lock cerrojo = new ReentrantLock();
     private final Condition hayVinoFabricado = cerrojo.newCondition();
+    private final Condition vinoProbado = cerrojo.newCondition();
 
     private final ArrayDeque<Vino> vinosFabricados = new ArrayDeque<>();
 
@@ -149,9 +150,11 @@ public class Almacen {
     }
 
     public void probarVinoSiHay() {
-        if (vinoParaProbar.tryAcquire()) {
-            System.out.println(
-                    Thread.currentThread().getName() + ">>> prueba vino");
+        cerrojo.lock();
+        try {
+            // TODO: probarVinoSiHay()
+        } finally {
+            cerrojo.unlock();
         }
     }
 
@@ -165,19 +168,31 @@ public class Almacen {
      * espera y continúa su etapa de fabricación en vez de quedarse "dormido"
      * hasta que otro miembro termine un vino.
      * 
-     * @param miembro
+     * @param miembro el miembro que prueba vinos
      * @throws InterruptedException
      */
-    public void probarVino(Miembro miembro) throws InterruptedException {
+    public void probarVinos(Miembro miembro) throws InterruptedException {
         cerrojo.lock();
         try {
-            if (vinosFabricados.isEmpty()) {
+            // No esperar en bucle para seguir su proceso si aún no hay vinos
+            if (vinosFabricados.isEmpty())
                 hayVinoFabricado.await(4, TimeUnit.SECONDS);
-            }
+
+            // Si aún no hay vinos, salir de la espera y seguir su proceso
             if (!vinosFabricados.isEmpty()) {
+                Vino vino;
                 Iterator<Vino> iterador = vinosFabricados.iterator();
-                while (iterador.hasNext())
-                    iterador.next().probar(miembro);
+                while (iterador.hasNext()) {
+                    vino = iterador.next();
+                    if (vino.probar(miembro))
+                        System.out.println(
+                                miembro.getNombre() + ">>> prueba vino de ");
+
+                    if (vino.getCantidadProbaron() >= cantidadMiembros) {
+                        iterador.remove();
+                        vinoProbado.signalAll();
+                    }
+                }
             }
         } finally {
             cerrojo.unlock();
