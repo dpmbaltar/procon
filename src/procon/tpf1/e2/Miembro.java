@@ -56,7 +56,7 @@ public class Miembro implements Runnable {
                     }
                     break;
                 case 3: // espera pasiva
-                    almacen.esperarPruebaVino();
+                    //almacen.esperarPruebaVino();
                     break;
                 }
 

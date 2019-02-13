@@ -115,7 +115,7 @@ public class Almacen {
     public UnidadFermentacion adquirirUnidadFermentacion()
             throws InterruptedException {
         UnidadFermentacion unidadAdquirida = null;
-
+        // TODO: adquirirUnidadFermentacion()
         return unidadAdquirida;
     }
 
@@ -141,10 +141,6 @@ public class Almacen {
         unidadFermentacion.release();
     }
 
-    public void esperarPruebaVino() {
-
-    }
-
     public void salir() {
 
     }
@@ -153,6 +149,23 @@ public class Almacen {
         cerrojo.lock();
         try {
             // TODO: probarVinoSiHay()
+        } finally {
+            cerrojo.unlock();
+        }
+    }
+
+    public void esperarPruebaVino(Vino vino) throws InterruptedException {
+        cerrojo.lock();
+        try {
+            // Primero, el fabricante prueba su propio vino
+            Miembro fabricante = vino.getFabricante();
+            vino.probar(fabricante);
+
+            // Esperar que el resto de los miembros prueben el vino
+            while (vino.getCantidadProbaron() >= cantidadMiembros)
+                vinoProbado.await();
+
+            System.out.println(fabricante.getNombre() + ">>> vino probado");
         } finally {
             cerrojo.unlock();
         }
