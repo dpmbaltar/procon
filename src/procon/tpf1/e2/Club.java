@@ -11,7 +11,7 @@ public class Club {
         Thread[] hiloMiembros;
         String nombreMiembro;
 
-        almacen = new Almacen(2, 7, 6, 15, 20);
+        almacen = new Almacen(cantidadMiembros, 2, 7, 6, 15, 20);
         administrador = new Administrador("Administrador", almacen);
         hiloAdministrador = new Thread(administrador, "Administrador");
         hiloMiembros = new Thread[cantidadMiembros];

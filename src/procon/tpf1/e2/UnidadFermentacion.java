@@ -7,6 +7,7 @@ public class UnidadFermentacion {
 
     private final int id;
     private Miembro miembro;
+    private Vino vino;
 
     public UnidadFermentacion(int id) {
         this.id = id;
@@ -15,6 +16,10 @@ public class UnidadFermentacion {
     public synchronized int getId() {
         return id;
     }
+    
+    public synchronized Vino getVino() {
+        return vino;
+    }
 
     public synchronized void ocupar(Miembro miembro) {
         this.miembro = miembro;
@@ -22,6 +27,7 @@ public class UnidadFermentacion {
 
     public synchronized void desocupar() {
         this.miembro = null;
+        this.vino = null;
     }
 
     public synchronized boolean estaOcupada() {
@@ -33,6 +39,7 @@ public class UnidadFermentacion {
     }
 
     public synchronized void finalizarFermentacion() {
+        vino = new Vino(miembro);
         System.out.println(miembro.getNombre() + ">>> finaliza fermentación");
     }
 

@@ -22,45 +22,54 @@ public class Miembro implements Runnable {
             Thread hiloFermentacion = null;
             Fermentacion fermentacion = null;
             UnidadFermentacion unidadFerm = null;
+            Vino vino = null;
             int litrosFabricados = 0;
-            int espera = -1;
-            int estapa = 0;
+            int vinosProbados = 0;
+            int etapa = 0;
 
-            while (litrosFabricados < 10) {
+            while (vinosProbados < 10) {
                 // almacen.probarVinoSiHay();
-                switch (estapa) {
+                //System.out.println("pre switch() etapa: " + etapa
+                //        + " vinosProbados: " + vinosProbados);
+                switch (etapa) {
                 case 0: // Prepara mezcla
                     if (almacen.iniciarMezcla()) {
                         Thread.sleep(150);
                         litrosFabricados += almacen.finalizarMezcla();
-                        estapa++;
+                        etapa++;
                     }
                     break;
                 case 1: // Inicia fermentación
-                    unidadFerm = almacen.adquirirUnidadFermentacion();
+                    // System.out.println("pre adquirirUnidadFermentacion()");
+                    unidadFerm = almacen.adquirirUnidadFermentacion(this);
                     if (unidadFerm != null) {
                         fermentacion = new Fermentacion(this, unidadFerm);
                         hiloFermentacion = new Thread(fermentacion);
                         hiloFermentacion.start();
-                        estapa++;
+                        etapa++;
                     }
                     break;
                 case 2: // Finaliza fermentación
                     if (fermentacion.estaFinalizada()) {
+                        vino = unidadFerm.getVino();
                         almacen.liberarUnidadFermentacion(unidadFerm);
                         hiloFermentacion = null;
                         fermentacion = null;
                         unidadFerm = null;
                         // ???
-                        estapa++;
+                        etapa++;
                     }
                     break;
                 case 3: // espera pasiva
-                    //almacen.esperarPruebaVino();
+                    almacen.esperarPruebaVino(vino);
+                    vinosProbados++;
+                    vino = null;
+                    etapa++;
                     break;
                 }
-
-                almacen.probarVinos(this);
+                // System.out.println("pre probarVinos() etapa: " + etapa);
+                vinosProbados += almacen.probarVinos(this);
+                // System.out.println("post probarVinos() etapa: " + etapa);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
