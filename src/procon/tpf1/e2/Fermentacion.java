@@ -19,7 +19,7 @@ public class Fermentacion implements Runnable {
     public void run() {
         try {
             uf.iniciarFermentacion();
-            Thread.sleep(4000);
+            Thread.sleep(2000);
             uf.finalizarFermentacion();
             finalizada = true;
         } catch (InterruptedException e) {

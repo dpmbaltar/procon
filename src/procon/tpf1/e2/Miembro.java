@@ -29,8 +29,9 @@ public class Miembro implements Runnable {
 
             while (vinosProbados < 10) {
                 // almacen.probarVinoSiHay();
-                //System.out.println("pre switch() etapa: " + etapa
-                //        + " vinosProbados: " + vinosProbados);
+//                System.out.println(Thread.currentThread().getName()
+//                        + ">>> pre switch() etapa: " + etapa + " vinosProbados: "
+//                        + vinosProbados);
                 switch (etapa) {
                 case 0: // Prepara mezcla
                     if (almacen.iniciarMezcla()) {
@@ -61,16 +62,20 @@ public class Miembro implements Runnable {
                     }
                     break;
                 case 3: // espera pasiva
-                    almacen.esperarPruebaVino(vino);
-                    vinosProbados++;
-                    vino = null;
-                    etapa++;
+                    if (almacen.esperarPruebaVino(vino)) {
+                        vinosProbados++;
+                        vino = null;
+                        etapa++;
+                    }
                     break;
                 }
                 // System.out.println("pre probarVinos() etapa: " + etapa);
                 vinosProbados += almacen.probarVinos(this);
-                // System.out.println("post probarVinos() etapa: " + etapa);
+//                System.out.println(Thread.currentThread().getName()
+//                        + ">>> post probarVinos() etapa: " + etapa);
             }
+            System.out
+                    .println(Thread.currentThread().getName() + ">>> termina");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

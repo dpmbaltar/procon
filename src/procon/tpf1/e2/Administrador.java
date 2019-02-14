@@ -8,7 +8,7 @@ public class Administrador extends Miembro {
 
     @Override
     public void run() {
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
                 almacen.reponer(15, 20);
             } catch (InterruptedException e) {

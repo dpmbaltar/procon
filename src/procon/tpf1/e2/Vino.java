@@ -20,6 +20,10 @@ public class Vino {
         return probadores.size();
     }
 
+    public synchronized boolean estaProbadoPor(Miembro miembro) {
+        return probadores.contains(miembro);
+    }
+
     public synchronized boolean probar(Miembro miembro) {
         return probadores.add(miembro);
     }

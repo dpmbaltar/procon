@@ -39,7 +39,8 @@ public class UnidadFermentacion {
     }
 
     public synchronized void finalizarFermentacion() {
-        vino = new Vino(miembro);
+        if (vino == null)
+            vino = new Vino(miembro);
         System.out.println(miembro.getNombre() + ">>> finaliza fermentación");
     }
 

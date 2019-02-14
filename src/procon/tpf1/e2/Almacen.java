@@ -2,6 +2,7 @@ package procon.tpf1.e2;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -23,7 +24,7 @@ public class Almacen {
     private UnidadFermentacion[] unidadesFermentacion;
     private int envasesJugo;
     private int paquetesLevadura;
-    private boolean vinoListo = false;
+    private boolean hayNuevosVinos = false;
     private int cantidadMiembros = 0;
 
     private final Lock cerrojo = new ReentrantLock();
@@ -117,9 +118,9 @@ public class Almacen {
         System.out.println(
                 Thread.currentThread().getName() + ">>> finaliza mezcla");
 
-        //System.out.println(estacionMezcla);
-        //System.out.println(jarra);
-        //System.out.println(unidadFermentacion);
+        // System.out.println(estacionMezcla);
+        // System.out.println(jarra);
+        // System.out.println(unidadFermentacion);
         estacionMezcla.release();
 
         return 10;
@@ -130,6 +131,7 @@ public class Almacen {
         UnidadFermentacion unidadAdquirida = null;
 
         if (unidadFermentacion.tryAcquire()) {
+            mutex.acquire();
             for (int i = 0; i < unidadesFermentacion.length; i++) {
                 if (!unidadesFermentacion[i].estaOcupada()) {
                     unidadAdquirida = unidadesFermentacion[i];
@@ -141,15 +143,28 @@ public class Almacen {
             jarra.release();
             System.out.println(Thread.currentThread().getName()
                     + ">>> adquiere una unidad de fermentación");
+            mutex.release();
         }
 
         return unidadAdquirida;
     }
 
-    public synchronized void liberarUnidadFermentacion(UnidadFermentacion uf)
+    public void liberarUnidadFermentacion(UnidadFermentacion uf)
             throws InterruptedException {
+        mutex.acquire();
+        Vino vino = uf.getVino();
         uf.desocupar();
         unidadFermentacion.release();
+        jarra.release();
+        
+        cerrojo.lock();
+        try {
+            vinosFabricados.add(vino);
+            vinoProbado.signalAll();
+        } finally {
+            cerrojo.unlock();
+        }
+        mutex.release();
     }
 
     public boolean iniciarFermentacion() throws InterruptedException {
@@ -173,32 +188,32 @@ public class Almacen {
 
     }
 
-    public void probarVinoSiHay() {
-        cerrojo.lock();
-        try {
-            // TODO: probarVinoSiHay()
-        } finally {
-            cerrojo.unlock();
-        }
-    }
-
-    public void esperarPruebaVino(Vino vino) throws InterruptedException {
+    public boolean esperarPruebaVino(Vino vino) throws InterruptedException {
+        boolean probaronVino = false;
         cerrojo.lock();
         try {
             // Primero, el fabricante prueba su propio vino
             Miembro fabricante = vino.getFabricante();
             vino.probar(fabricante);
-            vinosFabricados.add(vino);
 
             // Esperar que el resto de los miembros prueben el vino
-            while (vino.getCantidadProbaron() >= cantidadMiembros)
+            while (vino.getCantidadProbaron() < cantidadMiembros
+                    || vinosFabricados.getLast().estaProbadoPor(fabricante))
                 vinoProbado.await();
 
-            jarra.release();
-            System.out.println(fabricante.getNombre() + ">>> vino probado");
+            // Verificar el motivo por el cual se "despertó" este miembro
+            if (vino.getCantidadProbaron() >= cantidadMiembros) {
+                // jarra.release();
+                probaronVino = true;
+                System.out.println(fabricante.getNombre() + ">>> vino probado");
+            }
+        } catch (NoSuchElementException e) {
+            //e.printStackTrace();
         } finally {
             cerrojo.unlock();
         }
+
+        return probaronVino;
     }
 
     /**
@@ -221,7 +236,7 @@ public class Almacen {
         try {
             // No esperar en bucle para seguir su proceso si aún no hay vinos
             if (vinosFabricados.isEmpty())
-                hayVinoFabricado.await(4, TimeUnit.SECONDS);
+                hayVinoFabricado.await(2, TimeUnit.SECONDS);
 
             // Si aún no hay vinos, salir de la espera y seguir su proceso
             if (!vinosFabricados.isEmpty()) {
