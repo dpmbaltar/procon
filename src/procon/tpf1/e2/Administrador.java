@@ -1,5 +1,8 @@
 package procon.tpf1.e2;
 
+/**
+ * El administrador del club, que se encarga de reponer los ingredientes.
+ */
 public class Administrador extends Miembro {
 
     public Administrador(String nombre, Almacen almacen) {

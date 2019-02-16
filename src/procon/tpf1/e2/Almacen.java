@@ -126,9 +126,59 @@ public class Almacen {
         return 10;
     }
 
-    public UnidadFermentacion adquirirUnidadFermentacion(Miembro miembro)
+//    public UnidadFermentacion adquirirUnidadFermentacion(Miembro miembro)
+//            throws InterruptedException {
+//        UnidadFermentacion unidadAdquirida = null;
+//
+//        if (unidadFermentacion.tryAcquire()) {
+//            mutex.acquire();
+//            for (int i = 0; i < unidadesFermentacion.length; i++) {
+//                if (!unidadesFermentacion[i].estaOcupada()) {
+//                    unidadAdquirida = unidadesFermentacion[i];
+//                    unidadAdquirida.ocupar(miembro);
+//                    break;
+//                }
+//            }
+//
+//            jarra.release();
+//            System.out.println(Thread.currentThread().getName()
+//                    + ">>> adquiere una unidad de fermentación");
+//            mutex.release();
+//        }
+//
+//        return unidadAdquirida;
+//    }
+//
+//    public void liberarUnidadFermentacion(UnidadFermentacion uf)
+//            throws InterruptedException {
+//        mutex.acquire();
+//        Vino vino = uf.getVino();
+//        uf.desocupar();
+//        unidadFermentacion.release();
+//        jarra.release();
+//
+//        cerrojo.lock();
+//        try {
+//            vinosFabricados.add(vino);
+//            vinoProbado.signalAll();
+//        } finally {
+//            cerrojo.unlock();
+//        }
+//        mutex.release();
+//    }
+
+    /**
+     * Intenta iniciar la fermentación de vino para un miembro. Si no hay una
+     * unidad de fermentación disponible, entonces devuelve nulo.
+     * 
+     * @param miembro
+     * @return
+     * @throws InterruptedException
+     */
+    public Fermentacion adquirirUnidadFermentacion(Miembro miembro)
             throws InterruptedException {
         UnidadFermentacion unidadAdquirida = null;
+        Fermentacion fermentacion = null;
 
         if (unidadFermentacion.tryAcquire()) {
             mutex.acquire();
@@ -136,27 +186,33 @@ public class Almacen {
                 if (!unidadesFermentacion[i].estaOcupada()) {
                     unidadAdquirida = unidadesFermentacion[i];
                     unidadAdquirida.ocupar(miembro);
+                    fermentacion = new Fermentacion(miembro, unidadAdquirida);
                     break;
                 }
             }
 
             jarra.release();
-            System.out.println(Thread.currentThread().getName()
+            System.out.println(miembro.getNombre()
                     + ">>> adquiere una unidad de fermentación");
             mutex.release();
         }
 
-        return unidadAdquirida;
+        return fermentacion;
     }
 
-    public void liberarUnidadFermentacion(UnidadFermentacion uf)
+    public Vino liberarUnidadFermentacion(Fermentacion fermentacion)
             throws InterruptedException {
+        Vino vino = null;
+        UnidadFermentacion uf = null;
+
         mutex.acquire();
-        Vino vino = uf.getVino();
+        uf = unidadesFermentacion[fermentacion.getIdUnidadFermentacion()];
+        vino = uf.getVino();
         uf.desocupar();
         unidadFermentacion.release();
         jarra.release();
-        
+        mutex.release();
+
         cerrojo.lock();
         try {
             vinosFabricados.add(vino);
@@ -164,24 +220,8 @@ public class Almacen {
         } finally {
             cerrojo.unlock();
         }
-        mutex.release();
-    }
 
-    public boolean iniciarFermentacion() throws InterruptedException {
-        boolean inicioFermentacion = false;
-        unidadFermentacion.acquire();
-        System.out.println(
-                Thread.currentThread().getName() + ">>> inicia fermentación");
-        jarra.release();
-
-        return inicioFermentacion;
-    }
-
-    public void finalizarFermentacion() throws InterruptedException {
-        // jarra.acquire();
-        System.out.println(
-                Thread.currentThread().getName() + ">>> finaliza fermentación");
-        unidadFermentacion.release();
+        return vino;
     }
 
     public void salir() {
@@ -194,7 +234,7 @@ public class Almacen {
         try {
             // Primero, el fabricante prueba su propio vino
             Miembro fabricante = vino.getFabricante();
-            vino.probar(fabricante);
+            //vino.probar(fabricante);
 
             // Esperar que el resto de los miembros prueben el vino
             while (vino.getCantidadProbaron() < cantidadMiembros
@@ -208,7 +248,7 @@ public class Almacen {
                 System.out.println(fabricante.getNombre() + ">>> vino probado");
             }
         } catch (NoSuchElementException e) {
-            //e.printStackTrace();
+            // e.printStackTrace();
         } finally {
             cerrojo.unlock();
         }

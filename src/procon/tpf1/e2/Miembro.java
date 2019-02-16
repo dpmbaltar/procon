@@ -21,7 +21,6 @@ public class Miembro implements Runnable {
         try {
             Thread hiloFermentacion = null;
             Fermentacion fermentacion = null;
-            UnidadFermentacion unidadFerm = null;
             Vino vino = null;
             int litrosFabricados = 0;
             int vinosProbados = 0;
@@ -41,29 +40,23 @@ public class Miembro implements Runnable {
                     }
                     break;
                 case 1: // Inicia fermentación
-                    // System.out.println("pre adquirirUnidadFermentacion()");
-                    unidadFerm = almacen.adquirirUnidadFermentacion(this);
-                    if (unidadFerm != null) {
-                        fermentacion = new Fermentacion(this, unidadFerm);
+                    fermentacion = almacen.adquirirUnidadFermentacion(this);
+                    if (fermentacion != null) {
                         hiloFermentacion = new Thread(fermentacion);
                         hiloFermentacion.start();
                         etapa++;
                     }
                     break;
                 case 2: // Finaliza fermentación
-                    if (fermentacion.estaFinalizada()) {
-                        vino = unidadFerm.getVino();
-                        almacen.liberarUnidadFermentacion(unidadFerm);
+                    if (fermentacion.estaCompleta()) {
+                        vino = almacen.liberarUnidadFermentacion(fermentacion);
                         hiloFermentacion = null;
                         fermentacion = null;
-                        unidadFerm = null;
-                        // ???
                         etapa++;
                     }
                     break;
-                case 3: // espera pasiva
+                case 3: // Espera a que todos prueben su vino
                     if (almacen.esperarPruebaVino(vino)) {
-                        vinosProbados++;
                         vino = null;
                         etapa++;
                     }
@@ -74,8 +67,8 @@ public class Miembro implements Runnable {
 //                System.out.println(Thread.currentThread().getName()
 //                        + ">>> post probarVinos() etapa: " + etapa);
             }
-            System.out
-                    .println(Thread.currentThread().getName() + ">>> termina");
+            System.out.println(nombre + ">>> termina con " + vinosProbados
+                    + " vinos probados");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
