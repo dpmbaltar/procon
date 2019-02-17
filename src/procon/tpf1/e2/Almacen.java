@@ -9,6 +9,11 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * El almacén del club.
+ * 
+ * @author Diego P. M. Baltar <dpmbaltar@gmail.com>
+ */
 public class Almacen {
 
     private final Semaphore mutex = new Semaphore(1);
@@ -18,20 +23,24 @@ public class Almacen {
     private final Semaphore envaseJugo = new Semaphore(0);
     private final Semaphore paqueteLevadura = new Semaphore(0);
     private final Semaphore unidadFermentacion = new Semaphore(0);
-    private final Semaphore vinoParaProbar = new Semaphore(0);
     private int estacionesMezcla;
     private int jarras;
     private UnidadFermentacion[] unidadesFermentacion;
     private int envasesJugo;
     private int paquetesLevadura;
-    private boolean hayNuevosVinos = false;
+    private int cantidadVinosFabricados = 0;
     private int cantidadMiembros = 0;
+
+    /**
+     * Los vinos fabricados a la espera de ser probado por todos los miembros.
+     */
+    private final ArrayDeque<Vino> vinosParaProbar = new ArrayDeque<>();
 
     private final Lock cerrojo = new ReentrantLock();
     private final Condition hayVinoFabricado = cerrojo.newCondition();
     private final Condition vinoProbado = cerrojo.newCondition();
 
-    private final ArrayDeque<Vino> vinosFabricados = new ArrayDeque<>();
+    private final Condition reponerIngredientes = cerrojo.newCondition();
 
     /**
      * Constructor con las especificaciónes del almacen.
@@ -61,23 +70,59 @@ public class Almacen {
         paqueteLevadura.release(paquetesLevadura);
     }
 
-    public void reponer(int envasesJugo, int paquetesLevadura)
-            throws InterruptedException {
-        debeReponer.acquire();
-        // mutex.acquire();
-        // if (this.envasesJugo < 2 || this.paquetesLevadura < 1) {
-        // this.envasesJugo += envasesJugo;
-        // this.paquetesLevadura += paquetesLevadura;
-        envaseJugo.release(envasesJugo);
-        paqueteLevadura.release(paquetesLevadura);
-        // }
-        System.out.println(
-                Thread.currentThread().getName() + ">>> repone ingredientes");
-        // mutex.release();
+    /**
+     * Devuelve la cantidad de miembros.
+     * 
+     * @return la cantidad de miembros
+     */
+    public synchronized int getCantidadMiembros() {
+        return cantidadMiembros;
     }
 
-    public void entrar(Miembro miembro) throws InterruptedException {
+    /**
+     * Repone los ingredientes según la cantidad dada.
+     * 
+     * @param administrador    el administrador que repone
+     * @param envasesJugo      la cantidad de envases
+     * @param paquetesLevadura la cantidad de paquetes
+     * @throws InterruptedException
+     * @return verdadero si debe seguir reponiendo, falso en caso contrario
+     */
+    public boolean reponer(Administrador administrador, int envasesJugo,
+            int paquetesLevadura) throws InterruptedException {
+        boolean continuar = true;
+        debeReponer.acquire();
+        mutex.acquire();
+        if (cantidadVinosFabricados < cantidadMiembros
+                && (envaseJugo.availablePermits() < 2
+                        || paqueteLevadura.availablePermits() < 1)) {
+            envaseJugo.release(envasesJugo);
+            paqueteLevadura.release(paquetesLevadura);
+            System.out.println(
+                    administrador.getNombre() + ">>> repone ingredientes");
+        } else {
+            continuar = false;
+        }
+        mutex.release();
 
+        return continuar;
+    }
+
+    /**
+     * Simula un miembro entrar por la puerta del almacén.
+     * 
+     * @param miembro el miembro
+     * @throws InterruptedException
+     */
+    public void entrar(Miembro miembro) throws InterruptedException {
+        // TODO: entrar()
+    }
+
+    /**
+     * Simula un miembro salir por la puerta del almacén.
+     */
+    public void salir() {
+        // TODO: salir()
     }
 
     /**
@@ -111,61 +156,14 @@ public class Almacen {
     /**
      * Simula finalizar la mezcla de un miembro. Liber una estación.
      * 
-     * @return
      * @throws InterruptedException
      */
-    public int finalizarMezcla() throws InterruptedException {
+    public void finalizarMezcla() throws InterruptedException {
         System.out.println(
                 Thread.currentThread().getName() + ">>> finaliza mezcla");
 
-        // System.out.println(estacionMezcla);
-        // System.out.println(jarra);
-        // System.out.println(unidadFermentacion);
         estacionMezcla.release();
-
-        return 10;
     }
-
-//    public UnidadFermentacion adquirirUnidadFermentacion(Miembro miembro)
-//            throws InterruptedException {
-//        UnidadFermentacion unidadAdquirida = null;
-//
-//        if (unidadFermentacion.tryAcquire()) {
-//            mutex.acquire();
-//            for (int i = 0; i < unidadesFermentacion.length; i++) {
-//                if (!unidadesFermentacion[i].estaOcupada()) {
-//                    unidadAdquirida = unidadesFermentacion[i];
-//                    unidadAdquirida.ocupar(miembro);
-//                    break;
-//                }
-//            }
-//
-//            jarra.release();
-//            System.out.println(Thread.currentThread().getName()
-//                    + ">>> adquiere una unidad de fermentación");
-//            mutex.release();
-//        }
-//
-//        return unidadAdquirida;
-//    }
-//
-//    public void liberarUnidadFermentacion(UnidadFermentacion uf)
-//            throws InterruptedException {
-//        mutex.acquire();
-//        Vino vino = uf.getVino();
-//        uf.desocupar();
-//        unidadFermentacion.release();
-//        jarra.release();
-//
-//        cerrojo.lock();
-//        try {
-//            vinosFabricados.add(vino);
-//            vinoProbado.signalAll();
-//        } finally {
-//            cerrojo.unlock();
-//        }
-//        mutex.release();
-//    }
 
     /**
      * Intenta iniciar la fermentación de vino para un miembro. Si no hay una
@@ -209,13 +207,15 @@ public class Almacen {
         uf = unidadesFermentacion[fermentacion.getIdUnidadFermentacion()];
         vino = uf.getVino();
         uf.desocupar();
+        cantidadVinosFabricados++;
+        debeReponer.release();
         unidadFermentacion.release();
         jarra.release();
         mutex.release();
 
         cerrojo.lock();
         try {
-            vinosFabricados.add(vino);
+            vinosParaProbar.add(vino);
             vinoProbado.signalAll();
         } finally {
             cerrojo.unlock();
@@ -224,26 +224,20 @@ public class Almacen {
         return vino;
     }
 
-    public void salir() {
-
-    }
-
     public boolean esperarPruebaVino(Vino vino) throws InterruptedException {
         boolean probaronVino = false;
         cerrojo.lock();
         try {
             // Primero, el fabricante prueba su propio vino
             Miembro fabricante = vino.getFabricante();
-            //vino.probar(fabricante);
 
             // Esperar que el resto de los miembros prueben el vino
             while (vino.getCantidadProbaron() < cantidadMiembros
-                    || vinosFabricados.getLast().estaProbadoPor(fabricante))
+                    || vinosParaProbar.getLast().estaProbadoPor(fabricante))
                 vinoProbado.await();
 
             // Verificar el motivo por el cual se "despertó" este miembro
             if (vino.getCantidadProbaron() >= cantidadMiembros) {
-                // jarra.release();
                 probaronVino = true;
                 System.out.println(fabricante.getNombre() + ">>> vino probado");
             }
@@ -275,13 +269,13 @@ public class Almacen {
         cerrojo.lock();
         try {
             // No esperar en bucle para seguir su proceso si aún no hay vinos
-            if (vinosFabricados.isEmpty())
+            if (vinosParaProbar.isEmpty())
                 hayVinoFabricado.await(2, TimeUnit.SECONDS);
 
             // Si aún no hay vinos, salir de la espera y seguir su proceso
-            if (!vinosFabricados.isEmpty()) {
+            if (!vinosParaProbar.isEmpty()) {
                 Vino vino;
-                Iterator<Vino> iterador = vinosFabricados.iterator();
+                Iterator<Vino> iterador = vinosParaProbar.iterator();
                 while (iterador.hasNext()) {
                     vino = iterador.next();
                     if (vino.probar(miembro)) {

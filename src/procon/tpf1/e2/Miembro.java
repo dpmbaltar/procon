@@ -2,40 +2,62 @@ package procon.tpf1.e2;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Un miembro del club, que se encarga de fabricar y probar vinos.
+ * 
+ * @author Diego P. M. Baltar <dpmbaltar@gmail.com>
+ */
 public class Miembro implements Runnable {
 
+    /**
+     * El nombre del miembro.
+     */
     protected final String nombre;
+
+    /**
+     * El almacén del club.
+     */
     protected final Almacen almacen;
 
+    /**
+     * Constructor con el nombre del miembro y el almacén.
+     * 
+     * @param nombre  el nombre
+     * @param almacen el almacén
+     */
     public Miembro(String nombre, Almacen almacen) {
         this.nombre = nombre;
         this.almacen = almacen;
     }
 
+    /**
+     * Devuelve el nombre del miembro.
+     * 
+     * @return el nombre del miembro
+     */
     public synchronized String getNombre() {
         return nombre;
     }
 
+    /**
+     * Fabrica y prueba vinos.
+     */
     @Override
     public void run() {
         try {
             Thread hiloFermentacion = null;
             Fermentacion fermentacion = null;
             Vino vino = null;
-            int litrosFabricados = 0;
+            int cantidadMiembros = almacen.getCantidadMiembros();
             int vinosProbados = 0;
             int etapa = 0;
 
-            while (vinosProbados < 10) {
-                // almacen.probarVinoSiHay();
-//                System.out.println(Thread.currentThread().getName()
-//                        + ">>> pre switch() etapa: " + etapa + " vinosProbados: "
-//                        + vinosProbados);
+            while (vinosProbados < cantidadMiembros) {
                 switch (etapa) {
                 case 0: // Prepara mezcla
                     if (almacen.iniciarMezcla()) {
                         Thread.sleep(150);
-                        litrosFabricados += almacen.finalizarMezcla();
+                        almacen.finalizarMezcla();
                         etapa++;
                     }
                     break;
@@ -62,15 +84,13 @@ public class Miembro implements Runnable {
                     }
                     break;
                 }
-                // System.out.println("pre probarVinos() etapa: " + etapa);
+
                 vinosProbados += almacen.probarVinos(this);
-//                System.out.println(Thread.currentThread().getName()
-//                        + ">>> post probarVinos() etapa: " + etapa);
             }
-            System.out.println(nombre + ">>> termina con " + vinosProbados
+            System.out.println(getNombre() + ">>> termina con " + vinosProbados
                     + " vinos probados");
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.out.println(getNombre() + ">>> miembro interrumpido");
         }
     }
 
