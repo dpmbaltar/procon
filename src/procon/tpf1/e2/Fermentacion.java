@@ -34,6 +34,15 @@ public class Fermentacion implements Runnable {
     }
 
     /**
+     * Devuelve el miembro que fermenta.
+     * 
+     * @return el miembro
+     */
+    public Miembro getMiembro() {
+        return miembro;
+    }
+
+    /**
      * Devuelve el ID de la unidad de fermentación. No se devuelve la unidad en
      * sí para evitar que un miembro puedad alterar el estado de la misma.
      * 

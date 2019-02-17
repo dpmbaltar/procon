@@ -41,6 +41,8 @@ public class Almacen {
     private final Condition vinoProbado = cerrojo.newCondition();
 
     private final Condition reponerIngredientes = cerrojo.newCondition();
+    private final Condition hayIngredientes = cerrojo.newCondition();
+    private final Condition estacionMezclaLibre = cerrojo.newCondition();
 
     /**
      * Constructor con las especificaciónes del almacen.
@@ -63,11 +65,11 @@ public class Almacen {
         this.jarras = jarras;
         this.envasesJugo = envasesJugo;
         this.paquetesLevadura = paquetesLevadura;
-        estacionMezcla.release(estacionesMezcla);
-        unidadFermentacion.release(unidadesFermentacion);
-        jarra.release(jarras);
-        envaseJugo.release(envasesJugo);
-        paqueteLevadura.release(paquetesLevadura);
+//        estacionMezcla.release(estacionesMezcla);
+//        unidadFermentacion.release(unidadesFermentacion);
+//        jarra.release(jarras);
+//        envaseJugo.release(envasesJugo);
+//        paqueteLevadura.release(paquetesLevadura);
     }
 
     /**
@@ -90,22 +92,41 @@ public class Almacen {
      */
     public boolean reponer(Administrador administrador, int envasesJugo,
             int paquetesLevadura) throws InterruptedException {
-        boolean continuar = true;
-        debeReponer.acquire();
-        mutex.acquire();
-        if (cantidadVinosFabricados < cantidadMiembros
-                && (envaseJugo.availablePermits() < 2
-                        || paqueteLevadura.availablePermits() < 1)) {
-            envaseJugo.release(envasesJugo);
-            paqueteLevadura.release(paquetesLevadura);
-            System.out.println(
-                    administrador.getNombre() + ">>> repone ingredientes");
-        } else {
-            continuar = false;
-        }
-        mutex.release();
+        boolean seguirReponiendo = true;
+        cerrojo.lock();
+        try {
+            while (cantidadVinosFabricados < cantidadMiembros
+                    && (this.envasesJugo >= 2 && this.paquetesLevadura >= 1))
+                reponerIngredientes.await();
 
-        return continuar;
+            if (cantidadVinosFabricados < cantidadMiembros) {
+                this.envasesJugo += envasesJugo;
+                this.paquetesLevadura += paquetesLevadura;
+                System.out.println(
+                        administrador.getNombre() + ">>> repone ingredientes");
+                hayIngredientes.signalAll();
+            } else {
+                seguirReponiendo = false;
+            }
+        } finally {
+            cerrojo.unlock();
+        }
+//        debeReponer.acquire();
+//        mutex.acquire();
+//        if (cantidadVinosFabricados < cantidadMiembros
+//                && (envaseJugo.availablePermits() < 2
+//                        || paqueteLevadura.availablePermits() < 1)) {
+//            envaseJugo.release(envasesJugo);
+//            paqueteLevadura.release(paquetesLevadura);
+//            
+//            System.out.println(
+//                    administrador.getNombre() + ">>> repone ingredientes");
+//        } else {
+//            continuar = false;
+//        }
+//        mutex.release();
+
+        return seguirReponiendo;
     }
 
     /**
@@ -135,20 +156,39 @@ public class Almacen {
      */
     public boolean iniciarMezcla() throws InterruptedException {
         boolean inicioMezcla = false;
-        if (estacionMezcla.tryAcquire()) {
-            jarra.acquire(2);
-            if (!envaseJugo.tryAcquire(2)) {
-                debeReponer.release();
-                envaseJugo.acquire(2);
+        cerrojo.lock();
+        try {
+            if (estacionesMezcla >= 1 && jarras >= 2) {
+                estacionesMezcla--;
+                jarras -= 2;
+                while (envasesJugo < 2 || paquetesLevadura < 1) {
+                    reponerIngredientes.signal();
+                    hayIngredientes.await();
+                }
+                envasesJugo -= 2;
+                paquetesLevadura--;
+                System.out.println(
+                        Thread.currentThread().getName() + ">>> inicia mezcla");
+                inicioMezcla = true;
             }
-            if (!paqueteLevadura.tryAcquire()) {
-                debeReponer.release();
-                paqueteLevadura.acquire();
-            }
-            System.out.println(
-                    Thread.currentThread().getName() + ">>> inicia mezcla");
-            inicioMezcla = true;
+        } finally {
+            cerrojo.unlock();
         }
+
+//        if (estacionMezcla.tryAcquire()) {
+//            jarra.acquire(2);
+//            if (!envaseJugo.tryAcquire(2)) {
+//                debeReponer.release();
+//                envaseJugo.acquire(2);
+//            }
+//            if (!paqueteLevadura.tryAcquire()) {
+//                debeReponer.release();
+//                paqueteLevadura.acquire();
+//            }
+//            System.out.println(
+//                    Thread.currentThread().getName() + ">>> inicia mezcla");
+//            inicioMezcla = true;
+//        }
 
         return inicioMezcla;
     }
@@ -159,10 +199,30 @@ public class Almacen {
      * @throws InterruptedException
      */
     public void finalizarMezcla() throws InterruptedException {
-        System.out.println(
-                Thread.currentThread().getName() + ">>> finaliza mezcla");
+        cerrojo.lock();
+        try {
+            estacionesMezcla++;
+            System.out.println(
+                    Thread.currentThread().getName() + ">>> finaliza mezcla");
+        } finally {
+            cerrojo.unlock();
+        }
+//        System.out.println(
+//                Thread.currentThread().getName() + ">>> finaliza mezcla");
+//
+//        estacionMezcla.release();
+    }
 
-        estacionMezcla.release();
+    private UnidadFermentacion obtenerUnidadFermentacion() {
+        UnidadFermentacion unidad = null;
+        for (int i = 0; i < unidadesFermentacion.length; i++) {
+            if (!unidadesFermentacion[i].estaOcupada()) {
+                unidad = unidadesFermentacion[i];
+                break;
+            }
+        }
+
+        return unidad;
     }
 
     /**
@@ -175,46 +235,65 @@ public class Almacen {
      */
     public Fermentacion adquirirUnidadFermentacion(Miembro miembro)
             throws InterruptedException {
-        UnidadFermentacion unidadAdquirida = null;
+        UnidadFermentacion unidadAdquirida;
         Fermentacion fermentacion = null;
+        cerrojo.lock();
+        try {
+            unidadAdquirida = obtenerUnidadFermentacion();
+            if (unidadAdquirida != null) {
+                unidadAdquirida.ocupar(miembro);
+                fermentacion = new Fermentacion(miembro, unidadAdquirida);
+                jarras++;
 
-        if (unidadFermentacion.tryAcquire()) {
-            mutex.acquire();
-            for (int i = 0; i < unidadesFermentacion.length; i++) {
-                if (!unidadesFermentacion[i].estaOcupada()) {
-                    unidadAdquirida = unidadesFermentacion[i];
-                    unidadAdquirida.ocupar(miembro);
-                    fermentacion = new Fermentacion(miembro, unidadAdquirida);
-                    break;
-                }
+                System.out.println(miembro.getNombre()
+                        + ">>> adquiere una unidad de fermentación");
             }
-
-            jarra.release();
-            System.out.println(miembro.getNombre()
-                    + ">>> adquiere una unidad de fermentación");
-            mutex.release();
+        } finally {
+            cerrojo.unlock();
         }
+//        if (unidadFermentacion.tryAcquire()) {
+//            mutex.acquire();
+//            for (int i = 0; i < unidadesFermentacion.length; i++) {
+//                if (!unidadesFermentacion[i].estaOcupada()) {
+//                    unidadAdquirida = unidadesFermentacion[i];
+//                    unidadAdquirida.ocupar(miembro);
+//                    fermentacion = new Fermentacion(miembro, unidadAdquirida);
+//                    break;
+//                }
+//            }
+//
+//            jarra.release();
+//            System.out.println(miembro.getNombre()
+//                    + ">>> adquiere una unidad de fermentación");
+//            mutex.release();
+//        }
 
         return fermentacion;
     }
 
     public Vino liberarUnidadFermentacion(Fermentacion fermentacion)
             throws InterruptedException {
+        UnidadFermentacion uf;
         Vino vino = null;
-        UnidadFermentacion uf = null;
-
-        mutex.acquire();
-        uf = unidadesFermentacion[fermentacion.getIdUnidadFermentacion()];
-        vino = uf.getVino();
-        uf.desocupar();
-        cantidadVinosFabricados++;
-        debeReponer.release();
-        unidadFermentacion.release();
-        jarra.release();
-        mutex.release();
-
+//        mutex.acquire();
+//        uf = unidadesFermentacion[fermentacion.getIdUnidadFermentacion()];
+//        vino = uf.getVino();
+//        uf.desocupar();
+//        cantidadVinosFabricados++;
+//        debeReponer.release();
+//        unidadFermentacion.release();
+//        jarra.release();
+//        mutex.release();
         cerrojo.lock();
         try {
+            uf = unidadesFermentacion[fermentacion.getIdUnidadFermentacion()];
+            vino = uf.getVino();
+            uf.desocupar();
+            System.out.println(fermentacion.getMiembro().getNombre()
+                    + ">>> libera una unidad de fermentación");
+            jarras++;
+            cantidadVinosFabricados++;
+            reponerIngredientes.signal();
             vinosParaProbar.add(vino);
             vinoProbado.signalAll();
         } finally {
@@ -224,14 +303,23 @@ public class Almacen {
         return vino;
     }
 
+    /**
+     * Simula la espera de un miembro a que se pruebe su vino. Antes de poder
+     * hacer más vino, su vino debe ser probado por todos los miembros, incluido
+     * el mismo fabricante.
+     * 
+     * @param vino
+     * @return
+     * @throws InterruptedException
+     */
     public boolean esperarPruebaVino(Vino vino) throws InterruptedException {
         boolean probaronVino = false;
         cerrojo.lock();
         try {
-            // Primero, el fabricante prueba su propio vino
             Miembro fabricante = vino.getFabricante();
 
-            // Esperar que el resto de los miembros prueben el vino
+            // Esperar que el resto de los miembros prueben el vino, o que haya
+            // un nuevo vino para probar por el fabricante
             while (vino.getCantidadProbaron() < cantidadMiembros
                     || vinosParaProbar.getLast().estaProbadoPor(fabricante))
                 vinoProbado.await();
