@@ -4,12 +4,15 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Filosofo implements Runnable {
 
-    private Tenedor tenedorIzquierdo;
-    private Tenedor tenedorDerecho;
+    /** Número de filósofo */
+    private int numero;
 
-    public Filosofo(Tenedor tenedorIzquierdo, Tenedor tenedorDerecho) {
-        this.tenedorIzquierdo = tenedorIzquierdo;
-        this.tenedorDerecho = tenedorDerecho;
+    /** Mesa */
+    private Mesa mesa;
+
+    public Filosofo(int numero, Mesa mesa) {
+        this.numero = numero;
+        this.mesa = mesa;
     }
 
     @Override
@@ -24,20 +27,20 @@ public class Filosofo implements Runnable {
         }
     }
 
+    /** Simula pensar */
     public void pensar() throws InterruptedException {
-        System.out.println(Thread.currentThread().getName() + " está pensando...");
-        Thread.sleep(ThreadLocalRandom.current().nextInt(400, 800));
+        System.out.println(Thread.currentThread().getName() + " comienza a pensar...");
+        Thread.sleep(ThreadLocalRandom.current().nextInt(500, 1000));
+        System.out.println(Thread.currentThread().getName() + " termina de pensar...");
     }
 
+    /** Simula comer */
     public void comer() throws InterruptedException {
-        //TODO: evitar deadlock
-        tenedorIzquierdo.ocupar();
-        tenedorDerecho.ocupar();
+        mesa.tomarTenedores(numero);
         System.out.println(Thread.currentThread().getName() + " comienza a comer...");
-        Thread.sleep(ThreadLocalRandom.current().nextInt(200, 600));
+        Thread.sleep(ThreadLocalRandom.current().nextInt(300, 800));
         System.out.println(Thread.currentThread().getName() + " termina de comer...");
-        tenedorIzquierdo.liberar();
-        tenedorDerecho.liberar();
+        mesa.dejarTenedores(numero);
     }
 
 }
