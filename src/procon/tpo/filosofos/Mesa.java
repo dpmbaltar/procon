@@ -23,6 +23,7 @@ public class Mesa {
         quierenComer = new boolean[5];
 
         for (int i = 0; i < 5; i++) {
+            //turnos[i] = new Semaphore(1);
             turnos[i] = new Semaphore(0);
             comiendo[i] = false;
             quierenComer[i] = false;
@@ -34,6 +35,7 @@ public class Mesa {
         mutex.acquire();
         quierenComer[filosofo] = true;
         intentarComer(filosofo);
+        //turnos[filosofo].acquire();
         mutex.release();
         turnos[filosofo].acquire();
         System.out.println(Thread.currentThread().getName() + " toma los tenedores");
@@ -43,7 +45,7 @@ public class Mesa {
     public void dejarTenedores(int filosofo) throws InterruptedException {
         mutex.acquire();
         comiendo[filosofo] = false;
-        quierenComer[filosofo] = false;
+        //quierenComer[filosofo] = false;
         System.out.println(Thread.currentThread().getName() + " deja los tenedores");
         intentarComer(filosofoIzquierdo(filosofo));
         intentarComer(filosofoDerecho(filosofo));
@@ -53,6 +55,7 @@ public class Mesa {
     /** Intenta adquirir el turno de un filósofo para comer */
     private void intentarComer(int filosofo) {
         if (quierenComer[filosofo] && !comiendo[filosofoIzquierdo(filosofo)] && !comiendo[filosofoDerecho(filosofo)]) {
+            quierenComer[filosofo] = false;
             comiendo[filosofo] = true;
             turnos[filosofo].release();
         }
