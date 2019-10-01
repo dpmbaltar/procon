@@ -10,6 +10,12 @@ public class Filosofo implements Runnable {
     /** Mesa */
     private Mesa mesa;
 
+    /**
+     * Constructor con número y mesa.
+     *
+     * @param numero para identificar el filósofo
+     * @param mesa la mesa
+     */
     public Filosofo(int numero, Mesa mesa) {
         this.numero = numero;
         this.mesa = mesa;
@@ -36,11 +42,12 @@ public class Filosofo implements Runnable {
 
     /** Simula comer */
     public void comer() throws InterruptedException {
-        mesa.tomarTenedores(numero);
-        System.out.println(Thread.currentThread().getName() + " comienza a comer...");
-        Thread.sleep(ThreadLocalRandom.current().nextInt(300, 800));
-        System.out.println(Thread.currentThread().getName() + " termina de comer...");
-        mesa.dejarTenedores(numero);
+        if (mesa.tomarTenedores(numero)) {
+            System.out.println(Thread.currentThread().getName() + " comienza a comer...");
+            Thread.sleep(ThreadLocalRandom.current().nextInt(300, 800));
+            System.out.println(Thread.currentThread().getName() + " termina de comer...");
+            mesa.dejarTenedores(numero);
+        }
     }
 
 }
