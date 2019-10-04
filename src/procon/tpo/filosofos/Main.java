@@ -2,6 +2,7 @@ package procon.tpo.filosofos;
 
 /**
  * TPO Filósofos 2019
+ * Corregido - Bien
  */
 public class Main {
 

@@ -36,7 +36,7 @@ public class Filosofo implements Runnable {
     /** Simula pensar */
     public void pensar() throws InterruptedException {
         System.out.println(Thread.currentThread().getName() + " comienza a pensar...");
-        Thread.sleep(ThreadLocalRandom.current().nextInt(500, 1000));
+        Thread.sleep(ThreadLocalRandom.current().nextInt(2000, 2500));
         System.out.println(Thread.currentThread().getName() + " termina de pensar...");
     }
 
@@ -44,7 +44,7 @@ public class Filosofo implements Runnable {
     public void comer() throws InterruptedException {
         if (mesa.tomarTenedores(numero)) {
             System.out.println(Thread.currentThread().getName() + " comienza a comer...");
-            Thread.sleep(ThreadLocalRandom.current().nextInt(300, 800));
+            Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 1500));
             System.out.println(Thread.currentThread().getName() + " termina de comer...");
             mesa.dejarTenedores(numero);
         }
