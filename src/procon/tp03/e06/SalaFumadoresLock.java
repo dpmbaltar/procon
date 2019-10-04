@@ -24,8 +24,7 @@ public class SalaFumadoresLock implements SalaFumadores {
 
             // Colocar los ingredientes para el fumador que corresponda
             idFumador = ingredientesParaFumador;
-            System.out
-                    .println("Colocado ingredientes para fumador " + idFumador);
+            System.out.println("Colocado ingredientes para fumador " + idFumador);
             ingredientesColocados.signalAll();
         } catch (InterruptedException e) {
             e.printStackTrace();

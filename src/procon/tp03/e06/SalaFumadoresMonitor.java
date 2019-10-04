@@ -12,13 +12,13 @@ public class SalaFumadoresMonitor implements SalaFumadores {
     public synchronized void colocar(int ingredientesParaFumador) {
         try {
             // Esperar mientras un fumador esté fumando
-            while (idFumador > 0)
+            while (idFumador > 0) {
                 wait();
+            }
 
             // Colocar los ingredientes para el fumador que corresponda
             idFumador = ingredientesParaFumador;
-            System.out
-                    .println("Colocado ingredientes para fumador " + idFumador);
+            System.out.println("Colocado ingredientes para fumador " + idFumador);
             notifyAll();
         } catch (InterruptedException e) {
         }
@@ -28,8 +28,9 @@ public class SalaFumadoresMonitor implements SalaFumadores {
     public synchronized void entraFumar(int idFumador) {
         try {
             // Esperar hasta que estén los ingredientes para el fumador dado
-            while (this.idFumador != idFumador)
+            while (this.idFumador != idFumador) {
                 wait();
+            }
 
             System.out.println("Fumador " + idFumador + " empieza a fumar.");
         } catch (InterruptedException e) {
