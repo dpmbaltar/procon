@@ -1,24 +1,25 @@
 package procon.tp03.e06;
 
+/**
+ * Corregido con Semáforos, Monitor y Lock - Bien
+ * Nota: se puede mejorar la implementación con locks, haciendo similar a los semáforos, utilizando una condición por
+ * fumador
+ */
 public class DisparaSala {
 
     public static void main(String[] args) {
         //SalaFumadores sala = new SalaFumadoresSemaphore();
         SalaFumadores sala = new SalaFumadoresMonitor();
         //SalaFumadores sala = new SalaFumadoresLock();
-        Fumador f1 = new Fumador(1, sala);
-        Fumador f2 = new Fumador(2, sala);
-        Fumador f3 = new Fumador(3, sala);
-        Agente ag = new Agente(sala);
+        Thread[] fumadores = new Thread[3];
 
-        Thread fumador1 = new Thread(f1);
-        Thread fumador2 = new Thread(f2);
-        Thread fumador3 = new Thread(f3);
-        Thread agente = new Thread(ag);
+        for (int i = 0; i < fumadores.length; i++)
+            fumadores[i] = new Thread(new Fumador(i + 1, sala));
 
-        fumador1.start();
-        fumador2.start();
-        fumador3.start();
+        for (int i = 0; i < fumadores.length; i++)
+            fumadores[i].start();
+
+        Thread agente = new Thread(new Agente(sala));
         agente.start();
     }
 }
