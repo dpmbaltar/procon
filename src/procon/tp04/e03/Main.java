@@ -3,20 +3,31 @@ package procon.tp04.e03;
 import procon.tp04.e03.Impresora.Tipo;
 
 public class Main {
+
     public static void main(String[] args) {
-        Thread t1, t2, t3, t4, t5, t6;
+        Thread[] usuarios = new Thread[3];
+        Thread[] impresoras = new Thread[3];
         ServicioImpresion si = new ServicioImpresionLock();
-        t1 = new Thread(new Usuario(si));
-        t2 = new Thread(new Usuario(si));
-        t3 = new Thread(new Usuario(si));
-        t4 = new Thread(new Impresora(si, Tipo.A, 1));
-        t5 = new Thread(new Impresora(si, Tipo.A, 2));
-        t6 = new Thread(new Impresora(si, Tipo.B, 3));
-        t1.start();
-        t2.start();
-        t3.start();
-        t4.start();
-        t5.start();
-        t6.start();
+
+        // Crear hilos de usuario
+        for (int i = 0; i < usuarios.length; i++)
+            usuarios[i] = new Thread(new Usuario(si));
+
+        for (int i = 0; i < impresoras.length; i++) {
+            // Crear 2 tipo A y 1 tipo B
+            if (i < 2)
+                impresoras[i] = new Thread(new Impresora(si, Tipo.A, i + 1));
+            else
+                impresoras[i] = new Thread(new Impresora(si, Tipo.B, i + 1));
+        }
+
+        // Iniciar hilos de usuarios
+        for (int i = 0; i < usuarios.length; i++)
+            usuarios[i].start();
+
+        // Iniciar hilos de impresoras
+        for (int i = 0; i < impresoras.length; i++)
+            impresoras[i].start();
     }
+
 }

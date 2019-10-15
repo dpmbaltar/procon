@@ -45,7 +45,7 @@ public class Impresora implements Runnable {
                 System.out.println(
                         String.format("Impresora %s #%d comienza a imprimir %s",
                                 tipo, id, impresion));
-                Thread.sleep(ThreadLocalRandom.current().nextInt(1, 5) * 100);
+                Thread.sleep(ThreadLocalRandom.current().nextInt(10, 15) * 100);
                 System.out.println(
                         String.format("Impresora %s #%d termina de imprimir %s",
                                 tipo, id, impresion));

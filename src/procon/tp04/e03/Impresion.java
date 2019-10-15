@@ -5,6 +5,7 @@ import java.util.Random;
 import procon.tp04.e03.Impresora.Tipo;
 
 public class Impresion {
+
     private static int idSiguiente = 1;
     private final int id;
     private Tipo tipo;
