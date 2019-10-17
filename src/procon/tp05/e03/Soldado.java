@@ -5,43 +5,50 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Soldado implements Runnable {
 
     private final Recinto recinto;
+    private boolean quierePostre;
+    private boolean quiereRefresco;
 
     public Soldado(Recinto recinto) {
         this.recinto = recinto;
+        quiereRefresco = ThreadLocalRandom.current().nextBoolean();
+        quierePostre = ThreadLocalRandom.current().nextBoolean();
     }
 
     @Override
     public void run() {
-        boolean quierePostre;
-        boolean quiereRefresco;
         int nroMostradorComida;
         int nroMostradorPostre;
         Bandeja bandeja;
+
         try {
+            // Soldado entra al recinto
             recinto.entrar();
-            quiereRefresco = ThreadLocalRandom.current().nextBoolean();
+
+            // Pedir bandeja
             nroMostradorComida = recinto.pedirBandeja(quiereRefresco);
-            Thread.sleep(ThreadLocalRandom.current().nextInt(2, 4) * 100);
+            Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
             bandeja = recinto.tomarBandeja(nroMostradorComida);
 
+            // Si la bandeja tiene refresco, toma un abridor y lo utiliza
             if (bandeja.tieneRefresco()) {
                 recinto.tomarAbridor();
-                Thread.sleep(100);
+                Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
                 recinto.dejarAbridor();
             }
 
-            System.out.println(
-                    Thread.currentThread().getName() + ">>> come su comida");
-            Thread.sleep(ThreadLocalRandom.current().nextInt(4, 8) * 100);
-            quierePostre = ThreadLocalRandom.current().nextBoolean();
+            // Soldado come su comida
+            System.out.println(Thread.currentThread().getName() + ">>> come su comida");
+            Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
 
+            // Si quiere postre, lo pide en uno de los 3 mostradores
             if (quierePostre) {
                 nroMostradorPostre = recinto.pedirPostre();
-                Thread.sleep(ThreadLocalRandom.current().nextInt(2, 4) * 100);
+                Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
                 recinto.tomarPostre(nroMostradorPostre);
-                System.out.println(Thread.currentThread().getName()
-                        + ">>> come su postre");
-                Thread.sleep(ThreadLocalRandom.current().nextInt(2, 4) * 100);
+
+                // Come su postre
+                System.out.println(Thread.currentThread().getName()+ ">>> come su postre");
+                Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
             }
 
             recinto.salir();

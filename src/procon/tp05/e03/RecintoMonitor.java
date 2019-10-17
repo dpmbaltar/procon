@@ -20,51 +20,48 @@ public class RecintoMonitor implements Recinto {
 
     @Override
     public synchronized void entrar() throws InterruptedException {
+        // Esperar si el recinto esta lleno
         while (cantidadSoldados >= CAPACIDAD) {
-            println(">>> Recinto lleno <<<");
-            println(Thread.currentThread().getName()
-                    + ">>> espera un lugar en el recinto");
+            //System.out.println("!!! Recinto lleno !!!");
+            //System.out.println(Thread.currentThread().getName() + ">>> espera un lugar en el recinto");
             wait();
         }
 
         cantidadSoldados++;
-        println(Thread.currentThread().getName() + ">>> entra al recinto");
+        System.out.println(Thread.currentThread().getName() + ">>> entra al recinto");
     }
 
     @Override
     public synchronized void salir() throws InterruptedException {
         cantidadSoldados--;
-        println(
-                Thread.currentThread().getName() + ">>> sale del recinto");
+        System.out.println(Thread.currentThread().getName() + ">>> sale del recinto");
         notifyAll();
     }
 
     @Override
-    public synchronized int pedirBandeja(boolean quiereRefresco)
-            throws InterruptedException {
+    public synchronized int pedirBandeja(boolean quiereRefresco) throws InterruptedException {
         int nroMostrador = mostradorComidaDisp();
+
         while (nroMostrador < 0) {
-            println(">>> Mostradores de comida ocupados <<<");
-            println(Thread.currentThread().getName()
-                    + ">>> espera monstrador para comida");
+            //System.out.println("!!! Mostradores de comida ocupados !!!");
+            //System.out.println(Thread.currentThread().getName() + ">>> espera monstrador para comida");
             wait();
             nroMostrador = mostradorComidaDisp();
         }
 
+        // Ocupar mostrador
         mostradorComida[nroMostrador] = new Bandeja(quiereRefresco);
-        println(
-                Thread.currentThread().getName() + ">>> pide una bandeja");
+        System.out.println(Thread.currentThread().getName() + ">>> pide una bandeja");
 
         return nroMostrador;
     }
 
     @Override
-    public synchronized Bandeja tomarBandeja(int nroMostrador)
-            throws InterruptedException {
+    public synchronized Bandeja tomarBandeja(int nroMostrador) throws InterruptedException {
+        // Liberar mostrador
         Bandeja bandeja = mostradorComida[nroMostrador];
         mostradorComida[nroMostrador] = null;
-        println(
-                Thread.currentThread().getName() + ">>> toma la bandeja");
+        System.out.println(Thread.currentThread().getName() + ">>> toma la bandeja");
         notifyAll();
 
         return bandeja;
@@ -72,89 +69,80 @@ public class RecintoMonitor implements Recinto {
 
     @Override
     public synchronized void tomarAbridor() throws InterruptedException {
+        // Esperar si no hay un abridor disponible
         while (abridoresDisp < 1) {
-            println(">>> Abridores ocupados <<<");
-            println(
-                    Thread.currentThread().getName() + ">>> espera abridor");
+            //System.out.println("!!! Abridores ocupados !!!");
+            //System.out.println(Thread.currentThread().getName() + ">>> espera abridor");
             wait();
         }
+
         abridoresDisp--;
-        println(
-                Thread.currentThread().getName() + ">>> toma un abridor");
+        System.out.println(Thread.currentThread().getName() + ">>> toma un abridor");
     }
 
     @Override
     public synchronized void dejarAbridor() throws InterruptedException {
+        // Dejar el abridor
         abridoresDisp++;
-        println(
-                Thread.currentThread().getName() + ">>> deja el abridor");
+        System.out.println(Thread.currentThread().getName() + ">>> deja el abridor");
         notifyAll();
     }
 
     @Override
     public synchronized int pedirPostre() throws InterruptedException {
         int nroMostrador = mostradorPostreDisp();
+
+        // Esperar mientras no hay mostradores de postres disponibles
         while (nroMostrador < 0) {
-            println(">>> Mostradores de postre ocupados <<<");
-            println(Thread.currentThread().getName()
-                    + ">>> espera monstrador para postre");
+            //System.out.println("!!! Mostradores de postre ocupados !!!");
+            //System.out.println(Thread.currentThread().getName() + ">>> espera monstrador para postre");
             wait();
             nroMostrador = mostradorPostreDisp();
         }
 
+        // Ocupar mostrador de postres
         mostradorPostre[nroMostrador] = true;
-        println(
-                Thread.currentThread().getName() + ">>> pide un postre");
+        System.out.println(Thread.currentThread().getName() + ">>> pide un postre");
 
         return nroMostrador;
     }
 
     @Override
-    public synchronized void tomarPostre(int nroMostrador)
-            throws InterruptedException {
+    public synchronized void tomarPostre(int nroMostrador) throws InterruptedException {
+        // Liberar mostrador de postres
         mostradorPostre[nroMostrador] = false;
-        println(
-                Thread.currentThread().getName() + ">>> toma el postre");
+        System.out.println(Thread.currentThread().getName() + ">>> toma el postre");
         notifyAll();
     }
 
     private int mostradorComidaDisp() {
-        int disp = -1;
-        for (int i = 0; i < MOSTRADORES_COMIDA; i++) {
-            if (mostradorComida[i] == null) {
-                disp = i;
-                break;
-            }
-        }
+        int disponible = -1;
+        int i = 0;
 
-        return disp;
+        do {
+            if (mostradorComida[i] == null) {
+                disponible = i;
+            }
+
+            i++;
+        } while (disponible < 0 && i < MOSTRADORES_COMIDA);
+
+        return disponible;
     }
 
     private int mostradorPostreDisp() {
-        int disp = -1;
-        for (int i = 0; i < MOSTRADORES_POSTRE; i++) {
+        int disponible = -1;
+        int i = 0;
+
+        do {
             if (!mostradorPostre[i]) {
-                disp = i;
-                break;
+                disponible = i;
             }
-        }
 
-        return disp;
-    }
+            i++;
+        } while (disponible < 0 && i < MOSTRADORES_POSTRE);
 
-    private void println(String s) {
-        int tabs = 0;
-        StringBuilder ln = new StringBuilder();
-        String nombreSoldado, idSoldado;
-        nombreSoldado = Thread.currentThread().getName();
-        idSoldado = nombreSoldado.substring(nombreSoldado.indexOf('-') + 1);
-        tabs = Integer.valueOf(idSoldado);
-
-        for (int i = 0; i < tabs; i++)
-            ln.append(' ');
-
-        ln.append(s);
-        System.out.println(ln);
+        return disponible;
     }
 
 }
