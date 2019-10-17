@@ -1,0 +1,102 @@
+run:
+Extractor-0 va a extraer 
+Generador-4 va a insertar 43
+Extractor-0 ha extraido null
+Generador-4 ha insertado 43
+Extractor-1 va a extraer 
+Extractor-1 ha extraido 43
+Extractor-4 va a extraer 
+Extractor-4 ha extraido null
+Extractor-3 va a extraer 
+Extractor-3 ha extraido null
+Generador-0 va a insertar 63 <---
+Extractor-2 va a extraer     <---
+Generador-0 ha insertado 63  <---
+Extractor-2 ha extraido 63   <---
+Generador-1 va a insertar 5
+Generador-1 ha insertado 5
+Generador-2 va a insertar 10
+Generador-2 ha insertado 10
+Generador-3 va a insertar 72
+Generador-3 ha insertado 72
+Generador-4 va a insertar 20
+Generador-4 ha insertado 20
+Extractor-4 va a extraer 
+Extractor-4 ha extraido 5
+Generador-1 va a insertar 77
+Generador-1 ha insertado 77
+Generador-2 va a insertar 10
+Generador-2 ha insertado 10
+Generador-3 va a insertar 27
+Generador-3 ha insertado 27
+Extractor-0 va a extraer 
+Extractor-0 ha extraido 10
+Extractor-1 va a extraer 
+Extractor-1 ha extraido 72
+Generador-0 va a insertar 99
+Extractor-3 va a extraer 
+Extractor-3 ha extraido 20
+Generador-0 ha insertado 99
+Extractor-2 va a extraer 
+Extractor-2 ha extraido 77
+Generador-4 va a insertar 55
+Generador-4 ha insertado 55
+Extractor-4 va a extraer 
+Extractor-4 ha extraido 10
+Extractor-1 va a extraer 
+Extractor-1 ha extraido 27
+Generador-1 va a insertar 82
+Generador-1 ha insertado 82
+Generador-2 va a insertar 46
+Generador-2 ha insertado 46
+Extractor-3 va a extraer 
+Generador-3 va a insertar 64
+Extractor-3 ha extraido 99
+Generador-3 ha insertado 64
+Extractor-0 va a extraer 
+Extractor-0 ha extraido 55
+Generador-0 va a insertar 49
+Generador-0 ha insertado 49
+Extractor-2 va a extraer 
+Extractor-2 ha extraido 82
+Generador-4 va a insertar 67
+Generador-4 ha insertado 67
+Generador-1 va a insertar 60
+Generador-1 ha insertado 60
+Generador-2 va a insertar 37
+Generador-2 ha insertado 37
+Generador-3 va a insertar 62
+Generador-3 ha insertado 62
+Extractor-4 va a extraer 
+Extractor-4 ha extraido 46
+Extractor-1 va a extraer 
+Extractor-1 ha extraido 64
+Extractor-3 va a extraer 
+Extractor-3 ha extraido 49
+Generador-0 va a insertar 98
+Generador-0 ha insertado 98
+Extractor-0 va a extraer 
+Extractor-0 ha extraido 67
+Extractor-2 va a extraer 
+Extractor-2 ha extraido 60
+Generador-4 va a insertar 99
+Generador-4 ha insertado 99
+Generador-1 va a insertar 35
+Generador-1 ha insertado 35
+Extractor-3 va a extraer 
+Generador-2 va a insertar 9
+Generador-2 ha insertado 9
+Extractor-3 ha extraido 37
+Generador-0 va a insertar 60
+Generador-0 ha insertado 60
+Generador-3 va a insertar 84
+Generador-3 ha insertado 84
+Extractor-4 va a extraer 
+Extractor-4 ha extraido 62
+Extractor-1 va a extraer 
+Extractor-1 ha extraido 98
+Extractor-2 va a extraer 
+Extractor-2 ha extraido 99
+Extractor-0 va a extraer 
+Extractor-0 ha extraido 35
+BUILD STOPPED (total time: 4 seconds)
