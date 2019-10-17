@@ -4,20 +4,19 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Escritor implements Runnable {
 
-    private final RecursoLE recurso;
+    private final Libro recurso;
 
-    public Escritor(RecursoLE recurso) {
+    public Escritor(Libro recurso) {
         this.recurso = recurso;
     }
 
     @Override
     public void run() {
         try {
-            for (int i = 0; i < 10; i++) {
+            while (true) {
                 recurso.comenzarEscritura();
-                Thread.sleep(ThreadLocalRandom.current().nextInt(1, 5) * 100);
+                Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
                 recurso.terminarEscritura();
-                Thread.sleep(ThreadLocalRandom.current().nextInt(1, 5) * 100);
                 //Thread.yield();
             }
         } catch (InterruptedException e) {

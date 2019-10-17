@@ -3,18 +3,23 @@ package procon.tp05.e02;
 public class Main {
 
     public static void main(String[] args) {
-        //RecursoLE recurso = new RecursoLEMonitor();
-        //RecursoLE recurso = new RecursoLEBinarySemaphore();
-        RecursoLE recurso = new RecursoLESemaphore();
-        Thread t1, t2, t3, t4;
-        t1 = new Thread(new Escritor(recurso), "Escritor-1");
-        t2 = new Thread(new Lector(recurso), "Lector-1");
-        t3 = new Thread(new Lector(recurso), "Lector-2");
-        t4 = new Thread(new Lector(recurso), "Lector-3");
-        t1.start();
-        t2.start();
-        t3.start();
-        t4.start();
+        //Libro libro = new LibroSemaforoBinario();
+        //Libro libro = new LibroMonitor();
+        Libro libro = new LibroCerrojo();
+        Thread[] lectores = new Thread[6];
+        Thread[] escritores = new Thread[3];
+
+        // Crear hilos
+        for (int i = 0; i < escritores.length; i++)
+            escritores[i] = new Thread(new Escritor(libro), "Escritor-" + i);
+        for (int i = 0; i < lectores.length; i++)
+            lectores[i] = new Thread(new Lector(libro), "Lector-" + i);
+
+        // Iniciar hilos
+        for (int i = 0; i < escritores.length; i++)
+            escritores[i].start();
+        for (int i = 0; i < lectores.length; i++)
+            lectores[i].start();
     }
 
 }
