@@ -22,12 +22,12 @@ public class Coche implements Runnable {
                 gestionaTrafico.entrarCocheDelNorte(id);
                 System.out.println("Coche "+id+" pasando desde el Norte...");
                 Thread.sleep(demora);
-                gestionaTrafico.salirCocheDelNorte();
+                gestionaTrafico.salirCocheDelNorte(id);
             } else if (desde == 'S') {
                 gestionaTrafico.entrarCocheDelSur(id);
                 System.out.println("Coche "+id+" pasando desde el Sur...");
                 Thread.sleep(demora);
-                gestionaTrafico.salirCocheDelSur();
+                gestionaTrafico.salirCocheDelSur(id);
             }
         } catch (InterruptedException e) {}
     }

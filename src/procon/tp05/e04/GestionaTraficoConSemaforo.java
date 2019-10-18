@@ -44,7 +44,7 @@ public class GestionaTraficoConSemaforo implements GestionaTrafico {
     }
 
     @Override
-    public void salirCocheDelNorte() throws InterruptedException {
+    public void salirCocheDelNorte(int id) throws InterruptedException {
         mutex.acquire();
         System.out.println("Coche "+coche+" sale desde el Norte.");
         coche = 0;
@@ -64,7 +64,7 @@ public class GestionaTraficoConSemaforo implements GestionaTrafico {
     }
 
     @Override
-    public void salirCocheDelSur() throws InterruptedException {
+    public void salirCocheDelSur(int id) throws InterruptedException {
         mutex.acquire();
         System.out.println("Coche "+coche+" sale desde el Sur.");
         coche = 0;
