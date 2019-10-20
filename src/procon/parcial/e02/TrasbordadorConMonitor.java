@@ -12,7 +12,7 @@ public class TrasbordadorConMonitor implements Trasbordador {
     /**
      * Determina si el trasbordador fue o no al otro lado.
      */
-    private boolean fue;
+    private boolean cruzo;
 
     /**
      * Contenedor de autos.
@@ -25,55 +25,61 @@ public class TrasbordadorConMonitor implements Trasbordador {
     public TrasbordadorConMonitor() {
         autos = new ArrayDeque<>(CAPACIDAD);
         funcionando = false;
-        fue = false;
+        cruzo = false;
     }
 
     @Override
     public synchronized void ir() throws InterruptedException {
         // Esperar si aún no volvió del otro lado o no se cargaron los autos
-        while (fue || autos.size() < 10)
+        while (cruzo || autos.size() < 10)
             wait();
 
         System.out.println("Ir al otro lado...");
-        fue = true;
+        cruzo = true;
         notifyAll();
     }
 
     @Override
     public synchronized void volver() throws InterruptedException {
-        // Esperar si aún no llego del lado de carga o si faltan autos para
-        // descargar del trasbordador
-        while (!fue || autos.size() > 0)
+        // Esperar si aún no llego del lado de carga o si faltan autos para descargar
+        while (!cruzo || autos.size() > 0)
             wait();
 
+        // Volver
         System.out.println("Volver del otro lado...");
-        fue = false;
+        cruzo = false;
         notifyAll();
     }
 
     @Override
     public synchronized void cargar(String auto) throws InterruptedException {
-        // Esperar si el trasbordador aún no regresa del otro lado
-        while (fue)
+        // Esperar si el trasbordador aún no regresa del otro lado o si está lleno
+        while (cruzo || autos.size() == 10)
             wait();
 
+        // Cargar auto
+        System.out.print(String.format("Carga auto %s", auto));
         autos.add(auto);
         visualizarEstado();
 
-        if (autos.size() >= 10)
+        // Notificar que está lleno
+        if (autos.size() == 10)
             notifyAll();
     }
 
     @Override
     public synchronized void descargar() throws InterruptedException {
-        // Esperar si el trasbordador aún no fue al otro lado
-        while (!fue)
+        // Esperar si el trasbordador aún no fue al otro lado o si ya fue descargado
+        while (!cruzo || autos.size() == 0)
             wait();
 
-        autos.remove();
+        // Descargar auto
+        String auto = autos.remove();
+        System.out.print(String.format("Descarga auto %s", auto));
         visualizarEstado();
 
-        if (autos.size() <= 0)
+        // Notificar que ya fue descargado por completo
+        if (autos.size() == 0)
             notifyAll();
     }
 

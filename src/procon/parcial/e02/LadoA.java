@@ -25,10 +25,13 @@ public class LadoA implements Runnable {
 
     @Override
     public void run() {
+        int auto = 0;
         while (trasbordador.estaFuncionando()) {
+            auto++;
             int demora = (new Random()).nextInt(10) * 100;
+
             try {
-                trasbordador.cargar("Auto");
+                trasbordador.cargar("Auto A-" + auto);
                 Thread.sleep(demora);
             } catch (InterruptedException e) {}
         }
