@@ -85,9 +85,10 @@ public class TrasbordadorConSemaforo implements Trasbordador {
         carga.acquire();
         mutex.acquire();
         autos.add(auto);
+        System.out.print(String.format("Carga %s", auto));
         visualizarEstado();
 
-        if (autos.size() >= CAPACIDAD)
+        if (autos.size() == CAPACIDAD)
             ir.release();
         mutex.release();
     }
@@ -101,10 +102,11 @@ public class TrasbordadorConSemaforo implements Trasbordador {
     public void descargar() throws InterruptedException {
         descarga.acquire();
         mutex.acquire();
-        autos.remove();
+        String auto = autos.remove();
+        System.out.print(String.format("Descarga %s", auto));
         visualizarEstado();
 
-        if (autos.size() <= 0)
+        if (autos.size() == 0)
             volver.release();
         mutex.release();
     }

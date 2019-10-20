@@ -58,7 +58,7 @@ public class TrasbordadorConMonitor implements Trasbordador {
             wait();
 
         // Cargar auto
-        System.out.print(String.format("Carga auto %s", auto));
+        System.out.print(String.format("Carga %s", auto));
         autos.add(auto);
         visualizarEstado();
 
@@ -75,7 +75,7 @@ public class TrasbordadorConMonitor implements Trasbordador {
 
         // Descargar auto
         String auto = autos.remove();
-        System.out.print(String.format("Descarga auto %s", auto));
+        System.out.print(String.format("Descarga %s", auto));
         visualizarEstado();
 
         // Notificar que ya fue descargado por completo
