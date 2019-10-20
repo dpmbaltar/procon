@@ -15,8 +15,9 @@ public class Lector implements Runnable {
         try {
             while (true) {
                 recurso.comenzarLectura();
-                Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
+                Thread.sleep(ThreadLocalRandom.current().nextInt(10, 15) * 100);
                 recurso.terminarLectura();
+                //Thread.sleep(ThreadLocalRandom.current().nextInt(10, 15) * 100);
                 //Thread.yield();
             }
         } catch (InterruptedException e) {
