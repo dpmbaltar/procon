@@ -39,21 +39,20 @@ public class TramoCompartidoConSemaforo implements TramoCompartido {
     }
 
     @Override
-    public void salirDesdeLadoA(String tren) {
-        try {
-            mutex.acquire();
-            System.out.println(String.format("Sale %s", tren));
+    public void salirDesdeLadoA(String tren) throws InterruptedException {
+        mutex.acquire();
+        System.out.println(String.format("Sale %s", tren));
 
-            // Decidir si le toca al lado A, B o al que llegue primero si no hay esperando
-            if (!trenesDesdeB.isEmpty())
-                entrarDesdeB.release();
-            else if (!trenesDesdeA.isEmpty())
-                entrarDesdeA.release();
-            else
-                puedePasar = 0;
+        // Decidir si le toca al lado A, B o al que llegue primero si no hay esperando
+        if (!trenesDesdeB.isEmpty()) {
+            entrarDesdeB.release();
+        } else if (!trenesDesdeA.isEmpty()) {
+            entrarDesdeA.release();
+        } else {
+            puedePasar = 0;
+        }
 
-            mutex.release();
-        } catch (InterruptedException e) {}
+        mutex.release();
     }
 
     @Override
@@ -81,21 +80,20 @@ public class TramoCompartidoConSemaforo implements TramoCompartido {
     }
 
     @Override
-    public void salirDesdeLadoB(String tren) {
-        try {
-            mutex.acquire();
-            System.out.println(String.format("Sale %s", tren));
+    public void salirDesdeLadoB(String tren) throws InterruptedException {
+        mutex.acquire();
+        System.out.println(String.format("Sale %s", tren));
 
-            // Decidir si le toca al lado A, B o al que llegue primero si no hay esperando
-            if (!trenesDesdeA.isEmpty())
-                entrarDesdeA.release();
-            else if (!trenesDesdeB.isEmpty())
-                entrarDesdeB.release();
-            else
-                puedePasar = 0;
+        // Decidir si le toca al lado A, B o al que llegue primero si no hay esperando
+        if (!trenesDesdeA.isEmpty()) {
+            entrarDesdeA.release();
+        } else if (!trenesDesdeB.isEmpty()) {
+            entrarDesdeB.release();
+        } else {
+            puedePasar = 0;
+        }
 
-            mutex.release();
-        } catch (InterruptedException e) {}
+        mutex.release();
     }
 
 
