@@ -1,6 +1,11 @@
+/bin/
 /build/
 /dist/
+/doc/
+/lib/
 /nbproject/
 /.idea/
+/.settings/
+/.vscode/
 .classpath
 .project
