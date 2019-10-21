@@ -1,146 +1,113 @@
 package procon.parcial.e01;
 
-import java.util.ArrayDeque;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Representa el tramo compartido por tramos A y B.
- * Implementación con Lock.
- */
 public class TramoCompartidoConCerrojo implements TramoCompartido {
 
-    /**
-     * El tren que está pasando por la vía compartida.
-     */
-    private Tren tren;
+    private final Lock mutex = new ReentrantLock();
+    private final Condition puedeEntrarA = mutex.newCondition();
+    private final Condition puedeEntrarB = mutex.newCondition();
 
-    /**
-     * El tren que le corresponde pasar tan pronto el tramo esté disponible.
-     */
-    private Tren trenSiguiente;
+    private boolean tramoOcupado = false;
+    private char ultimoLado = 0;
 
-    /**
-     * Cola de trenes en espera desde el tramo A.
-     */
-    private final ArrayDeque<Tren> tramoA = new ArrayDeque<>();
+    private Queue<Object> trenesDesdeA = new LinkedList<>();
+    private Queue<Object> trenesDesdeB = new LinkedList<>();
 
-    /**
-     * Cola de trenes en espera desde el tramo B.
-     */
-    private final ArrayDeque<Tren> tramoB = new ArrayDeque<>();
-
-    /**
-     * Cerrojo.
-     */
-    private final ReentrantLock cierre = new ReentrantLock();
-
-    /**
-     * Condición para indicar que un tren está esperando en el tramo A.
-     */
-    private final Condition esperaA = cierre.newCondition();
-
-    /**
-     * Condición para indicar que un tren está esperando en el tramo B.
-     */
-    private final Condition esperaB = cierre.newCondition();
-
-    /**
-     * Constructor.
-     */
-    public TramoCompartidoConCerrojo() {
-        tren = null;
-        trenSiguiente = null;
-    }
-
-    /**
-     * Simula entrar un tren al tramo compartido.
-     * @param tren el tren que va a entrar
-     * @throws InterruptedException
-     */
     @Override
-    public void entrar(Tren tren) throws InterruptedException {
-        cierre.lock();
+    public void entrarDesdeLadoA(String tren) throws InterruptedException {
+        mutex.lock();
         try {
-            String nombre = tren.getNombre();
-            char tramo = tren.getTramo();
+            // Tren entra en la cola de espera de A
+            trenesDesdeA.add(tren);
 
-            // Esperar si está el tramo ocupado, según el tramo de origen
-            while (estaOcupado() || !esSiguiente(tren)) {
-                if (tramo == 'A') {
-                    System.out.println(nombre+" espera en tramo A...");
-                    if (!tramoA.contains(tren)) // Evitar duplicado
-                        tramoA.add(tren);
-                    esperaA.await();
-                } else if (tramo == 'B') {
-                    System.out.println(nombre+" espera en tramo B...");
-                    if (!tramoB.contains(tren)) // Evitar duplicado
-                        tramoB.add(tren);
-                    esperaB.await();
-                }
-            }
+            // Primer tren vino desde A
+            if (ultimoLado == 0)
+                ultimoLado = 'A';
 
-            System.out.println(nombre+" entra al tramo compartido desde "+tramo);
-            this.tren = tren;
+            // Esperar si:
+            // hay un tren ocupando el tramo;
+            // ya paso uno desde A y hay esperando en B;
+            // no es el turno del tren actual
+            while (tramoOcupado
+                    || (!tramoOcupado && (ultimoLado == 'A' && !trenesDesdeB.isEmpty()))
+                    || !trenesDesdeA.peek().equals(tren))
+                puedeEntrarA.await();
+
+            // Usar tramo compartido
+            trenesDesdeA.remove();
+            tramoOcupado = true;
+            System.out.println(String.format("Entra %s", tren));
         } finally {
-            cierre.unlock();
+            mutex.unlock();
         }
     }
 
-    /**
-     * Simula salir el tren que entró al tramo compartido.
-     */
     @Override
-    public void salir() {
-        cierre.lock();
+    public void salirDesdeLadoA(String tren) {
+        mutex.lock();
         try {
-            String nombre = tren.getNombre();
-            char tramo = tren.getTramo();
+            System.out.println(String.format("Sale %s", tren));
+            ultimoLado = 'A';
+            tramoOcupado = false;
 
-            // Avisar al tramo opuesto para entrar, si hay trenes en espera
-            // Sino, avisar al siguiente del tramo actual
-            if (tramo == 'A') {
-                if (!tramoB.isEmpty()) {
-                    trenSiguiente = tramoB.remove();
-                    esperaB.signal();
-                } else if (!tramoA.isEmpty()) {
-                    trenSiguiente = tramoA.remove();
-                    esperaA.signal();
-                } else {
-                    trenSiguiente = null;
-                }
-            } else if (tramo == 'B') {
-                if (!tramoA.isEmpty()) {
-                    trenSiguiente = tramoA.remove();
-                    esperaA.signal();
-                } else if (!tramoB.isEmpty()) {
-                    trenSiguiente = tramoB.remove();
-                    esperaB.signal();
-                } else {
-                    trenSiguiente = null;
-                }
-            }
-
-            System.out.println(nombre+" sale del tramo compartido ("+tramo+").");
-            tren = null;
+            if (!trenesDesdeB.isEmpty())
+                puedeEntrarB.signalAll();
+            else
+                puedeEntrarA.signalAll();
         } finally {
-            cierre.unlock();
+            mutex.unlock();
         }
     }
 
-    /**
-     * Determina si el tramo está ocupado.
-     */
-    private boolean estaOcupado() {
-        return tren != null;
+    @Override
+    public void entrarDesdeLadoB(String tren) throws InterruptedException {
+        mutex.lock();
+        try {
+            // Tren entra en la cola de espera de B
+            trenesDesdeB.add(tren);
+
+            // Primer tren vino desde B
+            if (ultimoLado == 0)
+                ultimoLado = 'B';
+
+            // Esperar si:
+            // hay un tren ocupando el tramo;
+            // ya paso uno desde B y hay esperando en A;
+            // no es el turno del tren actual
+            while (tramoOcupado
+                    || (!tramoOcupado && (ultimoLado == 'B' && !trenesDesdeA.isEmpty()))
+                    || !trenesDesdeB.peek().equals(tren))
+                puedeEntrarB.await();
+
+            // Usar tramo compartido
+            trenesDesdeB.remove();
+            tramoOcupado = true;
+            System.out.println(String.format("Entra %s", tren));
+        } finally {
+            mutex.unlock();
+        }
     }
 
-    /**
-     * Determina si el tren dado es el siguiente a pasar.
-     * @param tren el tren a verificar
-     * @return
-     */
-    private boolean esSiguiente(Tren tren) {
-        return trenSiguiente == null || trenSiguiente.equals(tren);
+    @Override
+    public void salirDesdeLadoB(String tren) {
+        mutex.lock();
+        try {
+            System.out.println(String.format("Sale %s", tren));
+            ultimoLado = 'B';
+            tramoOcupado = false;
+
+            if (!trenesDesdeA.isEmpty())
+                puedeEntrarA.signalAll();
+            else
+                puedeEntrarB.signalAll();
+        } finally {
+            mutex.unlock();
+        }
     }
+
 }
