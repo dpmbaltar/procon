@@ -99,7 +99,10 @@ public class GestionaTraficoCerrojo implements GestionaTrafico {
             autosPasando.poll();
             ordenPasando.signalAll();
             autosPasandoNorte--;
-            pasarDesdeSur.signalAll();
+
+            // Notificar autos del sur si ya no hay pasando desde el norte
+            if (autosPasandoNorte == 0)
+                pasarDesdeSur.signalAll();
         } finally {
             mutex.unlock();
         }
@@ -118,7 +121,10 @@ public class GestionaTraficoCerrojo implements GestionaTrafico {
             autosPasando.poll();
             ordenPasando.signalAll();
             autosPasandoSur--;
-            pasarDesdeNorte.signalAll();
+
+            // Notificar autos del norte si ya no hay pasando desde el sur
+            if (autosPasandoSur == 0)
+                pasarDesdeNorte.signalAll();
         } finally {
             mutex.unlock();
         }
