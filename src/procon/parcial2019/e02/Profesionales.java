@@ -20,7 +20,7 @@ public class Profesionales implements Runnable {
                 observatorio.entraProfesional(nombre);
                 Thread.sleep(random.nextInt(10) * 100 + 1000);
                 observatorio.saleProfesional(nombre);
-                Thread.sleep(random.nextInt(10) * 1000 + 3000);
+                Thread.sleep(random.nextInt(10) * 1000 + 2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

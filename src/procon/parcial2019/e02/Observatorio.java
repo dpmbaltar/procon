@@ -10,33 +10,40 @@ public class Observatorio {
     private final Semaphore visitantes = new Semaphore(CAPACIDAD, true);
     private final Semaphore personal = new Semaphore(CAPACIDAD, true);
     private final Semaphore profesionales = new Semaphore(CAPACIDAD, true);
-    private final Semaphore entraVisitante = new Semaphore(1);
+    private final Semaphore entraVisitante = new Semaphore(0);
     private final Semaphore entraPersonal = new Semaphore(0);
     private final Semaphore entraProfesional = new Semaphore(0);
 
+    private int visitantesEsperando = 0;
+    private int personalEsperando = 0;
+    private int profesionalesEsperando = 0;
     private int visitantesAdentro = 0;
     private int personalAdentro = 0;
     private int profesionalesAdentro = 0;
     private int totalVisitantes = 0;
     private int totalPersonal = 0;
     private int totalProfesionales = 0;
-    private int visitantesEsperando = 0;
-    private int personalEsperando = 0;
-    private int profesionalesEsperando = 0;
 
     public void entraVisitante(String nombre, boolean sillaDeRuedas) throws InterruptedException {
         mutex.acquire();
+        // Entran visitantes, personal o profesionales según cual llegue primero
+        if (totalVisitantes == 0 && totalPersonal == 0 && totalProfesionales == 0)
+            entraVisitante.release();
         visitantesEsperando++;
         mutex.release();
 
-        visitantes.acquire(); // Evita que entren más de lo admitido (CAPACIDAD)
+         // Evita que entren más de lo admitido (CAPACIDAD)
+        if (sillaDeRuedas)
+            visitantes.acquire(2);
+        else
+            visitantes.acquire();
         entraVisitante.acquire(); // Indica que solo están entrando visitantes al observatorio
 
         mutex.acquire();
         visitantesEsperando--;
         visitantesAdentro++;
         totalVisitantes++;
-        System.out.println(String.format("Entra visitante %s", nombre));
+        System.out.println(String.format("Entra visitante %s (silla: %s)", nombre, String.valueOf(sillaDeRuedas)));
         entraVisitante.release(); // Dejar entrar otro visitante
         mutex.release();
     }
@@ -59,16 +66,23 @@ public class Observatorio {
                 entraPersonal.release(); // Entra personal
             else if (profesionalesEsperando > 0)
                 entraProfesional.release(); // Entra profesional
-            else
+            else if (visitantesEsperando > 0)
                 entraVisitante.release(); // Entra visitante
+            // Sino, entra el que siga primero
         }
 
         mutex.release();
-        visitantes.release();
+        if (sillaDeRuedas)
+            visitantes.release(2);
+        else
+            visitantes.release();
     }
 
     public void entraPersonal(String nombre) throws InterruptedException {
         mutex.acquire();
+        // Entran visitantes, personal o profesionales según cual llegue primero
+        if (totalVisitantes == 0 && totalPersonal == 0 && totalProfesionales == 0)
+            entraPersonal.release();
         personalEsperando++;
         mutex.release();
 
@@ -102,8 +116,9 @@ public class Observatorio {
                 entraProfesional.release(); // Entra profesional
             else if (visitantesEsperando > 0)
                 entraVisitante.release();
-            else
+            else if (personalEsperando > 0)
                 entraPersonal.release(); // Entra personal
+            // Sino, entra el que siga primero
         }
 
         mutex.release();
@@ -112,6 +127,9 @@ public class Observatorio {
 
     public void entraProfesional(String nombre) throws InterruptedException {
         mutex.acquire();
+        // Entran visitantes, personal o profesionales según cual llegue primero
+        if (totalVisitantes == 0 && totalPersonal == 0 && totalProfesionales == 0)
+            entraProfesional.release();
         profesionalesEsperando++;
         mutex.release();
 
@@ -145,8 +163,9 @@ public class Observatorio {
                 entraVisitante.release(); // Entra visitante
             else if (personalEsperando > 0)
                 entraPersonal.release(); // Entra peronal
-            else
+            else if (profesionalesEsperando > 0)
                 entraProfesional.release(); // Entra profesional
+            // Sino, entra el que siga primero
         }
 
         mutex.release();
