@@ -8,7 +8,8 @@ public class Main {
 
     public static void main(String[] args) {
         //GestionaTrafico gt = new GestionaTraficoMonitor();
-        GestionaTrafico gt = new GestionaTraficoCerrojo();
+        //GestionaTrafico gt = new GestionaTraficoCerrojo();
+        GestionaTrafico gt = new GestionaTraficoConSemaforo();
         Thread[] trafico = new Thread[5];
 
         for (int i = 0; i < 5; i++)

@@ -4,83 +4,95 @@ import java.util.concurrent.Semaphore;
 
 public class GestionaTraficoConSemaforo implements GestionaTrafico {
 
-    private static int TOLERANCIA = 3;
+    private static final int TOLERANCIA = 3;
     private int esperanDesdeNorte = 0;
     private int esperanDesdeSur = 0;
     private int seguidosDesdeNorte = 0;
     private int seguidosDesdeSur = 0;
-    private int coche = 0;
-    private Semaphore desdeNorte = new Semaphore(1, true);
-    private Semaphore desdeSur = new Semaphore(1, true);
-    private Semaphore pasar = new Semaphore(1, true);
-    private Semaphore mutex = new Semaphore(1);
+    private boolean puenteLibre = true;
+
+    private final Semaphore mutex = new Semaphore(1);
+    private final Semaphore desdeNorte = new Semaphore(0, true);
+    private final Semaphore desdeSur = new Semaphore(0, true);
 
     @Override
     public void entrarCocheDelNorte(int id) throws InterruptedException {
-        System.out.println("Coche "+id+" llega desde el Norte.");
-        desdeNorte.acquire();
-        //System.out.println("Coche "+id+" es el siguiente desde el Norte.");
-        pasar.acquire();
         mutex.acquire();
-        System.out.println("Coche "+id+" entra desde el Norte.");
-        coche = id;
+        System.out.println(String.format("Llega Auto-%d desde NORTE", id));
+        esperanDesdeNorte++;
+        if (puenteLibre) {
+            puenteLibre = false;
+            desdeNorte.release();
+        }
+        mutex.release();
+
+        desdeNorte.acquire();
+
+        mutex.acquire();
+        esperanDesdeNorte--;
         seguidosDesdeNorte++;
-        seguidosDesdeSur = 0;
+        System.out.println(String.format("Entra Auto-%d desde NORTE", id));
         mutex.release();
     }
 
     @Override
     public void entrarCocheDelSur(int id) throws InterruptedException {
-        System.out.println("Coche "+id+" llega desde el Sur.");
-        desdeSur.acquire();
-        //System.out.println("Coche "+id+" es el siguiente desde el Sur.");
-        pasar.acquire();
         mutex.acquire();
-        System.out.println("Coche "+id+" entra desde el Sur.");
-        coche = id;
+        System.out.println(String.format("Llega Auto-%d desde SUR", id));
+        esperanDesdeSur++;
+        if (puenteLibre) {
+            puenteLibre = false;
+            desdeSur.release();
+        }
+        mutex.release();
+
+        desdeSur.acquire();
+
+        mutex.acquire();
+        esperanDesdeSur--;
         seguidosDesdeSur++;
-        seguidosDesdeNorte = 0;
+        System.out.println(String.format("Entra Auto-%d desde SUR", id));
         mutex.release();
     }
 
     @Override
     public void salirCocheDelNorte(int id) throws InterruptedException {
         mutex.acquire();
-        System.out.println("Coche "+coche+" sale desde el Norte.");
-        coche = 0;
+        System.out.println(String.format("Sale Auto-%d desde NORTE", id));
 
-        if (seguidosDesdeNorte >= TOLERANCIA) {
-            System.out.println(TOLERANCIA+" seguidos desde el Norte. Le toca al Sur");
+        if (esperanDesdeSur > 0 && (seguidosDesdeNorte >= TOLERANCIA || esperanDesdeNorte == 0)) {
+            if (seguidosDesdeNorte >= TOLERANCIA)
+                System.out.println(String.format("!!!Pasaron %d autos desde NORTE!!!", seguidosDesdeNorte));
             seguidosDesdeNorte = 0;
             desdeSur.release();
-            //desdeNorte.release();
-        } else {
+        } else if (esperanDesdeNorte > 0) {
             desdeNorte.release();
-            //desdeSur.release();
+        } else {
+            System.out.println("!!!PUENTE LIBRE!!!");
+            puenteLibre = true;
         }
 
         mutex.release();
-        pasar.release();
     }
 
     @Override
     public void salirCocheDelSur(int id) throws InterruptedException {
         mutex.acquire();
-        System.out.println("Coche "+coche+" sale desde el Sur.");
-        coche = 0;
+        System.out.println(String.format("Sale Auto-%d desde SUR", id));
 
-        if (seguidosDesdeSur >= TOLERANCIA) {
-            System.out.println(TOLERANCIA+" seguidos desde el Sur. Le toca al Norte");
+        if (esperanDesdeNorte > 0 && (seguidosDesdeSur >= TOLERANCIA || esperanDesdeSur == 0)) {
+            if (seguidosDesdeSur >= TOLERANCIA)
+                System.out.println(String.format("!!!Pasaron %d autos desde SUR!!!", seguidosDesdeSur));
             seguidosDesdeSur = 0;
             desdeNorte.release();
-            //desdeSur.release();
-        } else {
+        } else if (esperanDesdeSur > 0) {
             desdeSur.release();
-            //desdeNorte.release();
+        } else {
+            System.out.println("!!!PUENTE LIBRE!!!");
+            puenteLibre = true;
         }
 
         mutex.release();
-        pasar.release();
     }
 
 }
