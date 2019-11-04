@@ -25,6 +25,7 @@ public class Paciente implements Runnable {
             while (true) {
                 paciente = generarPaciente();
                 ch.entrar(paciente, random.nextBoolean());
+                System.out.println(String.format("%s está donando sangre...", paciente));
                 Thread.sleep(random.nextInt(10) * 100 + 1000);
                 ch.salir(paciente);
                 Thread.sleep(random.nextInt(10) * 100 + 2000);
