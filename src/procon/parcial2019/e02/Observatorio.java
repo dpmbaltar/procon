@@ -64,8 +64,8 @@ public class Observatorio {
                 entraPersonal.release(); // Entra personal
             else if (profesionalesEsperando > 0)
                 entraProfesional.release(); // Entra profesional
-            else if (visitantesEsperando > 0)
-                entraVisitante.release(); // Entra visitante
+            //else if (visitantesEsperando > 0)
+            //    entraVisitante.release(); // Entra visitante
             // Sino, entra el que siga primero
         }
 
@@ -111,8 +111,8 @@ public class Observatorio {
                 entraProfesional.release(); // Entra profesional
             else if (visitantesEsperando > 0)
                 entraVisitante.release();
-            else if (personalEsperando > 0)
-                entraPersonal.release(); // Entra personal
+            //else if (personalEsperando > 0)
+            //    entraPersonal.release(); // Entra personal
             // Sino, entra el que siga primero
         }
 
@@ -155,8 +155,8 @@ public class Observatorio {
                 entraVisitante.release(); // Entra visitante
             else if (personalEsperando > 0)
                 entraPersonal.release(); // Entra peronal
-            else if (profesionalesEsperando > 0)
-                entraProfesional.release(); // Entra profesional
+            //else if (profesionalesEsperando > 0)
+            //    entraProfesional.release(); // Entra profesional
             // Sino, entra el que siga primero
         } else {
             entraProfesional.release();

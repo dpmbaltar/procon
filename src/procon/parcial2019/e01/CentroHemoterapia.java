@@ -10,6 +10,7 @@ class CentroHemoterapia {
 
     public void entrar(String paciente, boolean quiereSilla) throws InterruptedException {
         boolean tieneSilla = false;
+        boolean tieneRevista = false;
         System.out.println(String.format("Entra %s", paciente));
 
         // Si no pudo pasar a donar, espera
@@ -24,6 +25,7 @@ class CentroHemoterapia {
             }
 
             if (revistas.tryAcquire()) {
+                tieneRevista = true;
                 System.out.println(String.format("%s toma una revista", paciente));
             } else {
                 System.out.println(String.format("%s mira TV", paciente));
@@ -31,7 +33,8 @@ class CentroHemoterapia {
 
             camillas.acquire();
             System.out.println(String.format("%s ocupa una camilla", paciente));
-            revistas.release();
+            if (tieneRevista)
+                revistas.release();
             if (tieneSilla)
                 sillas.release();
         }
