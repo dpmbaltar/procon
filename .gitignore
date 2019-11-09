@@ -1,0 +1,7 @@
+bin/
+build/
+nbproject/
+.settings/
+.classpath
+.project
+/doc/
