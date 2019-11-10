@@ -42,16 +42,15 @@ public class Visitante implements Runnable {
 
     private void irACarreraDeGomones() {
         int llaveDeBolso = -1;
-        boolean irEnTren = true;//ThreadLocalRandom.current().nextBoolean();
+        int gomon = -1;
+        boolean irEnTren = false;//ThreadLocalRandom.current().nextBoolean();
 
         try {
             parque.irACarrerasDeGomones(irEnTren);
-//            Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
             llaveDeBolso = parque.dejarPertenencias();
+            gomon = parque.prepararseParaLaCarrera();
             parque.iniciarCarreraDeGomones();
-//            Thread.sleep(ThreadLocalRandom.current().nextInt(15, 20) * 100);
-            parque.finalizarCarreraDeGomones();
-            parque.tomarPertenencias(llaveDeBolso);
+            parque.finalizarCarreraDeGomones(llaveDeBolso, gomon);
             parque.volverDeCarrerasDeGomones(irEnTren);
         } catch (InterruptedException | BrokenBarrierException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
