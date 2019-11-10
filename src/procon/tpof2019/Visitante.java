@@ -1,5 +1,9 @@
 package procon.tpof2019;
 
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Visitante implements Runnable {
 
     /**
@@ -21,8 +25,20 @@ public class Visitante implements Runnable {
      */
     @Override
     public void run() {
-        // TODO Auto-generated method stub
+        while (parque.estaAbierto()) {
+            try {
+                sleep(1, 30);
+                parque.irACarrerasDeGomones();
+                sleep(1, 2);
+                parque.iniciarCarreraDeGomones();
+            } catch (InterruptedException e) {
+                Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
+            }
+        }
+    }
 
+    private void sleep(int min, int max) throws InterruptedException {
+        Thread.sleep(ThreadLocalRandom.current().nextInt(min, max) * 1000);
     }
 
 }

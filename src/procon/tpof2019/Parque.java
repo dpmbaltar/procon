@@ -1,5 +1,8 @@
 package procon.tpof2019;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
 public class Parque {
 
     /**
@@ -26,6 +29,9 @@ public class Parque {
      * Indica si las actividades del parque están abiertas o cerradas.
      */
     private boolean actividadesAbiertas = false;
+
+    private CyclicBarrier tren = new CyclicBarrier(15);
+    private CyclicBarrier carrera = new CyclicBarrier(5);
 
     private final VistaParque vp = new VistaParque();
 
@@ -59,6 +65,33 @@ public class Parque {
         mensaje("<<PARQUE CERRADO>>");
     }
 
+    public synchronized boolean estaAbierto() {
+        return abierto;
+    }
 
+
+
+
+    public void irACarrerasDeGomones() throws InterruptedException, BrokenBarrierException {
+        vp.printGomones("Ir a carreras de gomones en tren");
+        tren.await();
+        vp.printGomones("Tren en camino a carrera de gomones");
+    }
+
+    public int iniciarCarreraDeGomones() throws InterruptedException, BrokenBarrierException {
+        vp.printGomones("Iniciar carrera gomones");
+        carrera.await();
+        vp.printGomones("Inicia carrera gomones");
+        
+        return 0;
+    }
+
+    public void finalizarCarreraDeGomones(int llaveDeBolso) {
+
+    }
+
+    public void volverDeCarrerasDeGomones() {
+
+    }
 
 }

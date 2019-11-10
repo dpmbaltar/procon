@@ -5,7 +5,7 @@ public class Main {
     public static void main(String[] args) {
         Parque parque = new Parque();
         Thread administrador = new Thread(new Administrador(parque), "Administrador");
-        Thread[] visitantes = new Thread[10];
+        Thread[] visitantes = new Thread[20];
 
         for (int i = 0; i < visitantes.length; i++)
             visitantes[i] = new Thread(new Visitante(parque), "Visitante-" + (i + 1));
