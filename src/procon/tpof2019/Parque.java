@@ -36,7 +36,7 @@ public class Parque {
     private CyclicBarrier trenIda = new CyclicBarrier(15);
     private CyclicBarrier trenVuelta = new CyclicBarrier(15);
     //private CyclicBarrier carrera = new CyclicBarrier(5);
-    private CountDownLatch carrera = new CountDownLatch(1);
+    private CountDownLatch carrera = new CountDownLatch(5);
 
     private final Semaphore bicicletas = new Semaphore(15);
     private final Semaphore vaciarBolsos = new Semaphore(0);
@@ -148,7 +148,7 @@ public class Parque {
         bolsos[bolsosOcupados] = true;
         llave = bolsosOcupados;
         bolsosOcupados++;
-        System.out.println(String.format("%s tiene bolso: %d", Thread.currentThread().getName(), llave));
+        //System.out.println(String.format("%s tiene bolso: %d", Thread.currentThread().getName(), llave));
         mutex.release();
 
         return llave;
@@ -167,11 +167,13 @@ public class Parque {
             gomones[gomon] += " y " + visitante;
             lugaresEnGomonesDoblesOcupados++;
             gomonesListos++;
+            carrera.countDown();
         } else if (ThreadLocalRandom.current().nextBoolean()) {
             gomon = lugaresEnGomonesSimplesOcupados;
             gomones[gomon] = visitante;
             lugaresEnGomonesSimplesOcupados++;
             gomonesListos++;
+            carrera.countDown();
         } else { // En este caso, "lugaresEnGomonesDoblesOcupados" es siempre 0, 2, 4, u 8
             gomon = 5 + (lugaresEnGomonesDoblesOcupados / 2);
             gomones[gomon] = visitante;
@@ -208,7 +210,7 @@ public class Parque {
         // Finalizar la carrera mostrando el ganador
         if (ganador < 0) {
             ganador = gomon;
-            vp.printCarrera(String.format("🏁 ¡¡¡%s finaliza primero la carrera #%d!!!", gomones[ganador], totalDeCarreras));
+            vp.printCarrera(String.format("🏁 <<%s finaliza primero la carrera #%d>>", gomones[ganador], totalDeCarreras));
         } else {
             vp.printCarrera(String.format("🏁 %s finaliza la carrera #%d", visitante, totalDeCarreras));
         }
@@ -233,7 +235,7 @@ public class Parque {
             vaciarBolsos.release();
         } else { // Sino llevar bolsos desocupados al inicio nuevamente por la camioneta
             ganador = -1;
-            carrera = new CountDownLatch(1);
+            carrera = new CountDownLatch(5);
             traerBolsos.release();
         }
 
@@ -254,7 +256,6 @@ public class Parque {
 
     public void llevarBolsosAlFinal() throws InterruptedException {
         llevarBolsos.acquire();
-        carrera.countDown(); // Inicia la carrera
         vp.printCarrera(String.format("🚙 %s lleva los bolsos", Thread.currentThread().getName()));
         Thread.sleep(500);
         vaciarBolsos.release();
