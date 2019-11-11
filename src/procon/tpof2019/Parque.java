@@ -36,18 +36,16 @@ public class Parque {
     private CyclicBarrier trenIda = new CyclicBarrier(15);
     private CyclicBarrier trenVuelta = new CyclicBarrier(15);
     //private CyclicBarrier carrera = new CyclicBarrier(5);
-    private CountDownLatch carrera = new CountDownLatch(5);
+    private CountDownLatch carrera = new CountDownLatch(1);
 
     private final Semaphore bicicletas = new Semaphore(15);
-    private final Semaphore lugares = new Semaphore(15);
-    private final Semaphore llenarBolsos = new Semaphore(1);
     private final Semaphore vaciarBolsos = new Semaphore(0);
     private final Semaphore llevarBolsos = new Semaphore(0);
     private final Semaphore traerBolsos = new Semaphore(0);
     private final Semaphore prepararse = new Semaphore(1, true);
     private final Semaphore mutex = new Semaphore(1);
 
-    private String ganador = null;
+    private int ganador = -1;
     private int totalDeCarreras = 0;
     private int lugaresEnGomonesSimplesOcupados = 0;
     private int lugaresEnGomonesDoblesOcupados = 0;
@@ -66,7 +64,7 @@ public class Parque {
      * Índices entre 0 y 4 son simples.
      * Índices entre 5 y 9 son dobles.
      */
-    private final boolean[] gomones = new boolean[10];
+    private final String[] gomones = new String[10];
 
     private final VistaParque vp = new VistaParque();
 
@@ -102,6 +100,10 @@ public class Parque {
 
     public synchronized boolean estaAbierto() {
         return abierto;
+    }
+
+    public synchronized boolean actividadesAbiertas() {
+        return actividadesAbiertas;
     }
 
 
@@ -146,7 +148,7 @@ public class Parque {
         bolsos[bolsosOcupados] = true;
         llave = bolsosOcupados;
         bolsosOcupados++;
-
+        System.out.println(String.format("%s tiene bolso: %d", Thread.currentThread().getName(), llave));
         mutex.release();
 
         return llave;
@@ -154,32 +156,35 @@ public class Parque {
 
     public int prepararseParaLaCarrera() throws InterruptedException {
         int gomon = -1;
+        String visitante = Thread.currentThread().getName();
 
         mutex.acquire();
 
         // Elegir gomón doble si ya hay alguien esperando en uno, sino elegir aleatoriamente simple o doble
         if ((lugaresEnGomonesDoblesOcupados % 2) != 0) {
-            // En este caso, "lugaresEnGomonesDoblesOcupados" es siempre 1, 3, 5, 7 o 9;
-            gomones[5 + (lugaresEnGomonesDoblesOcupados / 2)] = true;
-            gomon = lugaresEnGomonesDoblesOcupados;
+            // En este caso, "lugaresEnGomonesDoblesOcupados" es siempre 1, 3, 5, 7 o 9
+            gomon = 5 + (lugaresEnGomonesDoblesOcupados / 2);
+            gomones[gomon] += " y " + visitante;
             lugaresEnGomonesDoblesOcupados++;
             gomonesListos++;
         } else if (ThreadLocalRandom.current().nextBoolean()) {
-            gomones[lugaresEnGomonesSimplesOcupados] = true;
             gomon = lugaresEnGomonesSimplesOcupados;
+            gomones[gomon] = visitante;
             lugaresEnGomonesSimplesOcupados++;
             gomonesListos++;
-        } else {
-            gomon = lugaresEnGomonesDoblesOcupados;
+        } else { // En este caso, "lugaresEnGomonesDoblesOcupados" es siempre 0, 2, 4, u 8
+            gomon = 5 + (lugaresEnGomonesDoblesOcupados / 2);
+            gomones[gomon] = visitante;
             lugaresEnGomonesDoblesOcupados++;
         }
-
+        System.out.println(String.format("%s tiene gomon: %d", Thread.currentThread().getName(), gomon));
         // Si no hay 5 gomones listos para iniciar la carrera, dejar a otros prepararse
         if (gomonesListos < 5) {
             prepararse.release();
         } else { // Si hay 5 gomones listos, indicar a la camioneta que lleve los bolsos ya que iniciará la carrera
-            llevarBolsos.release();
+            gomonesListos = 0;
             totalDeCarreras++;
+            llevarBolsos.release();
         }
 
         mutex.release();
@@ -188,7 +193,6 @@ public class Parque {
     }
 
     public void iniciarCarreraDeGomones() throws InterruptedException, BrokenBarrierException {
-        carrera.countDown();
         carrera.await();
         mutex.acquire();
         vp.printCarrera(String.format("🏁 %s inicia la carrera #%d", Thread.currentThread().getName(), totalDeCarreras));
@@ -201,9 +205,10 @@ public class Parque {
 
         mutex.acquire();
 
-        if (ganador == null) {
-            ganador = visitante;
-            vp.printCarrera(String.format("🏁 ¡¡¡%s gana la carrera #%d!!!", visitante, totalDeCarreras));
+        // Finalizar la carrera mostrando el ganador
+        if (ganador < 0) {
+            ganador = gomon;
+            vp.printCarrera(String.format("🏁 ¡¡¡%s finaliza primero la carrera #%d!!!", gomones[ganador], totalDeCarreras));
         } else {
             vp.printCarrera(String.format("🏁 %s finaliza la carrera #%d", visitante, totalDeCarreras));
         }
@@ -213,7 +218,7 @@ public class Parque {
         mutex.acquire();
 
         // Liberar gomon (simple o doble, según corresponda)
-        gomones[gomon] = false;
+        gomones[gomon] = null;
         if (gomon < 5)
             lugaresEnGomonesSimplesOcupados--;
         else
@@ -224,10 +229,13 @@ public class Parque {
         bolsosOcupados--;
 
         // Desocupar bolsos si aun hay ocupados en la camioneta
-        if (bolsosOcupados > 0)
+        if (bolsosOcupados > 0) {
             vaciarBolsos.release();
-        else // Sino llevar bolsos desocupados al inicio nuevamente por la camioneta
+        } else { // Sino llevar bolsos desocupados al inicio nuevamente por la camioneta
+            ganador = -1;
+            carrera = new CountDownLatch(1);
             traerBolsos.release();
+        }
 
         mutex.release();
     }
@@ -246,6 +254,7 @@ public class Parque {
 
     public void llevarBolsosAlFinal() throws InterruptedException {
         llevarBolsos.acquire();
+        carrera.countDown(); // Inicia la carrera
         vp.printCarrera(String.format("🚙 %s lleva los bolsos", Thread.currentThread().getName()));
         Thread.sleep(500);
         vaciarBolsos.release();

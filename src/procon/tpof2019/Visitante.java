@@ -27,7 +27,7 @@ public class Visitante implements Runnable {
     @Override
     public void run() {
         try {
-            while (parque.estaAbierto()) {
+            while (parque.actividadesAbiertas()) {
                 Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
                 irACarreraDeGomones();
             }
