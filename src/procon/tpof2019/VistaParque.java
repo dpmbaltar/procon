@@ -3,7 +3,10 @@ package procon.tpof2019;
 import java.awt.Container;
 import java.awt.GridLayout;
 
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
@@ -21,6 +24,8 @@ public class VistaParque extends JFrame {
     private final JScrollPane scroll3;
     private final JScrollPane scroll4;
     private final JScrollPane scroll5;
+
+    private final JProgressBar pb;
 
     public VistaParque() {
         super("Vista del Parque");
@@ -56,9 +61,21 @@ public class VistaParque extends JFrame {
 
         contentPane.add(scroll1);
         contentPane.add(scroll2);
-        contentPane.add(scroll3);
+        //contentPane.add(scroll3);
         contentPane.add(scroll4);
         contentPane.add(scroll5);
+
+        JPanel jp3 = new JPanel();
+        jp3.setLayout(new BoxLayout(jp3, BoxLayout.PAGE_AXIS));
+        pb = new JProgressBar(0, 5);
+        pb.setValue(0);
+        pb.setStringPainted(true);
+        pb.setBorder(new TitledBorder("Gomones ocupados"));
+        pb.setString("0");
+
+        jp3.add(scroll3);
+        jp3.add(pb);
+        contentPane.add(jp3);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -75,6 +92,16 @@ public class VistaParque extends JFrame {
         ta3.append(mensaje + "\n");
         ta3.setCaretPosition(ta3.getDocument().getLength());
         //scroll3.getVerticalScrollBar().setValue(scroll3.getVerticalScrollBar().getMaximum());
+    }
+
+    public synchronized void agregarGomon() {
+        pb.setValue(pb.getValue() + 1);
+        pb.setString(String.valueOf(pb.getValue()));
+    }
+
+    public synchronized void sacarGomones() {
+        pb.setValue(0);
+        pb.setString(String.valueOf(0));
     }
 
 }

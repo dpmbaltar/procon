@@ -45,12 +45,14 @@ public class Parque {
     private final Semaphore prepararse = new Semaphore(1, true);
     private final Semaphore mutex = new Semaphore(1);
 
+    private int visitantesEnInicio = 0;
     private int ganador = -1;
     private int totalDeCarreras = 0;
     private int lugaresEnGomonesSimplesOcupados = 0;
     private int lugaresEnGomonesDoblesOcupados = 0;
     private int gomonesListos = 0;
     private int bolsosOcupados = 0;
+    private boolean carreraSuspendida = false;
 
     /**
      * Los bolsos para las pertenencias (10).
@@ -129,7 +131,10 @@ public class Parque {
             Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
         }
 
+        mutex.acquire();
+        visitantesEnInicio++;
         vp.printCarrera(String.format("🏁 %s llega al inicio", Thread.currentThread().getName()));
+        mutex.release();
     }
 
     /**
@@ -148,13 +153,14 @@ public class Parque {
         bolsos[bolsosOcupados] = true;
         llave = bolsosOcupados;
         bolsosOcupados++;
-        //System.out.println(String.format("%s tiene bolso: %d", Thread.currentThread().getName(), llave));
+        vp.printCarrera(String.format("👜 %s ocupa un bolso", Thread.currentThread().getName()));
+
         mutex.release();
 
         return llave;
     }
 
-    public int prepararseParaLaCarrera() throws InterruptedException {
+    public int subirseAGomon() throws InterruptedException {
         int gomon = -1;
         String visitante = Thread.currentThread().getName();
 
@@ -168,7 +174,7 @@ public class Parque {
             lugaresEnGomonesDoblesOcupados++;
             gomonesListos++;
             carrera.countDown();
-        } else if (ThreadLocalRandom.current().nextBoolean()) {
+        } else if (!actividadesAbiertas || ThreadLocalRandom.current().nextBoolean()) {
             gomon = lugaresEnGomonesSimplesOcupados;
             gomones[gomon] = visitante;
             lugaresEnGomonesSimplesOcupados++;
@@ -179,9 +185,18 @@ public class Parque {
             gomones[gomon] = visitante;
             lugaresEnGomonesDoblesOcupados++;
         }
-        System.out.println(String.format("%s tiene gomon: %d", Thread.currentThread().getName(), gomon));
+
+        vp.printCarrera(String.format("🚣 %s ocupa un gomón", visitante));
+        vp.agregarGomon();
+
         // Si no hay 5 gomones listos para iniciar la carrera, dejar a otros prepararse
         if (gomonesListos < 5) {
+
+            //FIXME: Cancelar carrera cuando corresponda
+            if (!actividadesAbiertas && (gomonesListos + visitantesEnInicio) < 5) {
+                System.out.println("faltan: " + visitantesEnInicio + " listos: " + gomonesListos);
+            }
+
             prepararse.release();
         } else { // Si hay 5 gomones listos, indicar a la camioneta que lleve los bolsos ya que iniciará la carrera
             gomonesListos = 0;
@@ -197,6 +212,7 @@ public class Parque {
     public void iniciarCarreraDeGomones() throws InterruptedException, BrokenBarrierException {
         carrera.await();
         mutex.acquire();
+        visitantesEnInicio--;
         vp.printCarrera(String.format("🏁 %s inicia la carrera #%d", Thread.currentThread().getName(), totalDeCarreras));
         mutex.release();
         Thread.sleep(ThreadLocalRandom.current().nextInt(15, 20) * 100);
@@ -234,6 +250,7 @@ public class Parque {
         if (bolsosOcupados > 0) {
             vaciarBolsos.release();
         } else { // Sino llevar bolsos desocupados al inicio nuevamente por la camioneta
+            vp.sacarGomones();
             ganador = -1;
             carrera = new CountDownLatch(5);
             traerBolsos.release();
@@ -256,16 +273,20 @@ public class Parque {
 
     public void llevarBolsosAlFinal() throws InterruptedException {
         llevarBolsos.acquire();
-        vp.printCarrera(String.format("🚙 %s lleva los bolsos", Thread.currentThread().getName()));
+        vp.printCarrera(String.format("🚙 %s lleva los bolsos al final", Thread.currentThread().getName()));
         Thread.sleep(500);
         vaciarBolsos.release();
     }
 
     public void traerBolsosAlInicio() throws InterruptedException {
         traerBolsos.acquire();
-        vp.printCarrera(String.format("🚙 %s trae los bolsos", Thread.currentThread().getName()));
+        vp.printCarrera(String.format("🚙 %s trae los bolsos al inicio", Thread.currentThread().getName()));
         Thread.sleep(500);
         prepararse.release();
+    }
+
+    public synchronized boolean hayVisitantesEnInicio() {
+        return visitantesEnInicio > 0;
     }
 
 }

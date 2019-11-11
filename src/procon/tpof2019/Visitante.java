@@ -48,7 +48,7 @@ public class Visitante implements Runnable {
         try {
             parque.irACarrerasDeGomones(irEnTren);
             llaveDeBolso = parque.dejarPertenencias();
-            gomon = parque.prepararseParaLaCarrera();
+            gomon = parque.subirseAGomon();
             parque.iniciarCarreraDeGomones();
             parque.finalizarCarreraDeGomones(llaveDeBolso, gomon);
             parque.volverDeCarrerasDeGomones(irEnTren);

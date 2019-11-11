@@ -22,7 +22,7 @@ public class Camioneta implements Runnable {
     @Override
     public void run() {
         try {
-            while (parque.estaAbierto()) {
+            while (parque.estaAbierto() || parque.hayVisitantesEnInicio()) {
                 parque.llevarBolsosAlFinal();
 //                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
                 parque.traerBolsosAlInicio();
