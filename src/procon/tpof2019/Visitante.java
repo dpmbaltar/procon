@@ -29,8 +29,10 @@ public class Visitante implements Runnable {
         try {
             while (parque.actividadesAbiertas()) {
                 Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
-                irACarreraDeGomones();
+                //irACarreraDeGomones();
+                irAFaroMirador();
             }
+            System.out.println(Thread.currentThread().getName() + " termina");
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -53,6 +55,19 @@ public class Visitante implements Runnable {
             parque.finalizarCarreraDeGomones(llaveDeBolso, gomon);
             parque.volverDeCarrerasDeGomones(irEnTren);
         } catch (InterruptedException | BrokenBarrierException e) {
+            Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void irAFaroMirador() {
+        int tobogan = -1;
+
+        try {
+            parque.subirAFaroMirador();
+            Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+            tobogan = parque.iniciarDescensoEnTobogan();
+            parque.finalizarDescensoEnTobogan(tobogan);
+        } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
     }

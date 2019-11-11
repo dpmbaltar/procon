@@ -1,9 +1,12 @@
 package procon.tpof2019;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Parque {
@@ -174,7 +177,7 @@ public class Parque {
             lugaresEnGomonesDoblesOcupados++;
             gomonesListos++;
             carrera.countDown();
-        } else if (!actividadesAbiertas || ThreadLocalRandom.current().nextBoolean()) {
+        } else if (actividadesAbiertas() || ThreadLocalRandom.current().nextBoolean()) {
             gomon = lugaresEnGomonesSimplesOcupados;
             gomones[gomon] = visitante;
             lugaresEnGomonesSimplesOcupados++;
@@ -193,9 +196,13 @@ public class Parque {
         if (gomonesListos < 5) {
 
             //FIXME: Cancelar carrera cuando corresponda
-            if (!actividadesAbiertas && (gomonesListos + visitantesEnInicio) < 5) {
-                System.out.println("faltan: " + visitantesEnInicio + " listos: " + gomonesListos);
-            }
+            /*if (!actividadesAbiertas() && !carreraSuspendida && (gomonesListos + visitantesEnInicio) < 5) {
+                vp.printCarrera("🏁 <<carreras suspendidas por cierre>>");
+                System.out.println("en inicio: " + visitantesEnInicio);
+                carreraSuspendida = true;
+                for (int i = 0; i < 5; i++)
+                    carrera.countDown();
+            }*/
 
             prepararse.release();
         } else { // Si hay 5 gomones listos, indicar a la camioneta que lleve los bolsos ya que iniciará la carrera
@@ -210,11 +217,14 @@ public class Parque {
     }
 
     public void iniciarCarreraDeGomones() throws InterruptedException, BrokenBarrierException {
+        System.out.println(Thread.currentThread().getName() + " antes del latch " + carrera.getCount());
         carrera.await();
+        System.out.println(Thread.currentThread().getName() + " paso el latch");
         mutex.acquire();
         visitantesEnInicio--;
         vp.printCarrera(String.format("🏁 %s inicia la carrera #%d", Thread.currentThread().getName(), totalDeCarreras));
         mutex.release();
+        System.out.println(Thread.currentThread().getName() + " paso el mutex");
         Thread.sleep(ThreadLocalRandom.current().nextInt(15, 20) * 100);
     }
 
@@ -285,8 +295,62 @@ public class Parque {
         prepararse.release();
     }
 
-    public synchronized boolean hayVisitantesEnInicio() {
-        return visitantesEnInicio > 0;
+    public synchronized boolean hayVisitantesEnInicio() throws InterruptedException {
+        boolean hayVisitantes = false;
+        mutex.acquire();
+        hayVisitantes = visitantesEnInicio > 0;
+        mutex.release();
+
+        return hayVisitantes;
+    }
+
+    /* Faro-Mirador con vista a 40 m de altura y descenso en tobogán */
+
+    private final BlockingQueue<Integer> descenso = new SynchronousQueue<>(true);
+    private final BlockingQueue<String> tobogan1 = new ArrayBlockingQueue<>(1, true);
+    private final BlockingQueue<String> tobogan2 = new ArrayBlockingQueue<>(1, true);
+
+    private int cantidadDescensos = 0;
+
+    public void asignarTobogan() throws InterruptedException {
+        descenso.put(cantidadDescensos % 2);
+        cantidadDescensos++;
+    }
+
+    public void subirAFaroMirador() {
+
+    }
+
+    public int iniciarDescensoEnTobogan() throws InterruptedException {
+        int tobogan = descenso.take();
+        String visitante = Thread.currentThread().getName();
+
+        vp.printFaroMirador(String.format("%s es asignado el tobogan %d", visitante, tobogan));
+
+        // Utilizar el tobogán asignado, cuando esté disponible
+        if (tobogan == 0)
+            tobogan1.put(visitante);
+        else if (tobogan == 1)
+            tobogan2.put(visitante);
+
+        vp.printFaroMirador(String.format("%s inicia descenso en el tobogan %d", visitante, tobogan));
+        Thread.sleep(1000);
+
+        return tobogan;
+    }
+
+    public void finalizarDescensoEnTobogan(int tobogan) throws InterruptedException {
+        String visitante = Thread.currentThread().getName();
+        vp.printFaroMirador(String.format("%s termina descenso en el tobogan %d", visitante, tobogan));
+
+        // Liberar el tobogán utilizado
+        if (tobogan == 0)
+            visitante = tobogan1.take();
+        else if (tobogan == 1)
+            visitante = tobogan2.take();
+
+        if (!visitante.equals(Thread.currentThread().getName()))
+            throw new InterruptedException("ERROR");
     }
 
 }

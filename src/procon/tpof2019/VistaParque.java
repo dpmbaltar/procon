@@ -87,6 +87,12 @@ public class VistaParque extends JFrame {
         ta1.append(mensaje + "\n");
     }
 
+    public synchronized void printFaroMirador(String mensaje) {
+        System.out.println(mensaje);
+        ta5.append(mensaje + "\n");
+        ta5.setCaretPosition(ta5.getDocument().getLength());
+    }
+
     public synchronized void printCarrera(String mensaje) {
         System.out.println(mensaje);
         ta3.append(mensaje + "\n");

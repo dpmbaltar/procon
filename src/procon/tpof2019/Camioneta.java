@@ -28,6 +28,7 @@ public class Camioneta implements Runnable {
                 parque.traerBolsosAlInicio();
 //                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
             }
+            System.out.println("Camioneta termina");
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
