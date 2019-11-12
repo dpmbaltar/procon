@@ -309,18 +309,73 @@ public class Parque {
     private final BlockingQueue<Integer> descenso = new SynchronousQueue<>(true);
     private final BlockingQueue<String> tobogan1 = new ArrayBlockingQueue<>(1, true);
     private final BlockingQueue<String> tobogan2 = new ArrayBlockingQueue<>(1, true);
-
+    private final BlockingQueue<String> escaleraFaroMirador = new ArrayBlockingQueue<>(10, true);
+    private final BlockingQueue<String> colaFaroMirador = new ArrayBlockingQueue<>(1, true);
+    private final Object monitorEcaleraFaroMirador = new Object();
     private int cantidadDescensos = 0;
 
+    /**
+     * Asigna un tobogan al próximo visitante en querer descender en tobogán.
+     *
+     * @throws InterruptedException
+     */
     public void asignarTobogan() throws InterruptedException {
         descenso.put(cantidadDescensos % 2);
         cantidadDescensos++;
     }
 
-    public void subirAFaroMirador() {
-
+    /**
+     * Ir a la actividad Faro-Mirador.
+     *
+     * @throws InterruptedException
+     */
+    public void irAFaroMirador() throws InterruptedException {
+        String visitante = Thread.currentThread().getName();
+        vp.printFaroMirador(String.format("%s va al Faro-Mirador", visitante));
+        Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+        colaFaroMirador.put(visitante);
     }
 
+    /**
+     * Inicia ascenso al faro por la escalera.
+     *
+     * @throws InterruptedException
+     */
+    public void iniciarAscensoPorEscalera() throws InterruptedException {
+        String visitante = Thread.currentThread().getName();
+        escaleraFaroMirador.put(visitante);
+        vp.printFaroMirador(String.format("%s inicia ascenso", visitante));
+        colaFaroMirador.poll();
+        Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+    }
+
+    /**
+     * Finaliza ascenso al faro por escalera y observa desde lo alto del Faro-Mirador.
+     *
+     * @throws InterruptedException
+     */
+    public void finalizarAscensoPorEscalera() throws InterruptedException {
+        synchronized (monitorEcaleraFaroMirador) {
+            String visitante = Thread.currentThread().getName();
+
+            // Respetar orden de ascenso
+            while (!visitante.contentEquals(escaleraFaroMirador.peek()))
+                monitorEcaleraFaroMirador.wait();
+
+            vp.printFaroMirador(String.format("%s termina ascenso. Observa desde lo alto...", visitante));
+            escaleraFaroMirador.poll();
+            monitorEcaleraFaroMirador.notifyAll();
+        }
+
+        Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+    }
+
+    /**
+     * Inicia descenso en tobogán de un visitante.
+     *
+     * @return el tobogán asignado
+     * @throws InterruptedException
+     */
     public int iniciarDescensoEnTobogan() throws InterruptedException {
         int tobogan = descenso.take();
         String visitante = Thread.currentThread().getName();
@@ -339,6 +394,12 @@ public class Parque {
         return tobogan;
     }
 
+    /**
+     * Finaliza el descenso en tobogán de un visitante.
+     *
+     * @param tobogan el tobogán asignado
+     * @throws InterruptedException
+     */
     public void finalizarDescensoEnTobogan(int tobogan) throws InterruptedException {
         String visitante = Thread.currentThread().getName();
         vp.printFaroMirador(String.format("%s termina descenso en el tobogan %d", visitante, tobogan));
@@ -349,8 +410,7 @@ public class Parque {
         else if (tobogan == 1)
             visitante = tobogan2.take();
 
-        if (!visitante.equals(Thread.currentThread().getName()))
-            throw new InterruptedException("ERROR");
+        vp.printFaroMirador(String.format("%s vuelve del Faro-Mirador", visitante));
     }
 
 }

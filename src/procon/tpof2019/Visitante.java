@@ -63,8 +63,9 @@ public class Visitante implements Runnable {
         int tobogan = -1;
 
         try {
-            parque.subirAFaroMirador();
-            Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+            parque.irAFaroMirador();
+            parque.iniciarAscensoPorEscalera();
+            parque.finalizarAscensoPorEscalera();
             tobogan = parque.iniciarDescensoEnTobogan();
             parque.finalizarDescensoEnTobogan(tobogan);
         } catch (InterruptedException e) {
