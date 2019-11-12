@@ -8,6 +8,9 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Parque {
 
@@ -113,6 +116,7 @@ public class Parque {
 
 
     /* Carrera de gomones por el río */
+    /* Semáforos */
 
     /**
      * Ir al inicio de la carrera de gomones.
@@ -304,7 +308,46 @@ public class Parque {
         return hayVisitantes;
     }
 
-    /* Faro-Mirador con vista a 40 m de altura y descenso en tobogán */
+    /**
+     * Restaurante
+     * Locks
+     *
+     * Capacidad restaurante 1: 10
+     * Capacidad restaurante 2: 15
+     * Capacidad restaurante 3: 20
+     */
+
+    /**
+     * Capacidades de los restaurantes.
+     */
+    private static final int CAPACIDAD_RESTAURANTE_1 = 10;
+    private static final int CAPACIDAD_RESTAURANTE_2 = 15;
+    private static final int CAPACIDAD_RESTAURANTE_3 = 20;
+    private int visitantesEnRestaurante1 = 0;
+    private int visitantesEnRestaurante2 = 0;
+    private int visitantesEnRestaurante3 = 0;
+    private final Lock restaurante1 = new ReentrantLock();
+    private final Lock restaurante2 = new ReentrantLock();
+    private final Lock restaurante3 = new ReentrantLock();
+    private final Condition restaurante1Lleno = restaurante1.newCondition();
+    private final Condition restaurante2Lleno = restaurante2.newCondition();
+    private final Condition restaurante3Lleno = restaurante3.newCondition();
+
+    private void irARestaurante1() {
+
+    }
+
+    private void salirDeRestaurante1() {
+
+    }
+
+    /**
+     * Faro-Mirador con vista a 40 m de altura y descenso en tobogán
+     * BlockingQueue y Monitor
+     *
+     * Capacidad de la escalera: 10
+     * Toboganes: 2
+     */
 
     private final BlockingQueue<Integer> descenso = new SynchronousQueue<>(true);
     private final BlockingQueue<String> tobogan1 = new ArrayBlockingQueue<>(1, true);
