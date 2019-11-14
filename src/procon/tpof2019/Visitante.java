@@ -31,7 +31,8 @@ public class Visitante implements Runnable {
                 Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
                 //irACarreraDeGomones();
                 //irAFaroMirador();
-                irAlRestaurante();
+                //irAlRestaurante();
+                irAlShop();
             }
             System.out.println(Thread.currentThread().getName() + " termina");
         } catch (InterruptedException e) {
@@ -39,8 +40,26 @@ public class Visitante implements Runnable {
         }
     }
 
+    /**
+     * Ir al shop y comprar (opcionalmente).
+     */
     private void irAlShop() {
-        //TODO
+        boolean comprar = ThreadLocalRandom.current().nextBoolean();
+        int caja = -1;
+        Shop shop = parque.getShop();
+
+        try {
+            shop.entrar();
+            Thread.sleep(ThreadLocalRandom.current().nextInt(10, 20) * 100);
+
+            if (comprar)
+                caja = shop.comprar();
+
+            Thread.sleep(ThreadLocalRandom.current().nextInt(0, 3) * 100);
+            shop.salir(caja);
+        } catch (InterruptedException e) {
+            Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
+        }
     }
 
     private void irAlRestaurante() {

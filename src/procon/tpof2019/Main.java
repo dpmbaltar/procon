@@ -7,7 +7,7 @@ public class Main {
         Thread administrador = new Thread(new Administrador(parque), "Administrador");
         Thread camioneta = new Thread(new Camioneta(parque), "Camioneta");
         Thread administradorTobogan = new Thread(new AdministradorTobogan(parque), "Administrador (Toboganes)");
-        Thread[] visitantes = new Thread[50];
+        Thread[] visitantes = new Thread[10];
 
         for (int i = 0; i < visitantes.length; i++)
             visitantes[i] = new Thread(new Visitante(parque), "Visitante-" + (i + 1));

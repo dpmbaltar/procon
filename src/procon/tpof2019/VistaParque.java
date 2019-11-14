@@ -4,11 +4,14 @@ import java.awt.Container;
 import java.awt.GridLayout;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 
 public class VistaParque extends JFrame {
@@ -18,6 +21,8 @@ public class VistaParque extends JFrame {
     private final JTextArea ta3;
     private final JTextArea ta4;
     private final JTextArea ta5;
+    private final JTextArea mensajesShop;
+    private final DefaultListModel<String>[] cajas = new DefaultListModel[2];
 
     private final JScrollPane scroll1;
     private final JScrollPane scroll2;
@@ -102,7 +107,31 @@ public class VistaParque extends JFrame {
             capacidad += 5;
         }
 
+        // Shop
+        JPanel panelShop = new JPanel();
+        panelShop.setBorder(new TitledBorder("Shop"));
+        panelShop.setLayout(new BoxLayout(panelShop, BoxLayout.PAGE_AXIS));
+        mensajesShop = new JTextArea();
+        mensajesShop.setEditable(false);
+        JScrollPane desplShop = new JScrollPane(mensajesShop);
+        panelShop.add(desplShop);
+        JPanel panelCajas = new JPanel();
+        panelCajas.setLayout(new BoxLayout(panelCajas, BoxLayout.LINE_AXIS));
+        panelShop.add(panelCajas);
+
+        for (int i = 0; i < 2; i++) {
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            cajas[i] = listModel;
+            JList<String> lista = new JList<>(listModel);
+            lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            lista.setVisibleRowCount(3);
+            JScrollPane listaDesplPane = new JScrollPane(lista);
+            listaDesplPane.setBorder(new TitledBorder("Caja " + (i + 1)));
+            panelCajas.add(listaDesplPane);
+        }
+
         contentPane.add(restaurantes);
+        contentPane.add(panelShop);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -113,6 +142,20 @@ public class VistaParque extends JFrame {
         System.out.println(mensaje);
         ta1.append(mensaje + "\n");
         ta1.setCaretPosition(ta5.getDocument().getLength());
+    }
+
+    public synchronized void agregarClienteCaja(int i, String cliente) {
+        cajas[i].addElement(cliente);
+    }
+
+    public synchronized void sacarClienteCaja(int i, String cliente) {
+        cajas[i].removeElement(cliente);
+    }
+
+    public synchronized void printShop(String mensaje) {
+        System.out.println(mensaje);
+        mensajesShop.append(mensaje + "\n");
+        mensajesShop.setCaretPosition(mensajesShop.getDocument().getLength());
     }
 
     public synchronized void printRestaurantes(String mensaje) {

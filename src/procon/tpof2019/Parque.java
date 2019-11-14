@@ -71,6 +71,7 @@ public class Parque {
      */
     private final String[] gomones = new String[10];
 
+    private final Shop shop = new Shop();
     private final Restaurante[] restaurantes = new Restaurante[3];
 
     private final VistaParque vp = VistaParque.getInstance();
@@ -82,6 +83,10 @@ public class Parque {
             restaurantes[i] = new Restaurante(i, capacidadRestaurantes);
             capacidadRestaurantes += 5;
         }
+    }
+
+    public Shop getShop() {
+        return shop;
     }
 
     public Restaurante getRestaurante(int n) {
