@@ -65,6 +65,9 @@ public class Visitante implements Runnable {
         }
     }
 
+    /**
+     * Ir al restaurante a almorzar o merendar.
+     */
     private void irAlRestaurante() {
         Restaurante restaurante = parque.getRestaurante(ThreadLocalRandom.current().nextInt(0, 3));
 
@@ -77,23 +80,30 @@ public class Visitante implements Runnable {
         }
     }
 
+    /**
+     * Ir a la actividad "Carrera de gomones por el río".
+     */
     private void irACarreraDeGomones() {
         int llaveDeBolso = -1;
         int gomon = -1;
         boolean irEnTren = false;//ThreadLocalRandom.current().nextBoolean();
+        CarreraGomones carrera = parque.getCarreraGomones();
 
         try {
-            parque.irACarrerasDeGomones(irEnTren);
-            llaveDeBolso = parque.dejarPertenencias();
-            gomon = parque.subirseAGomon();
-            parque.iniciarCarreraDeGomones();
-            parque.finalizarCarreraDeGomones(llaveDeBolso, gomon);
-            parque.volverDeCarrerasDeGomones(irEnTren);
+            carrera.irACarrerasDeGomones(irEnTren);
+            llaveDeBolso = carrera.dejarPertenencias();
+            gomon = carrera.subirseAGomon();
+            carrera.iniciarCarreraDeGomones();
+            carrera.finalizarCarreraDeGomones(llaveDeBolso, gomon);
+            carrera.volverDeCarrerasDeGomones(irEnTren);
         } catch (InterruptedException | BrokenBarrierException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
+    /**
+     * Ir a la actividad "Faro-Mirador con vista a 40 m de altura y descenso en tobogán".
+     */
     private void irAFaroMirador() {
         int tobogan = -1;
 

@@ -1,8 +1,10 @@
 package procon.tpof2019;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+/**
+ * Encargado de llevar y traer visitantes a la actividad "Carrera de gomones por el río".
+ *
+ * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
+ */
 public class Tren implements Runnable {
 
     /**
@@ -19,18 +21,24 @@ public class Tren implements Runnable {
         this.parque = parque;
     }
 
+    /**
+     * Lleva y trae visitantes a la actividad.
+     */
     @Override
     public void run() {
-        try {
+        CarreraGomones carrera = parque.getCarreraGomones();
+
+        /*try {
             while (parque.estaAbierto()) {
-                parque.llevarBolsosAlFinal();
+                //TODO: implementar Tren
+                //carrera.traerVisitantes();
 //                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
-                parque.traerBolsosAlInicio();
+                //carrera.volver();
 //                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
             }
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
-        }
+        }*/
     }
 
 }
