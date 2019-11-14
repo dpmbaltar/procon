@@ -142,6 +142,12 @@ public class VistaParque extends JFrame {
         ta1.setCaretPosition(ta1.getDocument().getLength());
     }
 
+    public synchronized void printTour(String mensaje) {
+        System.out.println(mensaje);
+        ta2.append(mensaje + "\n");
+        ta2.setCaretPosition(ta2.getDocument().getLength());
+    }
+
     public synchronized void agregarClienteCaja(int i, String cliente) {
         cajas[i].addElement(cliente);
     }

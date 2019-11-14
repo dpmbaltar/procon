@@ -12,6 +12,7 @@ public class Main {
         for (int i = 0; i < visitantes.length; i++)
             visitantes[i] = new Thread(new Visitante(parque), "Visitante-" + (i + 1));
 
+        // Iniciar hilos
         administrador.start();
         camioneta.start();
         administradorTobogan.start();

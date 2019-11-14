@@ -1,5 +1,10 @@
 package procon.tpof2019;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Parque {
 
     /**
@@ -16,6 +21,16 @@ public class Parque {
      * Hora de cierre de actividades del parque.
      */
     public static final int HORA_CIERRA_ACTIVIDADES = 17;
+
+    /**
+     * Cantidad máxima de visitantes por tour.
+     */
+    private static final int CAPACIDAD_TOUR = 25;
+
+    /**
+     * Cantidad de molinetes de la entrada al parque.
+     */
+    private static final int CANTIDAD_MOLINETES = 5;
 
     /**
      * Indica si el parque está abierto o cerrado.
@@ -47,7 +62,32 @@ public class Parque {
      */
     private final FaroMirador faroMirador = new FaroMirador();
 
-    private final VistaParque vp = VistaParque.getInstance();
+    /**
+     * Mutex.
+     */
+    private final Semaphore mutex = new Semaphore(1);
+
+    /**
+     * Molinetes de la entrada al parque (5 en total, se liberan al abrir el parque).
+     */
+    private final Semaphore molinetes = new Semaphore(0, true);
+
+    /**
+     * Utilizada para iniciar el tour hacia el parque.
+     */
+    private final CyclicBarrier iniciarTour = new CyclicBarrier(CAPACIDAD_TOUR);
+
+    /**
+     * Utilizada para finalizar el tour en el parque.
+     */
+    private final CyclicBarrier finalizarTour = new CyclicBarrier(CAPACIDAD_TOUR);
+
+    /**
+     * Indica la cantidad de visitantes listos para iniciar el tour.
+     */
+    private int visitantesEnTour = 0;
+
+    private final VistaParque vista = VistaParque.getInstance();
 
     /**
      * Constructor.
@@ -104,7 +144,8 @@ public class Parque {
     public synchronized void abrir() {
         abierto = true;
         actividadesAbiertas = true;
-        vp.printParque("<<PARQUE ABIERTO>>");
+        molinetes.release(CANTIDAD_MOLINETES);
+        vista.printParque("<<PARQUE ABIERTO>>");
     }
 
     /**
@@ -112,7 +153,7 @@ public class Parque {
      */
     public synchronized void cerrarActividades() {
         actividadesAbiertas = false;
-        vp.printParque("<<ACTIVIDADES CERRADAS>>");
+        vista.printParque("<<ACTIVIDADES CERRADAS>>");
     }
 
     /**
@@ -120,7 +161,7 @@ public class Parque {
      */
     public synchronized void cerrar() {
         abierto = false;
-        vp.printParque("<<PARQUE CERRADO>>");
+        vista.printParque("<<PARQUE CERRADO>>");
     }
 
     public synchronized boolean estaAbierto() {
@@ -131,16 +172,76 @@ public class Parque {
         return actividadesAbiertas;
     }
 
-    public void iniciarVisita() {
+    /**
+     * Inicia la visita hacia el parque.
+     *
+     * @return verdadero si va en tour, falso en caso contrario
+     * @throws InterruptedException
+     */
+    public boolean iniciarVisita() throws InterruptedException {
+        boolean enTour = false;
 
+        mutex.acquire();
+
+        if (visitantesEnTour < CAPACIDAD_TOUR) {
+            visitantesEnTour++;
+            enTour = true;
+        }
+
+        mutex.release();
+
+        return enTour;
+    }
+
+    /**
+     * Ir al parque en particular.
+     */
+    public void irParticular() {
+        vista.printParque(String.format("%s viaja al parque en particular", Thread.currentThread().getName()));
+    }
+
+    /**
+     * Iniciar tour (ir al parque).
+     *
+     * @throws InterruptedException
+     * @throws BrokenBarrierException
+     */
+    public void iniciarTour() throws InterruptedException, BrokenBarrierException {
+        vista.printTour(String.format("%s inicia viaje al parque en tour", Thread.currentThread().getName()));
+        iniciarTour.await();
+        Thread.sleep(2000);
+    }
+
+    /**
+     * Finalizar tour (llegar al parque).
+     *
+     * @throws InterruptedException
+     * @throws BrokenBarrierException
+     */
+    public void finalizarTour() throws InterruptedException, BrokenBarrierException {
+        finalizarTour.await();
+        vista.printTour(String.format("%s finaliza viaje al parque en tour", Thread.currentThread().getName()));
+    }
+
+    /**
+     * Entra al parque a través de los molinetes.
+     *
+     * @throws InterruptedException
+     */
+    public void entrar() throws InterruptedException {
+        String visitante = Thread.currentThread().getName();
+        vista.printParque(String.format("%s llega a los molinetes", visitante));
+        molinetes.acquire();
+        Thread.sleep(ThreadLocalRandom.current().nextInt(0, 3) * 100);
+        vista.printParque(String.format("%s entra al parque", visitante));
+        molinetes.release();
     }
 
     /**
      * Finaliza visita en el parque.
      */
     public void finalizarVisita() {
-        String visitante = Thread.currentThread().getName();
-        vp.printParque(String.format("%s finaliza visita al parque", visitante));
+        vista.printParque(String.format("%s finaliza visita al parque", Thread.currentThread().getName()));
     }
 
 }

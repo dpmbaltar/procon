@@ -34,9 +34,16 @@ public class Visitante implements Runnable {
         int actividad = -1;
 
         try {
-            Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
-            parque.iniciarVisita();
-            Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+            if (parque.iniciarVisita()) {
+                parque.irParticular();
+                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+            } else {
+                parque.iniciarTour();
+                parque.finalizarTour();
+            }
+
+            Thread.sleep(ThreadLocalRandom.current().nextInt(0, 10) * 100);
+            parque.entrar();
 
             while (parque.actividadesAbiertas()) {
                 actividad = ThreadLocalRandom.current().nextInt(0, 5);
@@ -60,7 +67,7 @@ public class Visitante implements Runnable {
             }
 
             parque.finalizarVisita();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | BrokenBarrierException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
     }
