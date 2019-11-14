@@ -13,15 +13,44 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class FaroMirador {
 
+    /**
+     * Se utiliza para asignar toboganes según el orden de llegada de los visitantes.
+     */
     private final BlockingQueue<Integer> descenso = new SynchronousQueue<>(true);
+
+    /**
+     * Tobogán 1.
+     */
     private final BlockingQueue<String> tobogan1 = new ArrayBlockingQueue<>(1, true);
+
+    /**
+     * Tobogán 2.
+     */
     private final BlockingQueue<String> tobogan2 = new ArrayBlockingQueue<>(1, true);
+
+    /**
+     * Escalera (hasta 10 visitantes a la vez, en orden de llegada).
+     */
     private final BlockingQueue<String> escaleraFaroMirador = new ArrayBlockingQueue<>(10, true);
+
+    /**
+     * Cola de visitantes para el Faro-Mirador.
+     */
     private final BlockingQueue<String> colaFaroMirador = new ArrayBlockingQueue<>(1, true);
-    private final Object monitorEcaleraFaroMirador = new Object();
+
+    /**
+     * Cantidad de descensos realizados.
+     */
     private int cantidadDescensos = 0;
 
-    private final VistaParque vp = VistaParque.getInstance();
+    private final VistaParque vista = VistaParque.getInstance();
+
+    /**
+     * Devuelve verdadero si hay visitantes, falso en caso contrario.
+     */
+    public synchronized boolean hayVisitantes() {
+        return !escaleraFaroMirador.isEmpty();
+    }
 
     /**
      * Asigna un tobogan al próximo visitante en querer descender en tobogán.
@@ -40,7 +69,7 @@ public class FaroMirador {
      */
     public void irAFaroMirador() throws InterruptedException {
         String visitante = Thread.currentThread().getName();
-        vp.printFaroMirador(String.format("%s va al Faro-Mirador", visitante));
+        vista.printFaroMirador(String.format("%s va al Faro-Mirador", visitante));
         Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
         colaFaroMirador.put(visitante);
     }
@@ -53,7 +82,7 @@ public class FaroMirador {
     public void iniciarAscensoPorEscalera() throws InterruptedException {
         String visitante = Thread.currentThread().getName();
         escaleraFaroMirador.put(visitante);
-        vp.printFaroMirador(String.format("%s inicia ascenso", visitante));
+        vista.printFaroMirador(String.format("%s inicia ascenso", visitante));
         colaFaroMirador.poll();
         Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
     }
@@ -64,16 +93,16 @@ public class FaroMirador {
      * @throws InterruptedException
      */
     public void finalizarAscensoPorEscalera() throws InterruptedException {
-        synchronized (monitorEcaleraFaroMirador) {
+        synchronized (this) {
             String visitante = Thread.currentThread().getName();
 
             // Respetar orden de ascenso
             while (!visitante.contentEquals(escaleraFaroMirador.peek()))
-                monitorEcaleraFaroMirador.wait();
+                this.wait();
 
-            vp.printFaroMirador(String.format("%s termina ascenso. Observa desde lo alto...", visitante));
+            vista.printFaroMirador(String.format("%s termina ascenso. Observa desde lo alto...", visitante));
             escaleraFaroMirador.poll();
-            monitorEcaleraFaroMirador.notifyAll();
+            this.notifyAll();
         }
 
         Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
@@ -89,7 +118,7 @@ public class FaroMirador {
         int tobogan = descenso.take();
         String visitante = Thread.currentThread().getName();
 
-        vp.printFaroMirador(String.format("%s es asignado el tobogan %d", visitante, tobogan));
+        vista.printFaroMirador(String.format("%s es asignado el tobogan %d", visitante, tobogan));
 
         // Utilizar el tobogán asignado, cuando esté disponible
         if (tobogan == 0)
@@ -97,7 +126,7 @@ public class FaroMirador {
         else if (tobogan == 1)
             tobogan2.put(visitante);
 
-        vp.printFaroMirador(String.format("%s inicia descenso en el tobogan %d", visitante, tobogan));
+        vista.printFaroMirador(String.format("%s inicia descenso en el tobogan %d", visitante, tobogan));
         Thread.sleep(1000);
 
         return tobogan;
@@ -111,7 +140,7 @@ public class FaroMirador {
      */
     public void finalizarDescensoEnTobogan(int tobogan) throws InterruptedException {
         String visitante = Thread.currentThread().getName();
-        vp.printFaroMirador(String.format("%s termina descenso en el tobogan %d", visitante, tobogan));
+        vista.printFaroMirador(String.format("%s termina descenso en el tobogan %d", visitante, tobogan));
 
         // Liberar el tobogán utilizado
         if (tobogan == 0)
@@ -119,7 +148,7 @@ public class FaroMirador {
         else if (tobogan == 1)
             visitante = tobogan2.take();
 
-        vp.printFaroMirador(String.format("%s vuelve del Faro-Mirador", visitante));
+        vista.printFaroMirador(String.format("%s vuelve del Faro-Mirador", visitante));
     }
 
 }
