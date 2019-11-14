@@ -18,6 +18,11 @@ public class Visitante implements Runnable {
     private final Parque parque;
 
     /**
+     * Cantidad de pases a los restaurantes.
+     */
+    private int paseRestaurantes = 2;
+
+    /**
      * Constructor con el parque.
      *
      * @param parque el parque
@@ -46,7 +51,7 @@ public class Visitante implements Runnable {
             parque.entrar();
 
             while (parque.actividadesAbiertas()) {
-                actividad = ThreadLocalRandom.current().nextInt(0, 5);
+                actividad = ThreadLocalRandom.current().nextInt(0, 10);
 
                 // Realizar actividad
                 switch (actividad) {
@@ -54,7 +59,10 @@ public class Visitante implements Runnable {
                     irACarreraDeGomones();
                     break;
                 case 1:
-                    irAlRestaurante();
+                    if (paseRestaurantes > 0) {
+                        irAlRestaurante();
+                        paseRestaurantes--;
+                    }
                     break;
                 case 2:
                     irAFaroMirador();
@@ -119,16 +127,16 @@ public class Visitante implements Runnable {
         CarreraGomones carrera = parque.getCarreraGomones();
         int llaveDeBolso = -1;
         int gomon = -1;
-        boolean irEnTren = false;//ThreadLocalRandom.current().nextBoolean();
+        boolean irEnTren = true;//ThreadLocalRandom.current().nextBoolean();
 
         try {
-            carrera.irACarrerasDeGomones(irEnTren);
+            carrera.ir(irEnTren);
             llaveDeBolso = carrera.dejarPertenencias();
             gomon = carrera.subirseAGomon();
-            carrera.iniciarCarreraDeGomones();
-            carrera.finalizarCarreraDeGomones(llaveDeBolso, gomon);
-            carrera.volverDeCarrerasDeGomones(irEnTren);
-        } catch (InterruptedException | BrokenBarrierException e) {
+            carrera.iniciarCarrera();
+            carrera.finalizarCarrera(llaveDeBolso, gomon);
+            carrera.volver(irEnTren);
+        } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
     }
