@@ -67,7 +67,7 @@ public class FaroMirador {
      *
      * @throws InterruptedException
      */
-    public void irAFaroMirador() throws InterruptedException {
+    public void iniciarActividad() throws InterruptedException {
         String visitante = Thread.currentThread().getName();
         vista.printFaroMirador(String.format("%s va al Faro-Mirador", visitante));
         Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);

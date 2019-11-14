@@ -37,7 +37,7 @@ public class Restaurante {
      */
     private final Condition hayLugar = mutex.newCondition();
 
-    private final VistaParque vp = VistaParque.getInstance();
+    private final VistaParque vista = VistaParque.getInstance();
 
     /**
      * Constructor con el número y la capacidad.
@@ -62,14 +62,14 @@ public class Restaurante {
         try {
             // Esperar mientras esté lleno
             while (clientes == capacidad) {
-                vp.printRestaurantes(String.format("<<Restaurante %d lleno>>", numero));
+                vista.printRestaurantes(String.format("<<Restaurante %d lleno>>", numero));
                 hayLugar.await();
             }
 
             clientes++;
             visitante = Thread.currentThread().getName();
-            vp.printRestaurantes(String.format("%s entra al restaurante %d", visitante, numero));
-            vp.agregarCliente(numero);
+            vista.printRestaurantes(String.format("%s entra al restaurante %d", visitante, numero));
+            vista.agregarCliente(numero);
         } finally {
             mutex.unlock();
         }
@@ -84,8 +84,8 @@ public class Restaurante {
         mutex.lock();
         try {
             visitante = Thread.currentThread().getName();
-            vp.printRestaurantes(String.format("%s sale del restaurante %d", visitante, numero));
-            vp.sacarCliente(numero);
+            vista.printRestaurantes(String.format("%s sale del restaurante %d", visitante, numero));
+            vista.sacarCliente(numero);
             clientes--;
             hayLugar.signalAll();
         } finally {

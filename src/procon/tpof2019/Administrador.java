@@ -2,6 +2,8 @@ package procon.tpof2019;
 
 /**
  * Encargado de abrir y cerrar el parque de acorde a los horarios establecidos.
+ *
+ * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
  */
 public class Administrador implements Runnable {
 

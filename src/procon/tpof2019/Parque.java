@@ -5,6 +5,11 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Parque ecológico, clase principal desde donde se accede a las actividades.
+ *
+ * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
+ */
 public class Parque {
 
     /**

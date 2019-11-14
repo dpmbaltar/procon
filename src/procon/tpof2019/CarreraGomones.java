@@ -48,7 +48,7 @@ public class CarreraGomones {
      */
     private final String[] gomones = new String[10];
 
-    private final VistaParque vp = VistaParque.getInstance();
+    private final VistaParque vista = VistaParque.getInstance();
 
     /**
      * Ir al inicio de la carrera de gomones.
@@ -62,17 +62,17 @@ public class CarreraGomones {
     public void irACarrerasDeGomones(boolean irEnTren) throws InterruptedException, BrokenBarrierException {
         if (irEnTren) {
             trenIda.await();
-            vp.printCarrera(String.format("🚃 %s va a en tren", Thread.currentThread().getName()));
+            vista.printCarrera(String.format("🚃 %s va a en tren", Thread.currentThread().getName()));
             Thread.sleep(500);
         } else {
             bicicletas.acquire();
-            vp.printCarrera(String.format("🚲 %s va a en bici", Thread.currentThread().getName()));
+            vista.printCarrera(String.format("🚲 %s va a en bici", Thread.currentThread().getName()));
             Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
         }
 
         mutex.acquire();
         visitantesEnInicio++;
-        vp.printCarrera(String.format("🏁 %s llega al inicio", Thread.currentThread().getName()));
+        vista.printCarrera(String.format("🏁 %s llega al inicio", Thread.currentThread().getName()));
         mutex.release();
     }
 
@@ -92,7 +92,7 @@ public class CarreraGomones {
         bolsos[bolsosOcupados] = true;
         llave = bolsosOcupados;
         bolsosOcupados++;
-        vp.printCarrera(String.format("👜 %s ocupa un bolso", Thread.currentThread().getName()));
+        vista.printCarrera(String.format("👜 %s ocupa un bolso", Thread.currentThread().getName()));
 
         mutex.release();
 
@@ -125,8 +125,8 @@ public class CarreraGomones {
             lugaresEnGomonesDoblesOcupados++;
         }
 
-        vp.printCarrera(String.format("🚣 %s ocupa un gomón", visitante));
-        vp.agregarGomon();
+        vista.printCarrera(String.format("🚣 %s ocupa un gomón", visitante));
+        vista.agregarGomon();
 
         // Si no hay 5 gomones listos para iniciar la carrera, dejar a otros prepararse
         if (gomonesListos < 5) {
@@ -158,7 +158,7 @@ public class CarreraGomones {
         System.out.println(Thread.currentThread().getName() + " paso el latch");
         mutex.acquire();
         visitantesEnInicio--;
-        vp.printCarrera(String.format("🏁 %s inicia la carrera #%d", Thread.currentThread().getName(), totalDeCarreras));
+        vista.printCarrera(String.format("🏁 %s inicia la carrera #%d", Thread.currentThread().getName(), totalDeCarreras));
         mutex.release();
         System.out.println(Thread.currentThread().getName() + " paso el mutex");
         Thread.sleep(ThreadLocalRandom.current().nextInt(15, 20) * 100);
@@ -172,9 +172,9 @@ public class CarreraGomones {
         // Finalizar la carrera mostrando el ganador
         if (ganador < 0) {
             ganador = gomon;
-            vp.printCarrera(String.format("🏁 <<%s finaliza primero la carrera #%d>>", gomones[ganador], totalDeCarreras));
+            vista.printCarrera(String.format("🏁 <<%s finaliza primero la carrera #%d>>", gomones[ganador], totalDeCarreras));
         } else {
-            vp.printCarrera(String.format("🏁 %s finaliza la carrera #%d", visitante, totalDeCarreras));
+            vista.printCarrera(String.format("🏁 %s finaliza la carrera #%d", visitante, totalDeCarreras));
         }
 
         mutex.release();
@@ -196,7 +196,7 @@ public class CarreraGomones {
         if (bolsosOcupados > 0) {
             vaciarBolsos.release();
         } else { // Sino llevar bolsos desocupados al inicio nuevamente por la camioneta
-            vp.sacarGomones();
+            vista.sacarGomones();
             ganador = -1;
             carrera = new CountDownLatch(5);
             traerBolsos.release();
@@ -208,10 +208,10 @@ public class CarreraGomones {
     public void volverDeCarrerasDeGomones(boolean irEnTren) throws InterruptedException, BrokenBarrierException {
         if (irEnTren) {
             trenVuelta.await();
-            vp.printCarrera(String.format("🚃 %s vuelve en tren", Thread.currentThread().getName()));
+            vista.printCarrera(String.format("🚃 %s vuelve en tren", Thread.currentThread().getName()));
             Thread.sleep(500);
         } else {
-            vp.printCarrera(String.format("🚲 %s vuelve en bici", Thread.currentThread().getName()));
+            vista.printCarrera(String.format("🚲 %s vuelve en bici", Thread.currentThread().getName()));
             Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
             bicicletas.release();
         }
@@ -219,14 +219,14 @@ public class CarreraGomones {
 
     public void llevarBolsosAlFinal() throws InterruptedException {
         llevarBolsos.acquire();
-        vp.printCarrera(String.format("🚙 %s lleva los bolsos al final", Thread.currentThread().getName()));
+        vista.printCarrera(String.format("🚙 %s lleva los bolsos al final", Thread.currentThread().getName()));
         Thread.sleep(500);
         vaciarBolsos.release();
     }
 
     public void traerBolsosAlInicio() throws InterruptedException {
         traerBolsos.acquire();
-        vp.printCarrera(String.format("🚙 %s trae los bolsos al inicio", Thread.currentThread().getName()));
+        vista.printCarrera(String.format("🚙 %s trae los bolsos al inicio", Thread.currentThread().getName()));
         Thread.sleep(500);
         prepararse.release();
     }

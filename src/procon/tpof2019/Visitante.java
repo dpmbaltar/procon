@@ -35,11 +35,11 @@ public class Visitante implements Runnable {
 
         try {
             if (parque.iniciarVisita()) {
-                parque.irParticular();
-                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
-            } else {
                 parque.iniciarTour();
                 parque.finalizarTour();
+            } else {
+                parque.irParticular();
+                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
             }
 
             Thread.sleep(ThreadLocalRandom.current().nextInt(0, 10) * 100);
@@ -141,7 +141,7 @@ public class Visitante implements Runnable {
         int tobogan = -1;
 
         try {
-            faroMirador.irAFaroMirador();
+            faroMirador.iniciarActividad();
             faroMirador.iniciarAscensoPorEscalera();
             faroMirador.finalizarAscensoPorEscalera();
             tobogan = faroMirador.iniciarDescensoEnTobogan();
