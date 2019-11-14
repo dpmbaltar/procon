@@ -6,12 +6,10 @@ import java.awt.GridLayout;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 
 public class VistaParque extends JFrame {
@@ -115,7 +113,7 @@ public class VistaParque extends JFrame {
         mensajesShop.setEditable(false);
         JScrollPane desplShop = new JScrollPane(mensajesShop);
         panelShop.add(desplShop);
-        JPanel panelCajas = new JPanel();
+        /*JPanel panelCajas = new JPanel();
         panelCajas.setLayout(new BoxLayout(panelCajas, BoxLayout.LINE_AXIS));
         panelShop.add(panelCajas);
 
@@ -128,7 +126,7 @@ public class VistaParque extends JFrame {
             JScrollPane listaDesplPane = new JScrollPane(lista);
             listaDesplPane.setBorder(new TitledBorder("Caja " + (i + 1)));
             panelCajas.add(listaDesplPane);
-        }
+        }*/
 
         contentPane.add(restaurantes);
         contentPane.add(panelShop);
@@ -141,7 +139,7 @@ public class VistaParque extends JFrame {
     public synchronized void printParque(String mensaje) {
         System.out.println(mensaje);
         ta1.append(mensaje + "\n");
-        ta1.setCaretPosition(ta5.getDocument().getLength());
+        ta1.setCaretPosition(ta1.getDocument().getLength());
     }
 
     public synchronized void agregarClienteCaja(int i, String cliente) {

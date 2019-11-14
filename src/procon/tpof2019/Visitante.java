@@ -5,6 +5,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Visitante del parque.
+ *
+ * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
+ */
 public class Visitante implements Runnable {
 
     /**
@@ -26,15 +31,35 @@ public class Visitante implements Runnable {
      */
     @Override
     public void run() {
+        int actividad = -1;
+
         try {
+            Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+            parque.iniciarVisita();
+            Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+
             while (parque.actividadesAbiertas()) {
+                actividad = ThreadLocalRandom.current().nextInt(0, 5);
+
+                // Realizar actividad
+                switch (actividad) {
+                case 0:
+                    irACarreraDeGomones();
+                    break;
+                case 1:
+                    irAlRestaurante();
+                    break;
+                case 2:
+                    irAFaroMirador();
+                    break;
+                default:
+                    irAlShop();
+                }
+
                 Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
-                //irACarreraDeGomones();
-                //irAFaroMirador();
-                //irAlRestaurante();
-                irAlShop();
             }
-            System.out.println(Thread.currentThread().getName() + " termina");
+
+            parque.finalizarVisita();
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -84,10 +109,10 @@ public class Visitante implements Runnable {
      * Ir a la actividad "Carrera de gomones por el río".
      */
     private void irACarreraDeGomones() {
+        CarreraGomones carrera = parque.getCarreraGomones();
         int llaveDeBolso = -1;
         int gomon = -1;
         boolean irEnTren = false;//ThreadLocalRandom.current().nextBoolean();
-        CarreraGomones carrera = parque.getCarreraGomones();
 
         try {
             carrera.irACarrerasDeGomones(irEnTren);
@@ -105,14 +130,15 @@ public class Visitante implements Runnable {
      * Ir a la actividad "Faro-Mirador con vista a 40 m de altura y descenso en tobogán".
      */
     private void irAFaroMirador() {
+        FaroMirador faroMirador = parque.getFaroMirador();
         int tobogan = -1;
 
         try {
-            parque.irAFaroMirador();
-            parque.iniciarAscensoPorEscalera();
-            parque.finalizarAscensoPorEscalera();
-            tobogan = parque.iniciarDescensoEnTobogan();
-            parque.finalizarDescensoEnTobogan(tobogan);
+            faroMirador.irAFaroMirador();
+            faroMirador.iniciarAscensoPorEscalera();
+            faroMirador.finalizarAscensoPorEscalera();
+            tobogan = faroMirador.iniciarDescensoEnTobogan();
+            faroMirador.finalizarDescensoEnTobogan(tobogan);
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }

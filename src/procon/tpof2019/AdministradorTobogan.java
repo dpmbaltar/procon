@@ -29,9 +29,11 @@ public class AdministradorTobogan implements Runnable {
      */
     @Override
     public void run() {
+        FaroMirador faroMirador = parque.getFaroMirador();
+
         try {
             while (true) {
-                parque.asignarTobogan();
+                faroMirador.asignarTobogan();
             }
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
