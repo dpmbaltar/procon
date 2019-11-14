@@ -52,11 +52,14 @@ public class Visitante implements Runnable {
             shop.entrar();
             Thread.sleep(ThreadLocalRandom.current().nextInt(10, 20) * 100);
 
-            if (comprar)
+            if (comprar) {
                 caja = shop.comprar();
+                Thread.sleep(ThreadLocalRandom.current().nextInt(0, 2) * 100);
+                shop.pagar(caja);
+                Thread.sleep(ThreadLocalRandom.current().nextInt(1, 3) * 100);
+            }
 
-            Thread.sleep(ThreadLocalRandom.current().nextInt(0, 3) * 100);
-            shop.salir(caja);
+            shop.salir();
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }

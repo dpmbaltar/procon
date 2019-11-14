@@ -3,7 +3,8 @@ package procon.tpof2019;
 import java.util.LinkedList;
 
 /**
- * Shop (Monitores).
+ * Shop donde pasan el rato los visitantes y compran souvenires opcionalmente.
+ * Implementado con Monitor.
  *
  * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
  */
@@ -22,7 +23,7 @@ public class Shop {
     private final VistaParque vista = VistaParque.getInstance();
 
     /**
-     * Visitante entra el shop.
+     * Visitante entra al shop.
      *
      * @throws InterruptedException
      */
@@ -32,7 +33,7 @@ public class Shop {
     }
 
     /**
-     * Compra un souvenir (opcional).
+     * Visitante compra un souvenir (opcional).
      *
      * @return la caja donde pagar
      */
@@ -41,7 +42,7 @@ public class Shop {
         String visitante = Thread.currentThread().getName();
         vista.printShop(String.format("%s decide comprar un souvenir", visitante));
 
-        // Ir hacia la caja con menos visitantes
+        // Ir hacia la caja con menos gente
         if (caja1.size() <= caja2.size()) {
             caja1.add(visitante);
             caja = 1;
@@ -54,12 +55,12 @@ public class Shop {
     }
 
     /**
-     * Visitante sale del shop.
+     * Visitante paga (si compró un souvenir).
      *
-     * @param caja la caja donde va a pagar (-1 si no compró)
+     * @param cajaElegida la caja donde va a pagar (-1 si no compró)
      * @throws InterruptedException
      */
-    public synchronized void salir(int cajaElegida) throws InterruptedException {
+    public synchronized void pagar(int cajaElegida) throws InterruptedException {
         String visitante = Thread.currentThread().getName();
         LinkedList<String> caja = null;
 
@@ -74,10 +75,16 @@ public class Shop {
                 wait();
 
             caja.remove();
-            vista.printShop(String.format("%s paga en caja %d y sale del shop", visitante, cajaElegida));
-        } else {
-            vista.printShop(String.format("%s sale del shop sin comprar", visitante));
+            vista.printShop(String.format("%s paga en caja %d", visitante, cajaElegida));
         }
+    }
+
+    /**
+     * Visitante sale del shop.
+     */
+    public synchronized void salir() {
+        String visitante = Thread.currentThread().getName();
+        vista.printShop(String.format("%s sale del shop", visitante));
     }
 
 }
