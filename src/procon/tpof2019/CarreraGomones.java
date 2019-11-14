@@ -1,6 +1,5 @@
 package procon.tpof2019;
 
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -12,41 +11,111 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class CarreraGomones {
 
-    private CyclicBarrier trenVuelta = new CyclicBarrier(15);
-    private Semaphore carrera1 = new Semaphore(0, true);
+    /**
+     * Mutex.
+     */
+    private final Semaphore mutex = new Semaphore(1);
 
-    private final Semaphore trenVa = new Semaphore(1);
-    private final Semaphore trenVuelve = new Semaphore(0);
-    private final Semaphore subirseAlTren = new Semaphore(0, true);
-    private final Semaphore bajarseDelTren = new Semaphore(0);
+    /**
+     * Habilita el inicio de una carrera.
+     */
+    private Semaphore carrera = new Semaphore(0, true);
+
+    /**
+     * Indica que un visitante en el inicio se puede preparar para la carrera.
+     */
+    private final Semaphore prepararse = new Semaphore(1, true);
+
+    /**
+     * Cantidad de bicicletas disponibles.
+     */
     private final Semaphore bicicletas = new Semaphore(10);
 
+    /**
+     * Semáforos para el control del tren.
+     */
+    private final Semaphore trenVa = new Semaphore(0, true);
+    private final Semaphore trenVuelve = new Semaphore(0, true);
+    private final Semaphore bajarseDelTren = new Semaphore(0);
     private final Semaphore llevarVisitantes = new Semaphore(0);
     private final Semaphore esperarVisitantes = new Semaphore(0);
     private final Semaphore traerVisitantes = new Semaphore(0);
 
+    /**
+     * Semáforos para el control de la camioneta.
+     */
     private final Semaphore vaciarBolsos = new Semaphore(0);
     private final Semaphore llevarBolsos = new Semaphore(0);
     private final Semaphore traerBolsos = new Semaphore(0);
-    private final Semaphore prepararse = new Semaphore(1, true);
-    private final Semaphore mutex = new Semaphore(1);
 
+    /**
+     * Indica la cantidad de visitantes esperando en el inicio de una carrera.
+     */
     private int visitantesEnInicio = 0;
-    private int ganador = -1;
-    private int totalDeCarreras = 0;
-    private int lugaresEnGomonesSimplesOcupados = 0;
-    private int lugaresEnGomonesDoblesOcupados = 0;
-    private int gomonesListos = 0;
-    private int bolsosOcupados = 0;
-    private boolean carreraSuspendida = false;
 
+    /**
+     * Indica la cantidad de bolsos ocupados para una carrera.
+     */
+    private int bolsosOcupados = 0;
+
+    /**
+     * Indica la cantidad de lugares disponibles en gomones simples (5 en total).
+     */
+    private int lugaresEnGomonesSimplesOcupados = 0;
+
+    /**
+     * Indica la cantidad de lugares disponibles en gomones dobles (5 * 2 en total).
+     */
+    private int lugaresEnGomonesDoblesOcupados = 0;
+
+    /**
+     * Indica la cantidad de gomones listos para poder empezar una carrera.
+     */
+    private int gomonesListos = 0;
+
+    /**
+     * Indica la cantidad de visitantes listos a competir (mayor o igual a la cantidad de gomones listos).
+     */
     private int visitantesACompetir = 0;
 
+    /**
+     * Indica la cantidad de carreras completadas.
+     */
+    private int totalDeCarreras = 0;
+
+    /**
+     * Indica el gomón ganador de una carrera.
+     */
+    private int ganador = -1;
+
+    /**
+     * Indica la cantidad de visitantes esperando ir a la carrera en tren.
+     */
     private int esperandoIrEnTren = 0;
+
+    /**
+     * Indica la cantidad de visitantes esperando volver de la carrera en tren.
+     */
     private int esperandoVolverTren = 0;
+
+    /**
+     * Indica la cantidad subiendo al tren (en ida o vuelta).
+     */
     private int visitantesSubiendoAlTren = 0;
+
+    /**
+     * Indica la cantidad de visitantes arriba del tren (en ida o vuelta).
+     */
     private int visitantesEnElTren = 0;
+
+    /**
+     * Indica que el tren está listo para ir a la carrera.
+     */
     private boolean trenListoIr = false;
+
+    /**
+     * Indica que el tren está listo para volver de la carrera.
+     */
     private boolean trenListoVolver = false;
 
     /**
@@ -87,11 +156,11 @@ public class CarreraGomones {
                 esperandoIrEnTren -= 15;
                 visitantesSubiendoAlTren = 15;
                 trenListoIr = true;
-                subirseAlTren.release();
+                trenVa.release();
             }
 
             mutex.release();
-            subirseAlTren.acquire();
+            trenVa.acquire();
             vista.printCarrera(String.format("🚃 %s va en tren (se sube)", visitante));
             mutex.acquire();
             visitantesSubiendoAlTren--;
@@ -99,7 +168,7 @@ public class CarreraGomones {
 
             // Dejar a otros esperando subirse
             if (visitantesSubiendoAlTren > 0)
-                subirseAlTren.release();
+                trenVa.release();
             else
                 llevarVisitantes.release();
 
@@ -152,6 +221,12 @@ public class CarreraGomones {
         return llave;
     }
 
+    /**
+     * Visitante se sube a un gomón simple o doble.
+     *
+     * @return el gomón al que se subió
+     * @throws InterruptedException
+     */
     public int subirseAGomon() throws InterruptedException {
         int gomon = -1;
         String visitante = Thread.currentThread().getName();
@@ -189,7 +264,7 @@ public class CarreraGomones {
             gomonesListos = 0;
             totalDeCarreras++;
             llevarBolsos.release();
-            carrera1.release(visitantesACompetir);
+            carrera.release(visitantesACompetir);
             visitantesACompetir = 0;
         }
 
@@ -209,10 +284,12 @@ public class CarreraGomones {
      * @throws InterruptedException
      */
     public void iniciarCarrera() throws InterruptedException {
-        carrera1.acquire();
+        String visitante = Thread.currentThread().getName();
+
+        carrera.acquire();
         mutex.acquire();
         visitantesEnInicio--;
-        vista.printCarrera(String.format("🏁 %s inicia la carrera #%d", Thread.currentThread().getName(), totalDeCarreras));
+        vista.printCarrera(String.format("🏁 %s inicia la carrera #%d", visitante, totalDeCarreras));
         mutex.release();
 
         Thread.sleep(ThreadLocalRandom.current().nextInt(15, 20) * 100);
@@ -221,8 +298,8 @@ public class CarreraGomones {
     /**
      * Finaliza la carrera.
      *
-     * @param llaveDeBolso
-     * @param gomon
+     * @param llaveDeBolso la llave del bolso asignado
+     * @param gomon el gomón utilizado
      * @throws InterruptedException
      */
     public void finalizarCarrera(int llaveDeBolso, int gomon) throws InterruptedException {
@@ -233,7 +310,7 @@ public class CarreraGomones {
         // Finalizar la carrera mostrando el ganador
         if (ganador < 0) {
             ganador = gomon;
-            vista.printCarrera(String.format("🏁 <<%s finaliza primero la carrera #%d>>", gomones[ganador], totalDeCarreras));
+            vista.printCarrera(String.format("🏁 <<%s gana la carrera #%d>>", gomones[ganador], totalDeCarreras));
         } else {
             vista.printCarrera(String.format("🏁 %s finaliza la carrera #%d", visitante, totalDeCarreras));
         }
@@ -266,7 +343,7 @@ public class CarreraGomones {
     }
 
     /**
-     * Volver al parque.
+     * Volver al parque (en tren o bicicleta, según como llego en primer lugar).
      *
      * @param irEnTren verdadero si vuelve en tren, falso si en bicicleta
      * @throws InterruptedException
@@ -319,7 +396,7 @@ public class CarreraGomones {
                     esperandoIrEnTren -= 15;
                     visitantesSubiendoAlTren = 15;
                     trenListoIr = true;
-                    subirseAlTren.release();
+                    trenVa.release();
                 }
             }
 

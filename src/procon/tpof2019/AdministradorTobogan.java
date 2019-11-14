@@ -36,7 +36,7 @@ public class AdministradorTobogan implements Runnable {
                 faroMirador.asignarTobogan();
             }
 
-            System.out.println(String.format("<<%s finaliza>>", Thread.currentThread().getName()));
+            VistaParque.getInstance().printFaroMirador("<<Adm. tobogán finaliza>>");
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
