@@ -16,12 +16,24 @@ public class Camioneta implements Runnable {
     private final Parque parque;
 
     /**
+     * Indica que la camioneta siga andando.
+     */
+    private boolean andar = true;
+
+    /**
      * Constructor con el parque.
      *
      * @param parque el parque
      */
     public Camioneta(Parque parque) {
         this.parque = parque;
+    }
+
+    /**
+     * Parar camioneta.
+     */
+    public void parar() {
+        this.andar = false;
     }
 
     /**
@@ -32,12 +44,12 @@ public class Camioneta implements Runnable {
         CarreraGomones carrera = parque.getCarreraGomones();
 
         try {
-            while (parque.estaAbierto() || carrera.hayVisitantesEnInicio()) {
+            while (andar) {
                 carrera.llevarBolsosAlFinal();
-//                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
                 carrera.traerBolsosAlInicio();
-//                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
             }
+
+            VistaParque.getInstance().printParque("<<Camioneta finaliza>>");
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }

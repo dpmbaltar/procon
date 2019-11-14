@@ -16,12 +16,24 @@ public class Tren implements Runnable {
     private final Parque parque;
 
     /**
+     * Indica que el tren siga andando.
+     */
+    private boolean andar = true;
+
+    /**
      * Constructor con el parque.
      *
      * @param parque el parque
      */
     public Tren(Parque parque) {
         this.parque = parque;
+    }
+
+    /**
+     * Parar tren.
+     */
+    public void parar() {
+        this.andar = false;
     }
 
     /**
@@ -32,11 +44,13 @@ public class Tren implements Runnable {
         CarreraGomones carrera = parque.getCarreraGomones();
 
         try {
-            while (parque.estaAbierto() || carrera.hayVisitantesEnInicio()) {
+            while (andar) {
                 carrera.llevarVisitantes();
                 carrera.esperarVisitantes();
                 carrera.traerVisitantes();
             }
+
+            VistaParque.getInstance().printParque("<<Tren finaliza>>");
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
