@@ -8,9 +8,6 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Parque {
 
@@ -74,11 +71,26 @@ public class Parque {
      */
     private final String[] gomones = new String[10];
 
-    private final VistaParque vp = new VistaParque();
+    private final Restaurante[] restaurantes = new Restaurante[3];
+
+    private final VistaParque vp = VistaParque.getInstance();
+
+    public Parque() {
+        int capacidadRestaurantes = 10;
+
+        for (int i = 0; i < restaurantes.length; i++) {
+            restaurantes[i] = new Restaurante(i, capacidadRestaurantes);
+            capacidadRestaurantes += 5;
+        }
+    }
+
+    public Restaurante getRestaurante(int n) {
+        return restaurantes[n];
+    }
 
     private void mensaje(String mensaje) {
         System.out.println(mensaje);
-        vp.mostrar(mensaje);
+        vp.printParque(mensaje);
     }
 
     /**
@@ -306,39 +318,6 @@ public class Parque {
         mutex.release();
 
         return hayVisitantes;
-    }
-
-    /**
-     * Restaurante
-     * Locks
-     *
-     * Capacidad restaurante 1: 10
-     * Capacidad restaurante 2: 15
-     * Capacidad restaurante 3: 20
-     */
-
-    /**
-     * Capacidades de los restaurantes.
-     */
-    private static final int CAPACIDAD_RESTAURANTE_1 = 10;
-    private static final int CAPACIDAD_RESTAURANTE_2 = 15;
-    private static final int CAPACIDAD_RESTAURANTE_3 = 20;
-    private int visitantesEnRestaurante1 = 0;
-    private int visitantesEnRestaurante2 = 0;
-    private int visitantesEnRestaurante3 = 0;
-    private final Lock restaurante1 = new ReentrantLock();
-    private final Lock restaurante2 = new ReentrantLock();
-    private final Lock restaurante3 = new ReentrantLock();
-    private final Condition restaurante1Lleno = restaurante1.newCondition();
-    private final Condition restaurante2Lleno = restaurante2.newCondition();
-    private final Condition restaurante3Lleno = restaurante3.newCondition();
-
-    private void irARestaurante1() {
-
-    }
-
-    private void salirDeRestaurante1() {
-
     }
 
     /**

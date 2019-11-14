@@ -27,7 +27,15 @@ public class VistaParque extends JFrame {
 
     private final JProgressBar pb;
 
-    public VistaParque() {
+    private final JProgressBar[] rests = new JProgressBar[3];
+
+    private static final VistaParque instance = new VistaParque();
+
+    public static final VistaParque getInstance() {
+        return instance;
+    }
+
+    private VistaParque() {
         super("Vista del Parque");
 
         ta1 = new JTextArea();
@@ -53,7 +61,6 @@ public class VistaParque extends JFrame {
         scroll1.setBorder(new TitledBorder("Parque"));
         scroll2.setBorder(new TitledBorder("Tour"));
         scroll3.setBorder(new TitledBorder("Carrera de gomones"));
-        scroll4.setBorder(new TitledBorder("Restaurante"));
         scroll5.setBorder(new TitledBorder("Faro-Mirador"));
 
         Container contentPane = getContentPane();
@@ -77,14 +84,41 @@ public class VistaParque extends JFrame {
         jp3.add(pb);
         contentPane.add(jp3);
 
+        // Restaurantes
+        JPanel restaurantes = new JPanel();
+        restaurantes.setBorder(new TitledBorder("Restaurantes"));
+        restaurantes.setLayout(new BoxLayout(restaurantes, BoxLayout.PAGE_AXIS));
+        restaurantes.add(scroll4);
+        int capacidad = 10;
+
+        for (int i = 0; i < 3; i++) {
+            rests[i] = new JProgressBar(0, capacidad);
+            rests[i].setValue(0);
+            rests[i].setStringPainted(true);
+            rests[i].setBorder(new TitledBorder("Restaurante " + (i + 1)));
+            rests[i].setString("0");
+
+            restaurantes.add(rests[i]);
+            capacidad += 5;
+        }
+
+        contentPane.add(restaurantes);
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setVisible(true);
     }
 
-    public synchronized void mostrar(String mensaje) {
-        //System.out.println(mensaje);
+    public synchronized void printParque(String mensaje) {
+        System.out.println(mensaje);
         ta1.append(mensaje + "\n");
+        ta1.setCaretPosition(ta5.getDocument().getLength());
+    }
+
+    public synchronized void printRestaurantes(String mensaje) {
+        System.out.println(mensaje);
+        ta4.append(mensaje + "\n");
+        ta4.setCaretPosition(ta4.getDocument().getLength());
     }
 
     public synchronized void printFaroMirador(String mensaje) {
@@ -98,6 +132,16 @@ public class VistaParque extends JFrame {
         ta3.append(mensaje + "\n");
         ta3.setCaretPosition(ta3.getDocument().getLength());
         //scroll3.getVerticalScrollBar().setValue(scroll3.getVerticalScrollBar().getMaximum());
+    }
+
+    public synchronized void agregarCliente(int r) {
+        rests[r].setValue(rests[r].getValue() + 1);
+        rests[r].setString(String.valueOf(rests[r].getValue()));
+    }
+
+    public synchronized void sacarCliente(int r) {
+        rests[r].setValue(rests[r].getValue() - 1);
+        rests[r].setString(String.valueOf(rests[r].getValue()));
     }
 
     public synchronized void agregarGomon() {

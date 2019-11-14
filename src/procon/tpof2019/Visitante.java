@@ -30,7 +30,8 @@ public class Visitante implements Runnable {
             while (parque.actividadesAbiertas()) {
                 Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
                 //irACarreraDeGomones();
-                irAFaroMirador();
+                //irAFaroMirador();
+                irAlRestaurante();
             }
             System.out.println(Thread.currentThread().getName() + " termina");
         } catch (InterruptedException e) {
@@ -40,6 +41,18 @@ public class Visitante implements Runnable {
 
     private void irAlShop() {
         //TODO
+    }
+
+    private void irAlRestaurante() {
+        Restaurante restaurante = parque.getRestaurante(ThreadLocalRandom.current().nextInt(0, 3));
+
+        try {
+            restaurante.entrar();
+            Thread.sleep(ThreadLocalRandom.current().nextInt(15, 20) * 100);
+            restaurante.salir();
+        } catch (InterruptedException e) {
+            Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
+        }
     }
 
     private void irACarreraDeGomones() {

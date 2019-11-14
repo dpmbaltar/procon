@@ -7,32 +7,77 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Restaurante
  * Locks
+ *
+ * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
  */
 public class Restaurante {
 
-    private final int capacidad;
-    private int clientes = 0;
-    private final Lock lock = new ReentrantLock();
-    private final Condition hayLugar = lock.newCondition();
+    /**
+     * Número del restaurante.
+     */
+    private final int numero;
 
-    public Restaurante(int capacidad) {
+    /**
+     * Capacidad del restaurante.
+     */
+    private final int capacidad;
+
+    /**
+     * Cantidad de clientes en el restaurante.
+     */
+    private int clientes = 0;
+
+    private final Lock mutex = new ReentrantLock();
+    private final Condition hayLugar = mutex.newCondition();
+
+    private final VistaParque vp = VistaParque.getInstance();
+
+    /**
+     * Constructor con el número y la capacidad.
+     *
+     * @param numero el número del restaurante
+     * @param capacidad la capacidad del restaurante
+     */
+    public Restaurante(int numero, int capacidad) {
+        this.numero = numero;
         this.capacidad = capacidad;
     }
 
-    private void entrar() throws InterruptedException {
-        lock.lock();
+    public void entrar() throws InterruptedException {
+        String visitante;
+
+        mutex.lock();
 
         try {
-            while (clientes == capacidad)
+            // Esperar mientras esté lleno
+            while (clientes == capacidad) {
+                vp.printRestaurantes(String.format("<<Restaurante %d lleno>>", numero));
                 hayLugar.await();
+            }
 
+            clientes++;
+            visitante = Thread.currentThread().getName();
+            vp.printRestaurantes(String.format("%s entra al restaurante %d", visitante, numero));
+            vp.agregarCliente(numero);
         } finally {
-            lock.unlock();
+            mutex.unlock();
         }
     }
 
-    private void salir() {
+    public void salir() {
+        String visitante;
 
+        mutex.lock();
+
+        try {
+            visitante = Thread.currentThread().getName();
+            vp.printRestaurantes(String.format("%s sale del restaurante %d", visitante, numero));
+            vp.sacarCliente(numero);
+            clientes--;
+            hayLugar.signalAll();
+        } finally {
+            mutex.unlock();
+        }
     }
 
 }
