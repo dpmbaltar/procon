@@ -5,8 +5,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Restaurante
- * Locks
+ * Restaurante donde los visitantes almuerzan y/o meriendan.
+ * Implementado con Locks.
  *
  * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
  */
@@ -27,7 +27,14 @@ public class Restaurante {
      */
     private int clientes = 0;
 
+    /**
+     * Mutex.
+     */
     private final Lock mutex = new ReentrantLock();
+
+    /**
+     * Condición para notificar de que hay lugar en restaurante.
+     */
     private final Condition hayLugar = mutex.newCondition();
 
     private final VistaParque vp = VistaParque.getInstance();
@@ -43,11 +50,15 @@ public class Restaurante {
         this.capacidad = capacidad;
     }
 
+    /**
+     * Visitante entra al restaurante (si hay lugar).
+     *
+     * @throws InterruptedException
+     */
     public void entrar() throws InterruptedException {
         String visitante;
 
         mutex.lock();
-
         try {
             // Esperar mientras esté lleno
             while (clientes == capacidad) {
@@ -64,11 +75,13 @@ public class Restaurante {
         }
     }
 
+    /**
+     * Visitante sale del restaurante.
+     */
     public void salir() {
         String visitante;
 
         mutex.lock();
-
         try {
             visitante = Thread.currentThread().getName();
             vp.printRestaurantes(String.format("%s sale del restaurante %d", visitante, numero));
