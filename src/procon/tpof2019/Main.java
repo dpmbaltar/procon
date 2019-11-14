@@ -6,8 +6,9 @@ public class Main {
         Parque parque = new Parque();
         Thread administrador = new Thread(new Administrador(parque), "Administrador");
         Thread camioneta = new Thread(new Camioneta(parque), "Camioneta");
+        Thread tren = new Thread(new Tren(parque), "Tren");
         Thread administradorTobogan = new Thread(new AdministradorTobogan(parque), "Administrador (Toboganes)");
-        Thread[] visitantes = new Thread[100];
+        Thread[] visitantes = new Thread[25];
 
         for (int i = 0; i < visitantes.length; i++)
             visitantes[i] = new Thread(new Visitante(parque), "Visitante-" + (i + 1));
@@ -15,6 +16,7 @@ public class Main {
         // Iniciar hilos
         administrador.start();
         camioneta.start();
+        tren.start();
         administradorTobogan.start();
 
         for (int i = 0; i < visitantes.length; i++)
