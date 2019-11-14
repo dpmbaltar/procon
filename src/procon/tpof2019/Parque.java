@@ -63,11 +63,6 @@ public class Parque {
     private final FaroMirador faroMirador = new FaroMirador();
 
     /**
-     * Mutex.
-     */
-    private final Semaphore mutex = new Semaphore(1);
-
-    /**
      * Molinetes de la entrada al parque (5 en total, se liberan al abrir el parque).
      */
     private final Semaphore molinetes = new Semaphore(0, true);
@@ -164,10 +159,20 @@ public class Parque {
         vista.printParque("<<PARQUE CERRADO>>");
     }
 
+    /**
+     * Devuelve verdadero si el parque está abierto.
+     *
+     * @return verdadero si está abierto, falso en caso contrario
+     */
     public synchronized boolean estaAbierto() {
         return abierto;
     }
 
+    /**
+     * Devuelve verdadero si las actividades están abiertas.
+     *
+     * @return verdadero si están abiertas, falso en caso contrario
+     */
     public synchronized boolean actividadesAbiertas() {
         return actividadesAbiertas;
     }
@@ -178,17 +183,13 @@ public class Parque {
      * @return verdadero si va en tour, falso en caso contrario
      * @throws InterruptedException
      */
-    public boolean iniciarVisita() throws InterruptedException {
+    public synchronized boolean iniciarVisita() throws InterruptedException {
         boolean enTour = false;
-
-        mutex.acquire();
 
         if (visitantesEnTour < CAPACIDAD_TOUR) {
             visitantesEnTour++;
             enTour = true;
         }
-
-        mutex.release();
 
         return enTour;
     }
@@ -209,7 +210,7 @@ public class Parque {
     public void iniciarTour() throws InterruptedException, BrokenBarrierException {
         vista.printTour(String.format("%s inicia viaje al parque en tour", Thread.currentThread().getName()));
         iniciarTour.await();
-        Thread.sleep(2000);
+        Thread.sleep(1000);
     }
 
     /**
