@@ -268,11 +268,6 @@ public class CarreraGomones {
             visitantesACompetir = 0;
         }
 
-        System.out.println(String.format("gomones listos: %d", gomonesListos));
-        System.out.println(String.format("incio: %d competir: %d", visitantesEnInicio, visitantesACompetir));
-        System.out.println(String.format("gom simples: %d gom dobles: %d", lugaresEnGomonesSimplesOcupados, lugaresEnGomonesDoblesOcupados));
-        System.out.println(String.format("bolsos: %d", bolsosOcupados));
-
         mutex.release();
 
         return gomon;

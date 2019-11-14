@@ -16,12 +16,24 @@ public class AdministradorTobogan implements Runnable {
     private final Parque parque;
 
     /**
+     * Indica que siga asignando toboganes.
+     */
+    private boolean asignar = true;
+
+    /**
      * Constructor con el parque.
      *
      * @param parque el parque
      */
     public AdministradorTobogan(Parque parque) {
         this.parque = parque;
+    }
+
+    /**
+     * Finalizar su trabjo.
+     */
+    public void finalizar() {
+        asignar = false;
     }
 
     /**
@@ -32,7 +44,7 @@ public class AdministradorTobogan implements Runnable {
         FaroMirador faroMirador = parque.getFaroMirador();
 
         try {
-            while (faroMirador.hayVisitantes()) {
+            while (asignar) {
                 faroMirador.asignarTobogan();
             }
 
