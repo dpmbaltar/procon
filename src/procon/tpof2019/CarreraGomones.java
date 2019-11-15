@@ -132,7 +132,21 @@ public class CarreraGomones {
      */
     private final String[] gomones = new String[10];
 
+    /**
+     * Instancia del parque.
+     */
+    private final Parque parque;
+
     private final VistaParque vista = VistaParque.getInstance();
+
+    /**
+     * Constructor con el parque.
+     *
+     * @param parque el parque
+     */
+    public CarreraGomones(Parque parque) {
+        this.parque = parque;
+    }
 
     /**
      * Ir al inicio de la carrera de gomones.
@@ -258,14 +272,16 @@ public class CarreraGomones {
         vista.printCarrera(String.format("🚣 %s ocupa un gomón %s", visitante, gomon >= 5 ? "doble" : "simple"));
 
         // Si no hay 5 gomones listos para iniciar la carrera, dejar a otros prepararse
-        if (gomonesListos < 5) {
-            prepararse.release();
-        } else { // Si hay 5 gomones listos, indicar a la camioneta que lleve los bolsos ya que iniciará la carrera
+        if (gomonesListos == 5
+                || (!parque.actividadesAbiertas() && parque.getVisitantes() >= 0
+                        && esperandoIrEnTren == 0 && visitantesEnElTren == 0 && visitantesEnInicio == 0)) {
             gomonesListos = 0;
             totalDeCarreras++;
             llevarBolsos.release();
             carrera.release(visitantesACompetir);
             visitantesACompetir = 0;
+        } else {
+            prepararse.release();
         }
 
         mutex.release();

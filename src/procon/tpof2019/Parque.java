@@ -55,17 +55,17 @@ public class Parque {
     /**
      * Los restaurantes del parque.
      */
-    private final Restaurante[] restaurantes = new Restaurante[3];
+    private final Restaurante[] restaurantes;
 
     /**
      * La actividad "Carrera de gomones por el río".
      */
-    private final CarreraGomones carreraGomones = new CarreraGomones();
+    private final CarreraGomones carreraGomones;
 
     /**
      * La actividad "Faro-Mirador con vista a 40 m de altura y descenso en tobogán".
      */
-    private final FaroMirador faroMirador = new FaroMirador();
+    private final FaroMirador faroMirador;
 
     /**
      * Molinetes de la entrada al parque (5 en total, se liberan al abrir el parque).
@@ -87,6 +87,11 @@ public class Parque {
      */
     private int visitantesEnTour = 0;
 
+    /**
+     * Cantidad de visitantes que está en el parque.
+     */
+    private int visitantes = 0;
+
     private final VistaParque vista = VistaParque.getInstance();
 
     /**
@@ -94,11 +99,15 @@ public class Parque {
      */
     public Parque() {
         int capacidadRestaurantes = 10;
+        restaurantes = new Restaurante[3];
 
         for (int i = 0; i < restaurantes.length; i++) {
             restaurantes[i] = new Restaurante(i, capacidadRestaurantes);
             capacidadRestaurantes += 5;
         }
+
+        carreraGomones = new CarreraGomones(this);
+        faroMirador = new FaroMirador();
     }
 
     /**
@@ -136,6 +145,15 @@ public class Parque {
      */
     public synchronized FaroMirador getFaroMirador() {
         return faroMirador;
+    }
+
+    /**
+     * Devuelve la cantidad de visitantes en el parque.
+     *
+     * @return la cantidad de visitantes
+     */
+    public synchronized int getVisitantes() {
+        return visitantes;
     }
 
     /**
@@ -241,13 +259,18 @@ public class Parque {
         Thread.sleep(ThreadLocalRandom.current().nextInt(0, 3) * 100);
         vista.printParque(String.format("%s entra al parque", visitante));
         molinetes.release();
+
+        synchronized (this) {
+            visitantes++;
+        }
     }
 
     /**
      * Finaliza visita en el parque.
      */
-    public void finalizarVisita() {
+    public synchronized void finalizarVisita() {
         vista.printParque(String.format("%s finaliza visita al parque", Thread.currentThread().getName()));
+        visitantes--;
     }
 
 }

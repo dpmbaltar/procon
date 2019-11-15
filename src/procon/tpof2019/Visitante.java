@@ -127,7 +127,7 @@ public class Visitante implements Runnable {
         CarreraGomones carrera = parque.getCarreraGomones();
         int llaveDeBolso = -1;
         int gomon = -1;
-        boolean irEnTren = true;//ThreadLocalRandom.current().nextBoolean();
+        boolean irEnTren = ThreadLocalRandom.current().nextBoolean();
 
         try {
             carrera.ir(irEnTren);
