@@ -4,7 +4,6 @@ import java.awt.Container;
 import java.awt.GridLayout;
 
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -20,7 +19,6 @@ public class VistaParque extends JFrame {
     private final JTextArea ta4;
     private final JTextArea ta5;
     private final JTextArea mensajesShop;
-    private final DefaultListModel<String>[] cajas = new DefaultListModel[2];
 
     private final JScrollPane scroll1;
     private final JScrollPane scroll2;
@@ -28,7 +26,7 @@ public class VistaParque extends JFrame {
     private final JScrollPane scroll4;
     private final JScrollPane scroll5;
 
-    private final JProgressBar pb;
+    private final JProgressBar gomones;
 
     private final JProgressBar[] rests = new JProgressBar[3];
 
@@ -77,14 +75,14 @@ public class VistaParque extends JFrame {
 
         JPanel jp3 = new JPanel();
         jp3.setLayout(new BoxLayout(jp3, BoxLayout.PAGE_AXIS));
-        pb = new JProgressBar(0, 5);
-        pb.setValue(0);
-        pb.setStringPainted(true);
-        pb.setBorder(new TitledBorder("Gomones ocupados"));
-        pb.setString("0");
+        gomones = new JProgressBar(0, 5);
+        gomones.setValue(0);
+        gomones.setStringPainted(true);
+        gomones.setBorder(new TitledBorder("Gomones ocupados"));
+        gomones.setString("0");
 
         jp3.add(scroll3);
-        jp3.add(pb);
+        jp3.add(gomones);
         contentPane.add(jp3);
 
         // Restaurantes
@@ -113,21 +111,6 @@ public class VistaParque extends JFrame {
         mensajesShop.setEditable(false);
         JScrollPane desplShop = new JScrollPane(mensajesShop);
         panelShop.add(desplShop);
-        /*JPanel panelCajas = new JPanel();
-        panelCajas.setLayout(new BoxLayout(panelCajas, BoxLayout.LINE_AXIS));
-        panelShop.add(panelCajas);
-
-        for (int i = 0; i < 2; i++) {
-            DefaultListModel<String> listModel = new DefaultListModel<>();
-            cajas[i] = listModel;
-            JList<String> lista = new JList<>(listModel);
-            lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            lista.setVisibleRowCount(3);
-            JScrollPane listaDesplPane = new JScrollPane(lista);
-            listaDesplPane.setBorder(new TitledBorder("Caja " + (i + 1)));
-            panelCajas.add(listaDesplPane);
-        }*/
-
         contentPane.add(restaurantes);
         contentPane.add(panelShop);
 
@@ -148,18 +131,17 @@ public class VistaParque extends JFrame {
         ta2.setCaretPosition(ta2.getDocument().getLength());
     }
 
-    public synchronized void agregarClienteCaja(int i, String cliente) {
-        cajas[i].addElement(cliente);
-    }
-
-    public synchronized void sacarClienteCaja(int i, String cliente) {
-        cajas[i].removeElement(cliente);
-    }
-
     public synchronized void printShop(String mensaje) {
         System.out.println(mensaje);
         mensajesShop.append(mensaje + "\n");
         mensajesShop.setCaretPosition(mensajesShop.getDocument().getLength());
+    }
+
+    public synchronized void printCarrera(String mensaje) {
+        System.out.println(mensaje);
+        ta3.append(mensaje + "\n");
+        ta3.setCaretPosition(ta3.getDocument().getLength());
+        //scroll3.getVerticalScrollBar().setValue(scroll3.getVerticalScrollBar().getMaximum());
     }
 
     public synchronized void printRestaurantes(String mensaje) {
@@ -174,13 +156,6 @@ public class VistaParque extends JFrame {
         ta5.setCaretPosition(ta5.getDocument().getLength());
     }
 
-    public synchronized void printCarrera(String mensaje) {
-        System.out.println(mensaje);
-        ta3.append(mensaje + "\n");
-        ta3.setCaretPosition(ta3.getDocument().getLength());
-        //scroll3.getVerticalScrollBar().setValue(scroll3.getVerticalScrollBar().getMaximum());
-    }
-
     public synchronized void agregarCliente(int r) {
         rests[r].setValue(rests[r].getValue() + 1);
         rests[r].setString(String.valueOf(rests[r].getValue()));
@@ -192,13 +167,13 @@ public class VistaParque extends JFrame {
     }
 
     public synchronized void agregarGomon() {
-        pb.setValue(pb.getValue() + 1);
-        pb.setString(String.valueOf(pb.getValue()));
+        gomones.setValue(gomones.getValue() + 1);
+        gomones.setString(String.valueOf(gomones.getValue()));
     }
 
     public synchronized void sacarGomones() {
-        pb.setValue(0);
-        pb.setString(String.valueOf(0));
+        gomones.setValue(0);
+        gomones.setString(String.valueOf(0));
     }
 
 }
