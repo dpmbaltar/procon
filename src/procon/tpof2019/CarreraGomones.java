@@ -2,6 +2,7 @@ package procon.tpof2019;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Carrera de gomones por el río.
@@ -157,12 +158,10 @@ public class CarreraGomones {
      * @throws InterruptedException
      */
     public void ir(boolean irEnTren) throws InterruptedException {
-        String visitante;
-
-        mutex.acquire();
-        visitante = Thread.currentThread().getName();
+        String visitante = Thread.currentThread().getName();
 
         if (irEnTren) {
+            mutex.acquire();
             esperandoIrEnTren++;
 
             // Si el tren está listo, llevar visitantes a la carrera
@@ -174,42 +173,56 @@ public class CarreraGomones {
             }
 
             mutex.release();
-            trenVa.acquire();
-            vista.printCarrera(String.format("🚃 %s va en tren (se sube)", visitante));
-            mutex.acquire();
-            visitantesSubiendoAlTren--;
-            visitantesEnElTren++;
+            //trenVa.acquire();
+            // Esperar tren hasta 30 min
+            if (trenVa.tryAcquire(500, TimeUnit.MILLISECONDS)) {
+                vista.printCarrera(String.format("🚃 %s va en tren (se sube)", visitante));
+                mutex.acquire();
+                visitantesSubiendoAlTren--;
+                visitantesEnElTren++;
 
-            // Dejar a otros esperando subirse
-            if (visitantesSubiendoAlTren > 0)
-                trenVa.release();
-            else
-                llevarVisitantes.release();
+                // Dejar a otros esperando subirse
+                if (visitantesSubiendoAlTren > 0)
+                    trenVa.release();
+                else
+                    llevarVisitantes.release();
 
-            mutex.release();
-            bajarseDelTren.acquire();
-            vista.printCarrera(String.format("🚃 %s va en tren (se baja)", visitante));
-            mutex.acquire();
-            visitantesEnElTren--;
+                mutex.release();
+                bajarseDelTren.acquire();
+                vista.printCarrera(String.format("🚃 %s va en tren (se baja)", visitante));
+                mutex.acquire();
+                visitantesEnElTren--;
 
-            // Dejar a otros bajarse
-            if (visitantesEnElTren > 0)
-                bajarseDelTren.release();
-            else
-                esperarVisitantes.release();
+                // Dejar a otros bajarse
+                if (visitantesEnElTren > 0)
+                    bajarseDelTren.release();
+                else
+                    esperarVisitantes.release();
 
-            mutex.release();
+                visitantesEnInicio++;
+                vista.printCarrera(String.format("🏁 %s llega al inicio", visitante));
+                mutex.release();
+            } else {
+                mutex.acquire();
+                esperandoIrEnTren--;
+                vista.printCarrera(String.format("🚃 %s esperó el tren 30 minutos (se fue)", visitante));
+                mutex.release();
+            }
         } else {
-            mutex.release();
-            bicicletas.acquire();
-            vista.printCarrera(String.format("🚲 %s va a en bici", visitante));
-            Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
-        }
+            // Esperar hasta 30 mins
+            if (bicicletas.tryAcquire(500, TimeUnit.MILLISECONDS)) {
+                vista.printCarrera(String.format("🚲 %s va a en bici", visitante));
 
-        mutex.acquire();
-        visitantesEnInicio++;
-        vista.printCarrera(String.format("🏁 %s llega al inicio", visitante));
-        mutex.release();
+                Thread.sleep(ThreadLocalRandom.current().nextInt(8, 10) * 100);
+
+                mutex.acquire();
+                visitantesEnInicio++;
+                vista.printCarrera(String.format("🏁 %s llega al inicio", visitante));
+                mutex.release();
+            } else {
+                vista.printCarrera(String.format("🚲 %s esperó una bici 30 minutos (se fue)", visitante));
+            }
+        }
     }
 
     /**

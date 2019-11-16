@@ -11,6 +11,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 
+/**
+ * Ventana para visualizar el estado del parque.
+ */
 public class VistaParque extends JFrame {
 
     private final JTextArea ta1;
