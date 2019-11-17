@@ -37,7 +37,7 @@ public class Restaurante {
      */
     private final Condition hayLugar = mutex.newCondition();
 
-    private final VistaParque vista = VistaParque.getInstance();
+    private final VistaParque vista = VistaParque.getInstancia();
 
     /**
      * Constructor con el número y la capacidad.
@@ -69,7 +69,7 @@ public class Restaurante {
             clientes++;
             visitante = Thread.currentThread().getName();
             vista.printRestaurantes(String.format("%s entra al restaurante %d", visitante, numero));
-            vista.agregarCliente(numero);
+            vista.agregarClienteRestaurante(numero);
         } finally {
             mutex.unlock();
         }
@@ -85,7 +85,7 @@ public class Restaurante {
         try {
             visitante = Thread.currentThread().getName();
             vista.printRestaurantes(String.format("%s sale del restaurante %d", visitante, numero));
-            vista.sacarCliente(numero);
+            vista.sacarClienteRestaurante(numero);
             clientes--;
             hayLugar.signalAll();
         } finally {

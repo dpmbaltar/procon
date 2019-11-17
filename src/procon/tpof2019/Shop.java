@@ -20,7 +20,7 @@ public class Shop {
      */
     private final LinkedList<String> caja2 = new LinkedList<>();
 
-    private final VistaParque vista = VistaParque.getInstance();
+    private final VistaParque vista = VistaParque.getInstancia();
 
     /**
      * Visitante entra al shop.

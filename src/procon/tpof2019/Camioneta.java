@@ -49,7 +49,7 @@ public class Camioneta implements Runnable {
                 carrera.traerBolsosAlInicio();
             }
 
-            VistaParque.getInstance().printParque("<<Camioneta finaliza>>");
+            VistaParque.getInstancia().printParque("<<Camioneta finaliza>>");
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }

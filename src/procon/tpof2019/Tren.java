@@ -50,7 +50,7 @@ public class Tren implements Runnable {
                 carrera.traerVisitantes();
             }
 
-            VistaParque.getInstance().printParque("<<Tren finaliza>>");
+            VistaParque.getInstancia().printParque("<<Tren finaliza>>");
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }

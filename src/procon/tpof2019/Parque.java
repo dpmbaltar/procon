@@ -92,7 +92,7 @@ public class Parque {
      */
     private int visitantes = 0;
 
-    private final VistaParque vista = VistaParque.getInstance();
+    private final VistaParque vista = VistaParque.getInstancia();
 
     /**
      * Constructor.

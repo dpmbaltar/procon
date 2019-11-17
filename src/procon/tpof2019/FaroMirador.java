@@ -43,7 +43,7 @@ public class FaroMirador {
      */
     private int cantidadDescensos = 0;
 
-    private final VistaParque vista = VistaParque.getInstance();
+    private final VistaParque vista = VistaParque.getInstancia();
 
     /**
      * Devuelve verdadero si hay visitantes, falso en caso contrario.

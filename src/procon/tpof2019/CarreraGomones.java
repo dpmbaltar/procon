@@ -138,7 +138,7 @@ public class CarreraGomones {
      */
     private final Parque parque;
 
-    private final VistaParque vista = VistaParque.getInstance();
+    private final VistaParque vista = VistaParque.getInstancia();
 
     /**
      * Constructor con el parque.
