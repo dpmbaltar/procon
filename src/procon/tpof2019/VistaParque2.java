@@ -28,20 +28,22 @@ import javax.swing.event.ChangeListener;
 
 public class VistaParque2 extends JFrame {
 
+    private static final long serialVersionUID = 1L;
     private JPanel contentPane;
     private JSpinner visitorsCountSpinner;
     private JButton startButton;
     private JProgressBar mainProgressBar;
     private JLabel timeValueLabel;
     private JSlider timeSlider;
+    private JLabel parkVisitorsCountLabel;
     private JProgressBar tourBusProgressBar;
     private JProgressBar pinwheelProgressBar;
-    private JLabel parkVisitorsCountLabel;
     private JTextArea parkTextArea;
     private JTextField cashRegister1TextField;
     private JTextField cashRegister2TextField;
     private JTextField cashRegister3TextField;
     private JTextField cashRegister4TextField;
+    private JTextArea shopTextArea;
     private JProgressBar trainProgressBar;
     private JProgressBar bikesProgressBar;
     private JProgressBar simpleInflatableBoatsProgressBar;
@@ -55,6 +57,9 @@ public class VistaParque2 extends JFrame {
     private JProgressBar slide1ProgressBar;
     private JProgressBar slide2ProgressBar;
     private JTextArea lighthouseTextArea;
+    private JLabel threadCountValueLabel;
+
+    private static final VistaParque2 instancia = new VistaParque2();
 
     /**
      * Launch the application.
@@ -64,7 +69,7 @@ public class VistaParque2 extends JFrame {
             @Override
             public void run() {
                 try {
-                    VistaParque2 frame = new VistaParque2();
+                    VistaParque2 frame = VistaParque2.getInstancia();
                     frame.setVisible(true);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -76,7 +81,7 @@ public class VistaParque2 extends JFrame {
     /**
      * Create the frame.
      */
-    public VistaParque2() {
+    private VistaParque2() {
         setTitle("Parque");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 800, 600);
@@ -97,10 +102,11 @@ public class VistaParque2 extends JFrame {
         startButton = new JButton("Iniciar");
         startButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent arg0) {
+            public void actionPerformed(ActionEvent ae) {
+                visitorsCountSpinner.setEnabled(false);
                 startButton.setEnabled(false);
                 mainProgressBar.setVisible(true);
-                Main.iniciar();
+                Main.iniciar((Integer) visitorsCountSpinner.getValue());
             }
         });
 
@@ -163,7 +169,7 @@ public class VistaParque2 extends JFrame {
                 Tiempo.setDuracion(1000 * 1000 / value);
 
                 if ((value % 500) == 0)
-                    timeValueLabel.setText(String.format("%.1fx", value / (double)Tiempo.DURACION_DE_HORA));
+                    timeValueLabel.setText(String.format("%.1fx", value / (double) Tiempo.DURACION_DE_HORA));
             }
         });
         timeSlider.setMaximum(2000);
@@ -177,7 +183,7 @@ public class VistaParque2 extends JFrame {
         JPanel activitiesPanel = new JPanel();
         contentPane.add(activitiesPanel);
         GridBagLayout gbl_activitiesPanel = new GridBagLayout();
-        gbl_activitiesPanel.columnWidths = new int[] {0, 0, 0};
+        gbl_activitiesPanel.columnWidths = new int[] { 0, 0, 0 };
         gbl_activitiesPanel.rowHeights = new int[] { 255, 255, 0 };
         gbl_activitiesPanel.columnWeights = new double[] { 1.0, 1.0, 1.0 };
         gbl_activitiesPanel.rowWeights = new double[] { 1.0, 1.0, Double.MIN_VALUE };
@@ -198,12 +204,28 @@ public class VistaParque2 extends JFrame {
         gbl_parkPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
         parkPanel.setLayout(gbl_parkPanel);
 
+        JLabel parkVisitorsLabel = new JLabel("Visitantes:");
+        GridBagConstraints gbc_parkVisitorsLabel = new GridBagConstraints();
+        gbc_parkVisitorsLabel.anchor = GridBagConstraints.WEST;
+        gbc_parkVisitorsLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_parkVisitorsLabel.gridx = 0;
+        gbc_parkVisitorsLabel.gridy = 0;
+        parkPanel.add(parkVisitorsLabel, gbc_parkVisitorsLabel);
+
+        parkVisitorsCountLabel = new JLabel("0");
+        parkVisitorsCountLabel.setToolTipText("Cantidad de visitantes en el parque");
+        GridBagConstraints gbc_parkVisitorsCountLabel = new GridBagConstraints();
+        gbc_parkVisitorsCountLabel.insets = new Insets(0, 0, 5, 0);
+        gbc_parkVisitorsCountLabel.gridx = 1;
+        gbc_parkVisitorsCountLabel.gridy = 0;
+        parkPanel.add(parkVisitorsCountLabel, gbc_parkVisitorsCountLabel);
+
         JLabel tourBusLabel = new JLabel("Tour:");
         GridBagConstraints gbc_tourBusLabel = new GridBagConstraints();
         gbc_tourBusLabel.anchor = GridBagConstraints.WEST;
         gbc_tourBusLabel.insets = new Insets(0, 0, 5, 5);
         gbc_tourBusLabel.gridx = 0;
-        gbc_tourBusLabel.gridy = 0;
+        gbc_tourBusLabel.gridy = 1;
         parkPanel.add(tourBusLabel, gbc_tourBusLabel);
 
         tourBusProgressBar = new JProgressBar();
@@ -213,7 +235,7 @@ public class VistaParque2 extends JFrame {
         gbc_tourBusProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_tourBusProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_tourBusProgressBar.gridx = 1;
-        gbc_tourBusProgressBar.gridy = 0;
+        gbc_tourBusProgressBar.gridy = 1;
         parkPanel.add(tourBusProgressBar, gbc_tourBusProgressBar);
 
         JLabel pinwheelLabel = new JLabel("Molitenes:");
@@ -221,7 +243,7 @@ public class VistaParque2 extends JFrame {
         gbc_pinwheelLabel.anchor = GridBagConstraints.WEST;
         gbc_pinwheelLabel.insets = new Insets(0, 0, 5, 5);
         gbc_pinwheelLabel.gridx = 0;
-        gbc_pinwheelLabel.gridy = 1;
+        gbc_pinwheelLabel.gridy = 2;
         parkPanel.add(pinwheelLabel, gbc_pinwheelLabel);
 
         pinwheelProgressBar = new JProgressBar();
@@ -231,24 +253,8 @@ public class VistaParque2 extends JFrame {
         gbc_pinwheelProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_pinwheelProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_pinwheelProgressBar.gridx = 1;
-        gbc_pinwheelProgressBar.gridy = 1;
+        gbc_pinwheelProgressBar.gridy = 2;
         parkPanel.add(pinwheelProgressBar, gbc_pinwheelProgressBar);
-
-        JLabel parkVisitorsLabel = new JLabel("Visitantes:");
-        GridBagConstraints gbc_parkVisitorsLabel = new GridBagConstraints();
-        gbc_parkVisitorsLabel.anchor = GridBagConstraints.WEST;
-        gbc_parkVisitorsLabel.insets = new Insets(0, 0, 5, 5);
-        gbc_parkVisitorsLabel.gridx = 0;
-        gbc_parkVisitorsLabel.gridy = 2;
-        parkPanel.add(parkVisitorsLabel, gbc_parkVisitorsLabel);
-
-        parkVisitorsCountLabel = new JLabel("0");
-        parkVisitorsCountLabel.setToolTipText("Cantidad de visitantes en el parque");
-        GridBagConstraints gbc_parkVisitorsCountLabel = new GridBagConstraints();
-        gbc_parkVisitorsCountLabel.insets = new Insets(0, 0, 5, 0);
-        gbc_parkVisitorsCountLabel.gridx = 1;
-        gbc_parkVisitorsCountLabel.gridy = 2;
-        parkPanel.add(parkVisitorsCountLabel, gbc_parkVisitorsCountLabel);
 
         JScrollPane parkScrollPane = new JScrollPane();
         GridBagConstraints gbc_parkScrollPane = new GridBagConstraints();
@@ -311,28 +317,28 @@ public class VistaParque2 extends JFrame {
         cashRegistersPanel.setLayout(new BoxLayout(cashRegistersPanel, BoxLayout.X_AXIS));
 
         cashRegister1TextField = new JTextField();
-        cashRegister1TextField.setToolTipText("Caja 1");
+        cashRegister1TextField.setToolTipText("Clientes en caja 1");
         cashRegister1TextField.setText("0");
         cashRegister1TextField.setEditable(false);
         cashRegistersPanel.add(cashRegister1TextField);
         cashRegister1TextField.setColumns(10);
 
         cashRegister2TextField = new JTextField();
-        cashRegister2TextField.setToolTipText("Caja 2");
+        cashRegister2TextField.setToolTipText("Clientes en caja 2");
         cashRegister2TextField.setEditable(false);
         cashRegister2TextField.setText("0");
         cashRegistersPanel.add(cashRegister2TextField);
         cashRegister2TextField.setColumns(10);
 
         cashRegister3TextField = new JTextField();
-        cashRegister3TextField.setToolTipText("Caja 3");
+        cashRegister3TextField.setToolTipText("Clientes en caja 3");
         cashRegister3TextField.setEditable(false);
         cashRegister3TextField.setText("0");
         cashRegistersPanel.add(cashRegister3TextField);
         cashRegister3TextField.setColumns(10);
 
         cashRegister4TextField = new JTextField();
-        cashRegister4TextField.setToolTipText("Caja 4");
+        cashRegister4TextField.setToolTipText("Clientes en caja 4");
         cashRegister4TextField.setText("0");
         cashRegister4TextField.setEditable(false);
         cashRegistersPanel.add(cashRegister4TextField);
@@ -346,7 +352,7 @@ public class VistaParque2 extends JFrame {
         gbc_shopScrollPane.gridy = 2;
         shopPanel.add(shopScrollPane, gbc_shopScrollPane);
 
-        JTextArea shopTextArea = new JTextArea();
+        shopTextArea = new JTextArea();
         shopTextArea.setEditable(false);
         shopScrollPane.setViewportView(shopTextArea);
 
@@ -558,6 +564,7 @@ public class VistaParque2 extends JFrame {
         lighthousePanel.add(stairsLabel, gbc_stairsLabel);
 
         stairsProgressBar = new JProgressBar();
+        stairsProgressBar.setToolTipText("Cantidad de visitantes en la escalera");
         stairsProgressBar.setStringPainted(true);
         GridBagConstraints gbc_stairsProgressBar = new GridBagConstraints();
         gbc_stairsProgressBar.fill = GridBagConstraints.HORIZONTAL;
@@ -575,6 +582,7 @@ public class VistaParque2 extends JFrame {
         lighthousePanel.add(slide1Label, gbc_slide1Label);
 
         slide1ProgressBar = new JProgressBar();
+        slide1ProgressBar.setToolTipText("Estado del tobogán 1");
         slide1ProgressBar.setStringPainted(true);
         GridBagConstraints gbc_slide1ProgressBar = new GridBagConstraints();
         gbc_slide1ProgressBar.fill = GridBagConstraints.HORIZONTAL;
@@ -592,6 +600,7 @@ public class VistaParque2 extends JFrame {
         lighthousePanel.add(slide2Label, gbc_slide2Label);
 
         slide2ProgressBar = new JProgressBar();
+        slide2ProgressBar.setToolTipText("Estado del tobogán 2");
         slide2ProgressBar.setStringPainted(true);
         GridBagConstraints gbc_slide2ProgressBar = new GridBagConstraints();
         gbc_slide2ProgressBar.fill = GridBagConstraints.HORIZONTAL;
@@ -622,7 +631,149 @@ public class VistaParque2 extends JFrame {
         JLabel threadCountLabel = new JLabel("Hilos en ejecución:");
         southPanel.add(threadCountLabel);
 
-        JLabel threadCountValueLabel = new JLabel("0");
+        threadCountValueLabel = new JLabel("0");
         southPanel.add(threadCountValueLabel);
+    }
+
+    public static final VistaParque2 getInstancia() {
+        return instancia;
+    }
+
+    public synchronized void finalizar() {
+        mainProgressBar.setVisible(false);
+        startButton.setEnabled(true);
+        visitorsCountSpinner.setEnabled(true);
+
+    }
+
+    public synchronized void printParque(String mensaje) {
+        System.out.println(mensaje);
+        parkTextArea.append(mensaje + "\n");
+        parkTextArea.setCaretPosition(parkTextArea.getDocument().getLength());
+    }
+
+    @Deprecated
+    public synchronized void printTour(String mensaje) {
+        System.out.println(mensaje);
+        parkTextArea.append(mensaje + "\n");
+        parkTextArea.setCaretPosition(parkTextArea.getDocument().getLength());
+    }
+
+    /*
+     * public synchronized void printShop(String mensaje) {
+     * System.out.println(mensaje); shopTextArea.append(mensaje + "\n");
+     * shopTextArea.setCaretPosition(shopTextArea.getDocument().getLength()); }
+     */
+
+    /**
+     * Muestra un mensaje en la consola y en el area de texto de la actividad
+     * "Carrera de gomones por el río".
+     *
+     * @param mensaje el mensaje
+     */
+    public synchronized void printCarreraGomones(String mensaje) {
+        System.out.println(mensaje);
+        inflatableBoatRaceTextArea.append(mensaje + "\n");
+        inflatableBoatRaceTextArea.setCaretPosition(inflatableBoatRaceTextArea.getDocument().getLength());
+    }
+
+    /**
+     * Agrega 1 a la barra del tren.
+     */
+    public synchronized void agregarPasajero() {
+        trainProgressBar.setValue(trainProgressBar.getValue() + 1);
+        trainProgressBar.setString(String.format("Tren: %d/15", trainProgressBar.getValue()));
+    }
+
+    /**
+     * Saca 1 de la barra del tren.
+     */
+    public synchronized void sacarPasajero() {
+        trainProgressBar.setValue(trainProgressBar.getValue() - 1);
+        trainProgressBar.setString(String.format("Tren: %d/15", trainProgressBar.getValue()));
+    }
+
+    /**
+     * Agrega 1 a la barra de las bicicletas.
+     */
+    public synchronized void agregarBicicleta() {
+        bikesProgressBar.setValue(bikesProgressBar.getValue() + 1);
+        bikesProgressBar.setString(String.format("Bicicletas: %d/10", bikesProgressBar.getValue()));
+    }
+
+    /**
+     * Saca 1 de la barra de las bicicletas.
+     */
+    public synchronized void sacarBicicleta() {
+        bikesProgressBar.setValue(bikesProgressBar.getValue() - 1);
+        bikesProgressBar.setString(String.format("Bicicletas: %d/10", bikesProgressBar.getValue()));
+    }
+
+    /**
+     * Agrega 1 a la barra de gomones.
+     */
+    public synchronized void agregarGomon() {
+        simpleInflatableBoatsProgressBar.setValue(simpleInflatableBoatsProgressBar.getValue() + 1);
+        simpleInflatableBoatsProgressBar
+                .setString(String.format("Gomones: %d/5", simpleInflatableBoatsProgressBar.getValue()));
+    }
+
+    /**
+     * Saca 1 de la barra de gomones.
+     */
+    public synchronized void sacarGomon() {
+        simpleInflatableBoatsProgressBar.setValue(simpleInflatableBoatsProgressBar.getValue() - 1);
+        simpleInflatableBoatsProgressBar
+                .setString(String.format("Gomones: %d/5", simpleInflatableBoatsProgressBar.getValue()));
+    }
+
+    public synchronized void printRestaurantes(String mensaje) {
+        System.out.println(mensaje);
+        restaurantsTextArea.append(mensaje + "\n");
+        restaurantsTextArea.setCaretPosition(restaurantsTextArea.getDocument().getLength());
+    }
+
+    public synchronized void agregarCliente(int restaurante) {
+        JProgressBar progressBar = null;
+
+        switch (restaurante) {
+        case 0:
+            progressBar = restaurant1ProgressBar;
+            break;
+        case 1:
+            progressBar = restaurant2ProgressBar;
+            break;
+        case 2:
+            progressBar = restaurant3ProgressBar;
+            break;
+        }
+
+        if (progressBar != null)
+            progressBar.setValue(progressBar.getValue() + 1);
+    }
+
+    public synchronized void sacarCliente(int restaurante) {
+        JProgressBar progressBar = null;
+
+        switch (restaurante) {
+        case 0:
+            progressBar = restaurant1ProgressBar;
+            break;
+        case 1:
+            progressBar = restaurant2ProgressBar;
+            break;
+        case 2:
+            progressBar = restaurant3ProgressBar;
+            break;
+        }
+
+        if (progressBar != null)
+            progressBar.setValue(progressBar.getValue() - 1);
+    }
+
+    public synchronized void printFaroMirador(String mensaje) {
+        System.out.println(mensaje);
+        lighthouseTextArea.append(mensaje + "\n");
+        lighthouseTextArea.setCaretPosition(lighthouseTextArea.getDocument().getLength());
     }
 }
