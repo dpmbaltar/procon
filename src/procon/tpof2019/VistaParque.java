@@ -677,13 +677,43 @@ public class VistaParque extends JFrame {
     }
 
     public synchronized void agregarClienteShop() {
-        int visitorsCount = Integer.valueOf(shopVisitorsCountLabel.getText());
-        shopVisitorsCountLabel.setText(String.valueOf(visitorsCount + 1));
+        shopVisitorsCountLabel.setText(String.valueOf(Integer.valueOf(shopVisitorsCountLabel.getText()) + 1));
     }
 
     public synchronized void sacarClienteShop() {
-        int visitorsCount = Integer.valueOf(shopVisitorsCountLabel.getText());
-        shopVisitorsCountLabel.setText(String.valueOf(visitorsCount - 1));
+        shopVisitorsCountLabel.setText(String.valueOf(Integer.valueOf(shopVisitorsCountLabel.getText()) - 1));
+    }
+
+    public synchronized void agregarClienteCaja(int i) {
+        JTextField textField = null;
+
+        switch (i) {
+        case 1:
+            textField = cashRegister1TextField;
+            break;
+        case 2:
+            textField = cashRegister2TextField;
+            break;
+        }
+
+        if (textField != null)
+            textField.setText(String.valueOf(Integer.valueOf(textField.getText()) + 1));
+    }
+
+    public synchronized void sacarClienteCaja(int i) {
+        JTextField textField = null;
+
+        switch (i) {
+        case 1:
+            textField = cashRegister1TextField;
+            break;
+        case 2:
+            textField = cashRegister2TextField;
+            break;
+        }
+
+        if (textField != null)
+            textField.setText(String.valueOf(Integer.valueOf(textField.getText()) - 1));
     }
 
     /**

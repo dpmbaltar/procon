@@ -3,7 +3,7 @@ package procon.tpof2019;
 import java.util.LinkedList;
 
 /**
- * Shop donde pasan el rato los visitantes y compran souvenires opcionalmente.
+ * Shop donde pasan el rato los visitantes y compran souvenir opcionalmente.
  * Implementado con Monitor.
  *
  * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
@@ -20,16 +20,17 @@ public class Shop {
      */
     private final LinkedList<String> caja2 = new LinkedList<>();
 
+    /**
+     * Vista del parque.
+     */
     private final VistaParque vista = VistaParque.getInstancia();
 
     /**
      * Visitante entra al shop.
-     *
-     * @throws InterruptedException
      */
     public synchronized void entrar() {
-        String visitante = Thread.currentThread().getName();
-        vista.printShop(String.format("%s entra al shop", visitante));
+        vista.printShop(String.format("%s entra al shop", Thread.currentThread().getName()));
+        vista.agregarClienteShop();
     }
 
     /**
@@ -40,7 +41,6 @@ public class Shop {
     public synchronized int comprar() {
         int caja = -1;
         String visitante = Thread.currentThread().getName();
-        vista.printShop(String.format("%s decide comprar un souvenir", visitante));
 
         // Ir hacia la caja con menos gente
         if (caja1.size() <= caja2.size()) {
@@ -50,6 +50,9 @@ public class Shop {
             caja2.add(visitante);
             caja = 2;
         }
+
+        vista.printShop(String.format("%s decide comprar souvenir", visitante));
+        vista.agregarClienteCaja(caja);
 
         return caja;
     }
@@ -74,8 +77,10 @@ public class Shop {
             while (!caja.peek().equals(visitante))
                 wait();
 
-            caja.remove();
             vista.printShop(String.format("%s paga en caja %d", visitante, cajaElegida));
+            vista.sacarClienteCaja(cajaElegida);
+            caja.remove();
+            notifyAll();
         }
     }
 
@@ -83,8 +88,8 @@ public class Shop {
      * Visitante sale del shop.
      */
     public synchronized void salir() {
-        String visitante = Thread.currentThread().getName();
-        vista.printShop(String.format("%s sale del shop", visitante));
+        vista.printShop(String.format("%s sale del shop", Thread.currentThread().getName()));
+        vista.sacarClienteShop();
     }
 
 }
