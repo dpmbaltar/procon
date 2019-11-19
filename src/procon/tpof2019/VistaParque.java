@@ -59,7 +59,9 @@ public class VistaParque extends JFrame {
     private JLabel threadCountValueLabel;
 
     private static final VistaParque instancia = new VistaParque();
-
+public synchronized JTextArea getParkTextArea() {
+    return parkTextArea;
+}
     /**
      * Launch the application.
      */
@@ -70,6 +72,19 @@ public class VistaParque extends JFrame {
                 try {
                     VistaParque frame = VistaParque.getInstancia();
                     frame.setVisible(true);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                while (true) {
+                                    Thread.sleep(Tiempo.enHoras(2));
+                                    VistaParque.getInstancia().getParkTextArea().append("2 hrs\n");
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -105,6 +120,11 @@ public class VistaParque extends JFrame {
                 visitorsCountSpinner.setEnabled(false);
                 startButton.setEnabled(false);
                 mainProgressBar.setVisible(true);
+                parkTextArea.setText(null);
+                shopTextArea.setText(null);
+                inflatableBoatRaceTextArea.setText(null);
+                restaurantsTextArea.setText(null);
+                lighthouseTextArea.setText(null);
 
                 new Thread(new Runnable() {
                     @Override
@@ -167,21 +187,25 @@ public class VistaParque extends JFrame {
         northPanel.add(timeValueLabel, gbc_timeValueLabel);
 
         timeSlider = new JSlider();
-        timeSlider.setMinorTickSpacing(500);
+        timeSlider.setMinorTickSpacing(250);
         timeSlider.setPaintTicks(true);
-        timeSlider.setMinimum(500);
+        timeSlider.setMinimum(250);
         timeSlider.setSnapToTicks(true);
         timeSlider.addChangeListener(new ChangeListener() {
+            private int lastValue = -1;
             @Override
             public void stateChanged(ChangeEvent ce) {
-                int value = timeSlider.getValue();
-                Tiempo.setDuracion(1000 * 1000 / value);
-
-                if ((value % 500) == 0)
-                    timeValueLabel.setText(String.format("%.1fx", value / (double) Tiempo.DURACION_DE_HORA));
+                int newValue = timeSlider.getValue();
+                if (newValue != lastValue) {
+                    lastValue = newValue;
+                    Tiempo.setDuracion(1000 * 1000 / newValue);
+                    if ((newValue % 250) == 0) {
+                        timeValueLabel.setText(String.format("1 hora = %d milis", Tiempo.getDuracion()));
+                    }
+                }
             }
         });
-        timeSlider.setMaximum(2000);
+        timeSlider.setMaximum(5000);
         timeSlider.setValue(1000);
         GridBagConstraints gbc_timeSlider = new GridBagConstraints();
         gbc_timeSlider.fill = GridBagConstraints.HORIZONTAL;
