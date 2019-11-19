@@ -37,6 +37,9 @@ public class Restaurante {
      */
     private final Condition hayLugar = mutex.newCondition();
 
+    /**
+     * Vista del parque.
+     */
     private final VistaParque vista = VistaParque.getInstancia();
 
     /**
@@ -68,7 +71,7 @@ public class Restaurante {
 
             clientes++;
             visitante = Thread.currentThread().getName();
-            vista.printRestaurantes(String.format("%s entra al restaurante %d", visitante, numero));
+            vista.printRestaurantes(String.format("%s entra a restaurante %d", visitante, numero));
             vista.agregarClienteRestaurante(numero);
         } finally {
             mutex.unlock();
@@ -84,7 +87,7 @@ public class Restaurante {
         mutex.lock();
         try {
             visitante = Thread.currentThread().getName();
-            vista.printRestaurantes(String.format("%s sale del restaurante %d", visitante, numero));
+            vista.printRestaurantes(String.format("%s sale de restaurante %d", visitante, numero));
             vista.sacarClienteRestaurante(numero);
             clientes--;
             hayLugar.signalAll();
