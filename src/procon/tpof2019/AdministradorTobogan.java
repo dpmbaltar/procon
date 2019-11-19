@@ -30,7 +30,7 @@ public class AdministradorTobogan implements Runnable {
     }
 
     /**
-     * Finalizar su trabjo.
+     * Finalizar su trabajo.
      */
     public void finalizar() {
         asignar = false;
@@ -42,10 +42,12 @@ public class AdministradorTobogan implements Runnable {
     @Override
     public void run() {
         FaroMirador faroMirador = parque.getFaroMirador();
+        int descensos = 0;
 
         try {
             while (asignar) {
-                faroMirador.asignarTobogan();
+                faroMirador.asignarTobogan(descensos);
+                descensos++;
             }
 
             VistaParque.getInstancia().printFaroMirador("<<Adm. tobogán finaliza>>");
