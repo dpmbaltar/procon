@@ -92,9 +92,9 @@ public class VistaParque extends JFrame {
         JPanel northPanel = new JPanel();
         contentPane.add(northPanel, BorderLayout.NORTH);
         GridBagLayout gbl_northPanel = new GridBagLayout();
-        gbl_northPanel.columnWidths = new int[] { 0, 0, 65, 0, 48, 0, 200, 0 };
+        gbl_northPanel.columnWidths = new int[] { 0, 0, 65, 0, 0, 200, 0 };
         gbl_northPanel.rowHeights = new int[] { 27, 0 };
-        gbl_northPanel.columnWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+        gbl_northPanel.columnWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE };
         gbl_northPanel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
         northPanel.setLayout(gbl_northPanel);
 
@@ -124,7 +124,8 @@ public class VistaParque extends JFrame {
             }
         });
 
-        JLabel visitorsThreadCountLabel = new JLabel("Cantidad de visitantes (hilos):");
+        JLabel visitorsThreadCountLabel = new JLabel("Cantidad de visitantes:");
+        visitorsThreadCountLabel.setToolTipText("Cada visitante es un hilo de ejecución");
         GridBagConstraints gbc_visitorsThreadCountLabel = new GridBagConstraints();
         gbc_visitorsThreadCountLabel.insets = new Insets(0, 0, 0, 5);
         gbc_visitorsThreadCountLabel.gridx = 0;
@@ -156,18 +157,10 @@ public class VistaParque extends JFrame {
         gbc_mainProgressBar.gridy = 0;
         northPanel.add(mainProgressBar, gbc_mainProgressBar);
 
-        JLabel timeLabel = new JLabel("Tiempo:");
-        GridBagConstraints gbc_timeLabel = new GridBagConstraints();
-        gbc_timeLabel.anchor = GridBagConstraints.EAST;
-        gbc_timeLabel.insets = new Insets(0, 0, 0, 5);
-        gbc_timeLabel.gridx = 4;
-        gbc_timeLabel.gridy = 0;
-        northPanel.add(timeLabel, gbc_timeLabel);
-
-        timeValueLabel = new JLabel("1x");
+        timeValueLabel = new JLabel("1 hora = 1000 milis");
         GridBagConstraints gbc_timeValueLabel = new GridBagConstraints();
         gbc_timeValueLabel.insets = new Insets(0, 0, 0, 5);
-        gbc_timeValueLabel.gridx = 5;
+        gbc_timeValueLabel.gridx = 4;
         gbc_timeValueLabel.gridy = 0;
         northPanel.add(timeValueLabel, gbc_timeValueLabel);
 
@@ -194,7 +187,7 @@ public class VistaParque extends JFrame {
         timeSlider.setValue(1000);
         GridBagConstraints gbc_timeSlider = new GridBagConstraints();
         gbc_timeSlider.fill = GridBagConstraints.HORIZONTAL;
-        gbc_timeSlider.gridx = 6;
+        gbc_timeSlider.gridx = 5;
         gbc_timeSlider.gridy = 0;
         northPanel.add(timeSlider, gbc_timeSlider);
 
