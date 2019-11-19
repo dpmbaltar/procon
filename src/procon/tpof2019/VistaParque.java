@@ -59,9 +59,7 @@ public class VistaParque extends JFrame {
     private JLabel threadCountValueLabel;
 
     private static final VistaParque instancia = new VistaParque();
-public synchronized JTextArea getParkTextArea() {
-    return parkTextArea;
-}
+
     /**
      * Launch the application.
      */
@@ -72,19 +70,6 @@ public synchronized JTextArea getParkTextArea() {
                 try {
                     VistaParque frame = VistaParque.getInstancia();
                     frame.setVisible(true);
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                while (true) {
-                                    Thread.sleep(Tiempo.enHoras(2));
-                                    VistaParque.getInstancia().getParkTextArea().append("2 hrs\n");
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
