@@ -139,8 +139,10 @@ public class FaroMirador {
         vista.printFaroMirador(String.format("%s termina descenso en tobogan %d", visitante, tobogan));
         vista.desocuparTobogan(tobogan);
 
+        Thread.sleep(Tiempo.entreMinutos(0, 2));
+
         // Liberar el tobogán utilizado (nunca debería bloquearse)
-        visitante = toboganes[tobogan].take();
+        toboganes[tobogan].take();
     }
 
 }
