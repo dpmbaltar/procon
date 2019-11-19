@@ -3,7 +3,6 @@ package procon.tpof2019;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Faro-Mirador con vista a 40 m de altura y descenso en tobogán.
@@ -12,6 +11,11 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
  */
 public class FaroMirador {
+
+    /**
+     * Capacidad de la escalera.
+     */
+    public static final int CAPACIDAD_ESCALERA = 10;
 
     /**
      * Se utiliza para asignar toboganes según el orden de llegada de los visitantes.
@@ -70,7 +74,7 @@ public class FaroMirador {
     public void iniciarActividad() throws InterruptedException {
         String visitante = Thread.currentThread().getName();
         vista.printFaroMirador(String.format("%s va al Faro-Mirador", visitante));
-        Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+        Thread.sleep(Tiempo.entreMinutos(10, 20));
         colaFaroMirador.put(visitante);
     }
 
@@ -83,8 +87,10 @@ public class FaroMirador {
         String visitante = Thread.currentThread().getName();
         escaleraFaroMirador.put(visitante);
         vista.printFaroMirador(String.format("%s inicia ascenso", visitante));
+        vista.agregarVisitanteEscalera();
         colaFaroMirador.poll();
-        Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+
+        Thread.sleep(Tiempo.entreMinutos(30, 40));
     }
 
     /**
@@ -100,12 +106,13 @@ public class FaroMirador {
             while (!visitante.contentEquals(escaleraFaroMirador.peek()))
                 this.wait();
 
-            vista.printFaroMirador(String.format("%s termina ascenso. Observa desde lo alto...", visitante));
+            vista.printFaroMirador(String.format("%s termina ascenso. Observa...", visitante));
+            vista.sacarVisitanteEscalera();
             escaleraFaroMirador.poll();
             this.notifyAll();
         }
 
-        Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+        Thread.sleep(Tiempo.entreMinutos(15, 45));
     }
 
     /**
@@ -118,7 +125,7 @@ public class FaroMirador {
         int tobogan = descenso.take();
         String visitante = Thread.currentThread().getName();
 
-        vista.printFaroMirador(String.format("%s es asignado el tobogan %d", visitante, tobogan));
+        vista.printFaroMirador(String.format("%s es asignado tobogan %d", visitante, tobogan));
 
         // Utilizar el tobogán asignado, cuando esté disponible
         if (tobogan == 0)
@@ -126,8 +133,9 @@ public class FaroMirador {
         else if (tobogan == 1)
             tobogan2.put(visitante);
 
-        vista.printFaroMirador(String.format("%s inicia descenso en el tobogan %d", visitante, tobogan));
-        Thread.sleep(1000);
+        vista.ocuparTobogan(tobogan);
+        vista.printFaroMirador(String.format("%s inicia descenso en tobogan %d", visitante, tobogan));
+        Thread.sleep(Tiempo.entreMinutos(10, 15));
 
         return tobogan;
     }
@@ -140,7 +148,7 @@ public class FaroMirador {
      */
     public void finalizarDescensoEnTobogan(int tobogan) throws InterruptedException {
         String visitante = Thread.currentThread().getName();
-        vista.printFaroMirador(String.format("%s termina descenso en el tobogan %d", visitante, tobogan));
+        vista.printFaroMirador(String.format("%s termina descenso en tobogan %d", visitante, tobogan));
 
         // Liberar el tobogán utilizado
         if (tobogan == 0)
@@ -148,6 +156,7 @@ public class FaroMirador {
         else if (tobogan == 1)
             visitante = tobogan2.take();
 
+        vista.desocuparTobogan(tobogan);
         vista.printFaroMirador(String.format("%s vuelve del Faro-Mirador", visitante));
     }
 

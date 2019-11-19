@@ -795,40 +795,52 @@ public class VistaParque extends JFrame {
 
     public synchronized void agregarClienteRestaurante(int restaurante) {
         JProgressBar progressBar = null;
+        int capacidad = 0;
 
         switch (restaurante) {
         case 0:
             progressBar = restaurant1ProgressBar;
+            capacidad = 10;
             break;
         case 1:
             progressBar = restaurant2ProgressBar;
+            capacidad = 15;
             break;
         case 2:
             progressBar = restaurant3ProgressBar;
+            capacidad = 20;
             break;
         }
 
-        if (progressBar != null)
+        if (progressBar != null) {
             progressBar.setValue(progressBar.getValue() + 1);
+            progressBar.setString(String.format("%d/%d", progressBar.getValue(), capacidad));
+        }
     }
 
     public synchronized void sacarClienteRestaurante(int restaurante) {
         JProgressBar progressBar = null;
+        int capacidad = 0;
 
         switch (restaurante) {
         case 0:
             progressBar = restaurant1ProgressBar;
+            capacidad = 10;
             break;
         case 1:
             progressBar = restaurant2ProgressBar;
+            capacidad = 15;
             break;
         case 2:
             progressBar = restaurant3ProgressBar;
+            capacidad = 20;
             break;
         }
 
-        if (progressBar != null)
+        if (progressBar != null) {
             progressBar.setValue(progressBar.getValue() - 1);
+            progressBar.setString(String.format("%d/%d", progressBar.getValue(), capacidad));
+        }
     }
 
     public synchronized void printFaroMirador(String mensaje) {
@@ -836,4 +848,51 @@ public class VistaParque extends JFrame {
         lighthouseTextArea.append(mensaje + "\n");
         lighthouseTextArea.setCaretPosition(lighthouseTextArea.getDocument().getLength());
     }
+
+    public synchronized void agregarVisitanteEscalera() {
+        stairsProgressBar.setValue(stairsProgressBar.getValue() + 1);
+        stairsProgressBar.setString(stairsProgressBar.getValue() + "/" + FaroMirador.CAPACIDAD_ESCALERA);
+    }
+
+    public synchronized void sacarVisitanteEscalera() {
+        stairsProgressBar.setValue(stairsProgressBar.getValue() - 1);
+        stairsProgressBar.setString(stairsProgressBar.getValue() + "/" + FaroMirador.CAPACIDAD_ESCALERA);
+    }
+
+    public synchronized void ocuparTobogan(int tobogan) {
+        JProgressBar progressBar = null;
+
+        switch (tobogan) {
+        case 0:
+            progressBar = slide1ProgressBar;
+            break;
+        case 1:
+            progressBar = slide2ProgressBar;
+            break;
+        }
+
+        if (progressBar != null) {
+            progressBar.setValue(progressBar.getValue() + 1);
+            progressBar.setString("Ocupado");
+        }
+    }
+
+    public synchronized void desocuparTobogan(int tobogan) {
+        JProgressBar progressBar = null;
+
+        switch (tobogan) {
+        case 0:
+            progressBar = slide1ProgressBar;
+            break;
+        case 1:
+            progressBar = slide2ProgressBar;
+            break;
+        }
+
+        if (progressBar != null) {
+            progressBar.setValue(progressBar.getValue() - 1);
+            progressBar.setString("Desocupado");
+        }
+    }
+
 }
