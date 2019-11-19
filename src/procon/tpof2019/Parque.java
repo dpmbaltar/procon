@@ -3,7 +3,6 @@ package procon.tpof2019;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Parque ecológico, clase principal desde donde se accede a las actividades.
@@ -30,12 +29,12 @@ public class Parque {
     /**
      * Cantidad máxima de visitantes por tour.
      */
-    private static final int CAPACIDAD_TOUR = 25;
+    public static final int CAPACIDAD_TOUR = 25;
 
     /**
      * Cantidad de molinetes de la entrada al parque.
      */
-    private static final int CANTIDAD_MOLINETES = 5;
+    public static final int CANTIDAD_MOLINETES = 5;
 
     /**
      * Indica si el parque está abierto o cerrado.
@@ -244,7 +243,7 @@ public class Parque {
      */
     public void finalizarTour() throws InterruptedException, BrokenBarrierException {
         finalizarTour.await();
-        vista.printTour(String.format("%s finaliza viaje al parque en tour", Thread.currentThread().getName()));
+        vista.printParque(String.format("%s llega al parque en tour", Thread.currentThread().getName()));
     }
 
     /**
@@ -254,14 +253,20 @@ public class Parque {
      */
     public void entrar() throws InterruptedException {
         String visitante = Thread.currentThread().getName();
+
         vista.printParque(String.format("%s llega a los molinetes", visitante));
         molinetes.acquire();
-        Thread.sleep(ThreadLocalRandom.current().nextInt(0, 3) * 100);
+        vista.agregarVisitanteMolinete();
+
+        Thread.sleep(Tiempo.entreMinutos(1, 5));
+
         vista.printParque(String.format("%s entra al parque", visitante));
+        vista.sacarVisitanteMolinete();
         molinetes.release();
 
         synchronized (this) {
             visitantes++;
+            vista.agregarVisitante();
         }
     }
 
@@ -270,6 +275,7 @@ public class Parque {
      */
     public synchronized void finalizarVisita() {
         vista.printParque(String.format("%s finaliza visita al parque", Thread.currentThread().getName()));
+        vista.sacarVisitante();
         visitantes--;
     }
 

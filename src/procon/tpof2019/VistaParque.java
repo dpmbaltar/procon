@@ -665,6 +665,24 @@ public class VistaParque extends JFrame {
         parkTextArea.setCaretPosition(parkTextArea.getDocument().getLength());
     }
 
+    public synchronized void agregarVisitanteMolinete() {
+        pinwheelProgressBar.setValue(pinwheelProgressBar.getValue() + 1);
+        pinwheelProgressBar.setString(pinwheelProgressBar.getValue() + "/" + Parque.CANTIDAD_MOLINETES);
+    }
+
+    public synchronized void sacarVisitanteMolinete() {
+        pinwheelProgressBar.setValue(pinwheelProgressBar.getValue() - 1);
+        pinwheelProgressBar.setString(pinwheelProgressBar.getValue() + "/" + Parque.CANTIDAD_MOLINETES);
+    }
+
+    public synchronized void agregarVisitante() {
+        parkVisitorsCountLabel.setText(String.valueOf(Integer.valueOf(parkVisitorsCountLabel.getText()) + 1));
+    }
+
+    public synchronized void sacarVisitante() {
+        parkVisitorsCountLabel.setText(String.valueOf(Integer.valueOf(parkVisitorsCountLabel.getText()) - 1));
+    }
+
     @Deprecated
     public synchronized void printTour(String mensaje) {
         System.out.println(mensaje);
@@ -842,12 +860,12 @@ public class VistaParque extends JFrame {
         lighthouseTextArea.setCaretPosition(lighthouseTextArea.getDocument().getLength());
     }
 
-    public synchronized void agregarVisitanteEscalera() {
+    public synchronized void agregarVisitanteEscaleraFaroMirador() {
         stairsProgressBar.setValue(stairsProgressBar.getValue() + 1);
         stairsProgressBar.setString(stairsProgressBar.getValue() + "/" + FaroMirador.CAPACIDAD_ESCALERA);
     }
 
-    public synchronized void sacarVisitanteEscalera() {
+    public synchronized void sacarVisitanteEscaleraFaroMirador() {
         stairsProgressBar.setValue(stairsProgressBar.getValue() - 1);
         stairsProgressBar.setString(stairsProgressBar.getValue() + "/" + FaroMirador.CAPACIDAD_ESCALERA);
     }

@@ -78,7 +78,7 @@ public class FaroMirador {
 
         escalera.put(visitante);
         vista.printFaroMirador(String.format("%s inicia ascenso", visitante));
-        vista.agregarVisitanteEscalera();
+        vista.agregarVisitanteEscaleraFaroMirador();
 
         Thread.sleep(Tiempo.entreMinutos(20, 30));
     }
@@ -97,7 +97,7 @@ public class FaroMirador {
                 this.wait();
 
             vista.printFaroMirador(String.format("%s termina ascenso. Observa...", visitante));
-            vista.sacarVisitanteEscalera();
+            vista.sacarVisitanteEscaleraFaroMirador();
             escalera.poll(); // No bloquea el hilo como lo hace el método take()
             this.notifyAll();
         }
