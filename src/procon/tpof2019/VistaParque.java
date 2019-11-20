@@ -171,6 +171,7 @@ public class VistaParque extends JFrame {
         timeSlider.setSnapToTicks(true);
         timeSlider.addChangeListener(new ChangeListener() {
             private int lastValue = -1;
+
             @Override
             public void stateChanged(ChangeEvent ce) {
                 int newValue = timeSlider.getValue();
@@ -383,6 +384,8 @@ public class VistaParque extends JFrame {
         inflatableBoatRacePanel.add(trainLabel, gbc_trainLabel);
 
         trainProgressBar = new JProgressBar();
+        trainProgressBar.setString("0/15");
+        trainProgressBar.setMaximum(15);
         trainProgressBar.setStringPainted(true);
         GridBagConstraints gbc_trainProgressBar = new GridBagConstraints();
         gbc_trainProgressBar.fill = GridBagConstraints.HORIZONTAL;
@@ -400,6 +403,7 @@ public class VistaParque extends JFrame {
         inflatableBoatRacePanel.add(bikesLabel, gbc_bikesLabel);
 
         bikesProgressBar = new JProgressBar();
+        bikesProgressBar.setString("10/10");
         bikesProgressBar.setValue(10);
         bikesProgressBar.setMaximum(10);
         bikesProgressBar.setStringPainted(true);
@@ -419,6 +423,7 @@ public class VistaParque extends JFrame {
         inflatableBoatRacePanel.add(simpleInflatableBoatsLabel, gbc_simpleInflatableBoatsLabel);
 
         simpleInflatableBoatsProgressBar = new JProgressBar();
+        simpleInflatableBoatsProgressBar.setString("5/5");
         simpleInflatableBoatsProgressBar.setValue(5);
         simpleInflatableBoatsProgressBar.setMaximum(5);
         simpleInflatableBoatsProgressBar.setStringPainted(true);
@@ -438,6 +443,7 @@ public class VistaParque extends JFrame {
         inflatableBoatRacePanel.add(doubleInflatableBoatsLabel, gbc_doubleInflatableBoatsLabel);
 
         doubleInflatableBoatsProgressBar = new JProgressBar();
+        doubleInflatableBoatsProgressBar.setString("5/5");
         doubleInflatableBoatsProgressBar.setValue(5);
         doubleInflatableBoatsProgressBar.setMaximum(5);
         doubleInflatableBoatsProgressBar.setStringPainted(true);
@@ -753,7 +759,7 @@ public class VistaParque extends JFrame {
      */
     public synchronized void agregarPasajero() {
         trainProgressBar.setValue(trainProgressBar.getValue() + 1);
-        trainProgressBar.setString(String.format("Tren: %d/15", trainProgressBar.getValue()));
+        trainProgressBar.setString(trainProgressBar.getValue() + "/" + CarreraGomones.CAPACIDAD_TREN);
     }
 
     /**
@@ -761,7 +767,7 @@ public class VistaParque extends JFrame {
      */
     public synchronized void sacarPasajero() {
         trainProgressBar.setValue(trainProgressBar.getValue() - 1);
-        trainProgressBar.setString(String.format("Tren: %d/15", trainProgressBar.getValue()));
+        trainProgressBar.setString(trainProgressBar.getValue() + "/" + CarreraGomones.CAPACIDAD_TREN);
     }
 
     /**
@@ -781,21 +787,21 @@ public class VistaParque extends JFrame {
     }
 
     /**
-     * Agrega 1 a la barra de gomones.
+     * Agrega 1 a la barra de gomones simples.
      */
-    public synchronized void agregarGomon() {
+    public synchronized void agregarGomonSimple() {
         simpleInflatableBoatsProgressBar.setValue(simpleInflatableBoatsProgressBar.getValue() + 1);
         simpleInflatableBoatsProgressBar
-                .setString(String.format("Gomones: %d/5", simpleInflatableBoatsProgressBar.getValue()));
+                .setString(simpleInflatableBoatsProgressBar.getValue() + "/" + CarreraGomones.CANTIDAD_GOMONES_SIMPLES);
     }
 
     /**
-     * Saca 1 de la barra de gomones.
+     * Saca 1 de la barra de gomones simples.
      */
-    public synchronized void sacarGomon() {
+    public synchronized void sacarGomonSimple() {
         simpleInflatableBoatsProgressBar.setValue(simpleInflatableBoatsProgressBar.getValue() - 1);
         simpleInflatableBoatsProgressBar
-                .setString(String.format("Gomones: %d/5", simpleInflatableBoatsProgressBar.getValue()));
+                .setString(simpleInflatableBoatsProgressBar.getValue() + "/" + CarreraGomones.CANTIDAD_GOMONES_SIMPLES);
     }
 
     public synchronized void printRestaurantes(String mensaje) {
