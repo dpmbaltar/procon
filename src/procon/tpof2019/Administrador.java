@@ -1,5 +1,8 @@
 package procon.tpof2019;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Encargado de abrir y cerrar el parque de acorde a los horarios establecidos.
  *
@@ -28,12 +31,12 @@ public class Administrador implements Runnable {
     public void run() {
         try {
             parque.abrir();
-            Thread.sleep((Parque.HORA_CIERRA_ACTIVIDADES - Parque.HORA_ABRE) * 1000);
+            Thread.sleep(Tiempo.enHoras(Parque.HORA_CIERRA_ACTIVIDADES - Parque.HORA_ABRE));
             parque.cerrarActividades();
-            Thread.sleep((Parque.HORA_CIERRA - Parque.HORA_CIERRA_ACTIVIDADES) * 1000);
+            Thread.sleep(Tiempo.enHoras(Parque.HORA_CIERRA - Parque.HORA_CIERRA_ACTIVIDADES));
             parque.cerrar();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
