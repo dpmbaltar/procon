@@ -252,6 +252,37 @@ public class CarreraGomones {
         }
     }
 
+    public boolean irEnBicicleta() throws InterruptedException {
+        boolean vaEnBicicleta = false;
+        String visitante = null;
+
+        // Esperar algunos minutos opcionalmente
+        if (bicicletas.tryAcquire(Tiempo.entreMinutos(0, 10), TimeUnit.MILLISECONDS)) {
+            vaEnBicicleta = true;
+            visitante = Thread.currentThread().getName();
+            vista.printCarreraGomones(String.format("🚲 %s va a en bici", visitante));
+            vista.sacarBicicleta();
+
+            Thread.sleep(Tiempo.entreMinutos(20, 30));
+
+            mutex.acquire();
+            visitantesEnInicio++;
+            vista.printCarreraGomones(String.format("🚲 %s llega al inicio", visitante));
+            mutex.release();
+        }
+
+        return vaEnBicicleta;
+    }
+
+    public void volverEnBicicleta() throws InterruptedException {
+        vista.printCarreraGomones(String.format("🚲 %s vuelve en bici", Thread.currentThread().getName()));
+
+        Thread.sleep(Tiempo.entreMinutos(20, 30));
+
+        vista.agregarBicicleta();
+        bicicletas.release();
+    }
+
     private boolean entroPrimerVisitanteAlTren = false;
     private boolean trenListoParaVolver = false;
     private int esperandoVolverEnTren = 0;
@@ -626,6 +657,7 @@ public class CarreraGomones {
 
         vista.printCarreraGomones(String.format("🚃 %s va al inicio de carrera", Thread.currentThread().getName()));
         Thread.sleep(Tiempo.enMinutos(15));
+        vista.printCarreraGomones(String.format("🚃 %s llega inicio de carrera", Thread.currentThread().getName()));
         vista.ubicarTren(1);
 
         mutex.acquire();
@@ -658,6 +690,7 @@ public class CarreraGomones {
 
         vista.printCarreraGomones(String.format("🚃 %s vuelve al parque", Thread.currentThread().getName()));
         Thread.sleep(Tiempo.enMinutos(15));
+        vista.printCarreraGomones(String.format("🚃 %s llega al parque", Thread.currentThread().getName()));
         vista.ubicarTren(0);
 
         mutex.acquire();
