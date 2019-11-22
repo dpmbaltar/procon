@@ -13,6 +13,26 @@ import java.util.concurrent.TimeUnit;
 public class CarreraGomones {
 
     /**
+     * Capacidad del tren.
+     */
+    public static final int CAPACIDAD_TREN = 15;
+
+    /**
+     * Cantidad de bicicletas.
+     */
+    public static final int CANTIDAD_BICICLETAS = 10;
+
+    /**
+     * Cantidad de gomones simples.
+     */
+    public static final int CANTIDAD_GOMONES_SIMPLES = 5;
+
+    /**
+     * Cantidad de gomones dobles.
+     */
+    public static final int CANTIDAD_GOMONES_DOBLES = 5;
+
+    /**
      * Mutex.
      */
     private final Semaphore mutex = new Semaphore(1);
@@ -38,7 +58,7 @@ public class CarreraGomones {
     private final Semaphore trenVa = new Semaphore(0, true);
     private final Semaphore trenVuelve = new Semaphore(0, true);
     private final Semaphore bajarseDelTren = new Semaphore(0);
-    private final Semaphore llevarVisitantes = new Semaphore(0);
+    private final Semaphore trenLLeno = new Semaphore(0);
     private final Semaphore esperarVisitantes = new Semaphore(0);
     private final Semaphore traerVisitantes = new Semaphore(0);
 
@@ -112,7 +132,7 @@ public class CarreraGomones {
     /**
      * Indica que el tren está listo para ir a la carrera.
      */
-    private boolean trenListoIr = false;
+    private boolean trenListoParaIr = false;
 
     /**
      * Indica que el tren está listo para volver de la carrera.
@@ -138,6 +158,9 @@ public class CarreraGomones {
      */
     private final Parque parque;
 
+    /**
+     * Vista del parque.
+     */
     private final VistaParque vista = VistaParque.getInstancia();
 
     /**
@@ -154,29 +177,30 @@ public class CarreraGomones {
      * Si se va en tren, debe esperarse a que esté lleno (15 visitantes).
      * Si se va en bicicleta, debe haber disponibles (15 disponibles).
      *
-     * @param irEnTren indica si va en tren (verdadero) o en bicicleta (falso)
+     * @param enTren indica si va en tren (verdadero) o en bicicleta (falso)
      * @throws InterruptedException
      */
-    public void ir(boolean irEnTren) throws InterruptedException {
+    public void ir(boolean enTren) throws InterruptedException {
         String visitante = Thread.currentThread().getName();
 
-        if (irEnTren) {
+        if (enTren) {
             mutex.acquire();
             esperandoIrEnTren++;
 
             // Si el tren está listo, llevar visitantes a la carrera
-            if (esperandoIrEnTren == 15 && !trenListoIr) {
+            if (esperandoIrEnTren == 15 && !trenListoParaIr) {
                 esperandoIrEnTren -= 15;
                 visitantesSubiendoAlTren = 15;
-                trenListoIr = true;
+                trenListoParaIr = true;
                 trenVa.release();
             }
 
             mutex.release();
             //trenVa.acquire();
             // Esperar tren hasta 30 min
-            if (trenVa.tryAcquire(500, TimeUnit.MILLISECONDS)) {
+            if (trenVa.tryAcquire(Tiempo.enMinutos(30), TimeUnit.MILLISECONDS)) {
                 vista.printCarreraGomones(String.format("🚃 %s va en tren (se sube)", visitante));
+
                 mutex.acquire();
                 visitantesSubiendoAlTren--;
                 visitantesEnElTren++;
@@ -186,7 +210,7 @@ public class CarreraGomones {
                 if (visitantesSubiendoAlTren > 0)
                     trenVa.release();
                 else
-                    llevarVisitantes.release();
+                    trenLLeno.release(); // Indicar que el tren ya puede salir
 
                 mutex.release();
                 bajarseDelTren.acquire();
@@ -207,7 +231,7 @@ public class CarreraGomones {
             } else {
                 mutex.acquire();
                 esperandoIrEnTren--;
-                vista.printCarreraGomones(String.format("🚃 %s esperó el tren 30 minutos (se fue)", visitante));
+                vista.printCarreraGomones(String.format("🚃 %s esperó el tren 30 mins (se fue)", visitante));
                 mutex.release();
             }
         } else {
@@ -226,6 +250,105 @@ public class CarreraGomones {
                 vista.printCarreraGomones(String.format("🚲 %s esperó una bici 30 minutos (se fue)", visitante));
             }
         }
+    }
+
+    private boolean entroPrimerVisitanteAlTren = false;
+    private boolean trenListoParaVolver = false;
+    private int esperandoVolverEnTren = 0;
+    private final Semaphore primerVisitante = new Semaphore(0);
+
+    /**
+     * Visitante va a la carrera en tren, si obtiene un lugar en menos de 30 minutos.
+     *
+     * @return verdadero si fue en tren, falso si espero no obtuvo un lugar
+     * @throws InterruptedException
+     */
+    public boolean irEnTren() throws InterruptedException {
+        boolean vaEnTren = false;
+        String visitante = Thread.currentThread().getName();
+
+        mutex.acquire();
+
+        // Verificar si se puede subir al tren
+        if (!trenListoParaIr) {
+            vaEnTren = true;
+            esperandoIrEnTren++;
+            visitantesEnElTren++;
+
+            vista.printCarreraGomones(String.format("🚃 %s sube al tren (%d/15)", visitante, esperandoIrEnTren));
+            vista.agregarPasajero();
+
+            // Se sube primer visitante: el tren espera hasta 30 minutos por más visitantes para salir
+            if (!entroPrimerVisitanteAlTren) {
+                entroPrimerVisitanteAlTren = true;
+                primerVisitante.release();
+            }
+
+            // Si el tren se llenó, el tren debe salir
+            if (esperandoIrEnTren == 15) {
+                trenListoParaIr = true;
+                trenLLeno.release();
+            }
+
+            mutex.release();
+            trenVa.acquire();
+
+            vista.printCarreraGomones(String.format("🚃 %s va en tren", visitante));
+
+            bajarseDelTren.acquire();
+            mutex.acquire();
+            visitantesEnElTren--;
+            visitantesEnInicio++;
+
+            vista.printCarreraGomones(String.format("🚃 %s baja del tren (%d/15)", visitante, visitantesEnElTren));
+            vista.sacarPasajero();
+        }
+
+        mutex.release();
+
+        return vaEnTren;
+    }
+
+    public void volverEnTren() throws InterruptedException {
+        String visitante = Thread.currentThread().getName();
+
+        mutex.acquire();
+
+        // Verificar si se puede subir al tren
+        if (!trenListoParaVolver) {
+            esperandoVolverEnTren--;
+            visitantesEnElTren++;
+
+            vista.printCarreraGomones(String.format("🚃 %s sube al tren (%d/15)", visitante, esperandoVolverEnTren));
+            vista.agregarPasajero();
+
+            // Si el tren se llenó, el tren debe salir
+            if (esperandoVolverEnTren == 0) {
+                trenListoParaVolver = true;
+                traerVisitantes.release();
+            }
+
+            mutex.release();
+            trenVuelve.acquire();
+
+            vista.printCarreraGomones(String.format("🚃 %s vuelve en tren", visitante));
+
+            bajarseDelTren.acquire();
+            mutex.acquire();
+            visitantesEnElTren--;
+
+            vista.printCarreraGomones(String.format("🚃 %s baja del tren (%d/15)", visitante, visitantesEnElTren));
+            vista.sacarPasajero();
+
+            // Si se bajaron todos los visitantes, permitir nuevos viajes
+            if (visitantesEnElTren == 0) {
+                trenListoParaVolver = false;
+                trenListoParaIr = false;
+                entroPrimerVisitanteAlTren = false;
+            }
+        }
+
+        mutex.release();
     }
 
     /**
@@ -271,7 +394,7 @@ public class CarreraGomones {
             lugaresEnGomonesDoblesOcupados++;
             gomonesListos++;
             visitantesACompetir += 2;
-            vista.agregarGomon();
+            vista.agregarGomonSimple();
         } else if ((visitantesEnInicio - visitantesACompetir) > 0 && false/*ThreadLocalRandom.current().nextBoolean()*/) {
             gomon = 5 + (lugaresEnGomonesDoblesOcupados / 2);
             gomones[gomon] = visitante;
@@ -282,7 +405,7 @@ public class CarreraGomones {
             lugaresEnGomonesSimplesOcupados++;
             gomonesListos++;
             visitantesACompetir++;
-            vista.agregarGomon();
+            vista.agregarGomonSimple();
         }
 
         vista.printCarreraGomones(String.format("🚣 %s ocupa un gomón %s", visitante, gomon >= 5 ? "doble" : "simple"));
@@ -353,7 +476,7 @@ public class CarreraGomones {
         else
             lugaresEnGomonesDoblesOcupados--;
 
-        vista.sacarGomon();
+        vista.sacarGomonSimple();
 
         // Desocupar bolso
         bolsos[llaveDeBolso] = false;
@@ -363,7 +486,7 @@ public class CarreraGomones {
         if (bolsosOcupados > 0) {
             vaciarBolsos.release();
         } else { // Sino llevar bolsos desocupados al inicio nuevamente por la camioneta
-            vista.sacarGomon();
+            vista.sacarGomonSimple();
             ganador = -1;
             traerBolsos.release();
         }
@@ -420,13 +543,13 @@ public class CarreraGomones {
                 bajarseDelTren.release();
             else {
                 trenListoVolver = false;
-                trenListoIr = false;
+                trenListoParaIr = false;
 
                 // Si hay esperando para venir en tren, habilitarlo
-                if (esperandoIrEnTren >= 15 && !trenListoIr) {
+                if (esperandoIrEnTren >= 15 && !trenListoParaIr) {
                     esperandoIrEnTren -= 15;
                     visitantesSubiendoAlTren = 15;
-                    trenListoIr = true;
+                    trenListoParaIr = true;
                     trenVa.release();
                 }
             }
@@ -469,16 +592,45 @@ public class CarreraGomones {
         prepararse.release();
     }
 
+    private final Semaphore largarCarrera = new Semaphore(0);
+
+    public void largarCarrera() throws InterruptedException {
+        if (largarCarrera.tryAcquire(Tiempo.enMinutos(15), TimeUnit.MILLISECONDS)) {
+
+        }
+    }
+
     /**
      * Tren lleva los visitantes al inicio de la carrera.
+     *
+     * Consideraciones: el tren espera a que al menos se suba un visitante. Cuando se subió el primero, espera media
+     * hora por más visitantes. Si se llena antes, viaja al inicio de carrera, sino, viaja con los que estén a bordo.
      *
      * @throws InterruptedException
      */
     public void llevarVisitantes() throws InterruptedException {
-        llevarVisitantes.acquire();
-        vista.printCarreraGomones(String.format("🚃 %s lleva visitantes al inicio de carrera", Thread.currentThread().getName()));
-        Thread.sleep(500);
-        bajarseDelTren.release();
+        primerVisitante.acquire();
+
+        // Ir al inicio de carrera
+        if (!trenLLeno.tryAcquire(Tiempo.enMinutos(30), TimeUnit.MILLISECONDS)) {
+            mutex.acquire();
+            trenListoParaIr = true;
+            trenLLeno.tryAcquire(); // Se puede llenar justo después de cumplir la espera y antes de adquirir mutex
+            mutex.release();
+        }
+
+        mutex.acquire();
+        esperandoIrEnTren = 0;
+        trenVa.release(visitantesEnElTren);
+        mutex.release();
+
+        vista.printCarreraGomones(String.format("🚃 %s va al inicio de carrera", Thread.currentThread().getName()));
+        Thread.sleep(Tiempo.enMinutos(15));
+
+        mutex.acquire();
+        esperandoVolverEnTren = visitantesEnElTren;
+        bajarseDelTren.release(visitantesEnElTren);
+        mutex.release();
     }
 
     /**
@@ -487,7 +639,7 @@ public class CarreraGomones {
      * @throws InterruptedException
      */
     public void esperarVisitantes() throws InterruptedException {
-        esperarVisitantes.acquire();
+        //esperarVisitantes.acquire();
         vista.printCarreraGomones(String.format("🚃 %s espera visitantes en final de carrera", Thread.currentThread().getName()));
     }
 
@@ -498,9 +650,16 @@ public class CarreraGomones {
      */
     public void traerVisitantes() throws InterruptedException {
         traerVisitantes.acquire();
-        vista.printCarreraGomones(String.format("🚃 %s trae visitantes al parque", Thread.currentThread().getName()));
-        Thread.sleep(500);
-        bajarseDelTren.release();
+        mutex.acquire();
+        trenVuelve.release(visitantesEnElTren);
+        mutex.release();
+
+        vista.printCarreraGomones(String.format("🚃 %s vuelve al parque", Thread.currentThread().getName()));
+        Thread.sleep(Tiempo.enMinutos(15));
+
+        mutex.acquire();
+        bajarseDelTren.release(visitantesEnElTren);
+        mutex.release();
     }
 
     /**
