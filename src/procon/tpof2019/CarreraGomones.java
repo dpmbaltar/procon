@@ -611,7 +611,7 @@ public class CarreraGomones {
     public void llevarVisitantes() throws InterruptedException {
         primerVisitante.acquire();
 
-        // Ir al inicio de carrera
+        // Ir al inicio de carrera en 30 minutos luego de subirse un visitante
         if (!trenLLeno.tryAcquire(Tiempo.enMinutos(30), TimeUnit.MILLISECONDS)) {
             mutex.acquire();
             trenListoParaIr = true;
@@ -626,6 +626,7 @@ public class CarreraGomones {
 
         vista.printCarreraGomones(String.format("🚃 %s va al inicio de carrera", Thread.currentThread().getName()));
         Thread.sleep(Tiempo.enMinutos(15));
+        vista.ubicarTren(1);
 
         mutex.acquire();
         esperandoVolverEnTren = visitantesEnElTren;
@@ -641,6 +642,7 @@ public class CarreraGomones {
     public void esperarVisitantes() throws InterruptedException {
         //esperarVisitantes.acquire();
         vista.printCarreraGomones(String.format("🚃 %s espera visitantes en final de carrera", Thread.currentThread().getName()));
+        vista.ubicarTren(2);
     }
 
     /**
@@ -656,6 +658,7 @@ public class CarreraGomones {
 
         vista.printCarreraGomones(String.format("🚃 %s vuelve al parque", Thread.currentThread().getName()));
         Thread.sleep(Tiempo.enMinutos(15));
+        vista.ubicarTren(0);
 
         mutex.acquire();
         bajarseDelTren.release(visitantesEnElTren);

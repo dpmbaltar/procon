@@ -1,13 +1,16 @@
 package procon.tpof2019;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Hashtable;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -43,6 +46,7 @@ public class VistaParque extends JFrame {
     private JTextField cashRegister1TextField;
     private JTextField cashRegister2TextField;
     private JTextArea shopTextArea;
+    private JSlider trainLocationSlider;
     private JProgressBar trainProgressBar;
     private JProgressBar bikesProgressBar;
     private JProgressBar simpleInflatableBoatsProgressBar;
@@ -57,6 +61,7 @@ public class VistaParque extends JFrame {
     private JProgressBar slide2ProgressBar;
     private JTextArea lighthouseTextArea;
     private JLabel threadCountValueLabel;
+    private JLabel clockValueLabel;
 
     private static final VistaParque instancia = new VistaParque();
 
@@ -70,6 +75,34 @@ public class VistaParque extends JFrame {
                 try {
                     VistaParque frame = VistaParque.getInstancia();
                     frame.setVisible(true);
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            try {
+                                VistaParque vista = VistaParque.getInstancia();
+                                int hora = 0;
+                                int minuto = 0;
+
+                                while (true) {
+                                    Thread.sleep(Tiempo.enMinutos(1));
+
+                                    minuto++;
+                                    if (minuto == 60) {
+                                        minuto = 0;
+                                        hora++;
+                                        if (hora == 24)
+                                            hora = 0;
+                                    }
+
+                                    vista.actualizarHora(String.format("%02d:%02d", hora, minuto));
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    }).start();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -81,6 +114,17 @@ public class VistaParque extends JFrame {
      * Create the frame.
      */
     private VistaParque() {
+        /*try {
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            // If Nimbus is not available, you can set the GUI to another look and feel.
+        }*/
+
         setTitle("Parque");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 800, 600);
@@ -362,7 +406,6 @@ public class VistaParque extends JFrame {
         GridBagConstraints gbc_inflatableBoatRacePanel = new GridBagConstraints();
         gbc_inflatableBoatRacePanel.gridheight = 2;
         gbc_inflatableBoatRacePanel.fill = GridBagConstraints.BOTH;
-        gbc_inflatableBoatRacePanel.insets = new Insets(0, 0, 5, 0);
         gbc_inflatableBoatRacePanel.gridx = 2;
         gbc_inflatableBoatRacePanel.gridy = 0;
         activitiesPanel.add(inflatableBoatRacePanel, gbc_inflatableBoatRacePanel);
@@ -372,15 +415,42 @@ public class VistaParque extends JFrame {
         gbl_inflatableBoatRacePanel.columnWidths = new int[] { 75, 0, 0 };
         gbl_inflatableBoatRacePanel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0 };
         gbl_inflatableBoatRacePanel.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
-        gbl_inflatableBoatRacePanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
+        gbl_inflatableBoatRacePanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
         inflatableBoatRacePanel.setLayout(gbl_inflatableBoatRacePanel);
+
+        JPanel trainLocationPanel = new JPanel();
+        GridBagConstraints gbc_trainLocationPanel = new GridBagConstraints();
+        gbc_trainLocationPanel.gridwidth = 2;
+        gbc_trainLocationPanel.insets = new Insets(0, 0, 5, 0);
+        gbc_trainLocationPanel.fill = GridBagConstraints.BOTH;
+        gbc_trainLocationPanel.gridx = 0;
+        gbc_trainLocationPanel.gridy = 0;
+        inflatableBoatRacePanel.add(trainLocationPanel, gbc_trainLocationPanel);
+
+        trainLocationSlider = new JSlider();
+        trainLocationSlider.setPaintLabels(true);
+        trainLocationSlider.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        trainLocationSlider.setPaintTrack(false);
+        trainLocationSlider.setEnabled(false);
+        trainLocationSlider.setFocusable(false);
+        trainLocationSlider.setValue(0);
+        trainLocationSlider.setSnapToTicks(true);
+        trainLocationSlider.setPaintTicks(true);
+        trainLocationSlider.setMinorTickSpacing(1);
+        trainLocationSlider.setMaximum(2);
+        Hashtable<Integer, JLabel> labels = new Hashtable<>();
+        labels.put(0, new JLabel("Parque"));
+        labels.put(1, new JLabel("Inicio"));
+        labels.put(2, new JLabel("Fin"));
+        trainLocationSlider.setLabelTable(labels);
+        trainLocationPanel.add(trainLocationSlider);
 
         JLabel trainLabel = new JLabel("Tren:");
         GridBagConstraints gbc_trainLabel = new GridBagConstraints();
         gbc_trainLabel.anchor = GridBagConstraints.WEST;
         gbc_trainLabel.insets = new Insets(0, 0, 5, 5);
         gbc_trainLabel.gridx = 0;
-        gbc_trainLabel.gridy = 0;
+        gbc_trainLabel.gridy = 1;
         inflatableBoatRacePanel.add(trainLabel, gbc_trainLabel);
 
         trainProgressBar = new JProgressBar();
@@ -391,7 +461,7 @@ public class VistaParque extends JFrame {
         gbc_trainProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_trainProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_trainProgressBar.gridx = 1;
-        gbc_trainProgressBar.gridy = 0;
+        gbc_trainProgressBar.gridy = 1;
         inflatableBoatRacePanel.add(trainProgressBar, gbc_trainProgressBar);
 
         JLabel bikesLabel = new JLabel("Bicicletas:");
@@ -399,7 +469,7 @@ public class VistaParque extends JFrame {
         gbc_bikesLabel.anchor = GridBagConstraints.WEST;
         gbc_bikesLabel.insets = new Insets(0, 0, 5, 5);
         gbc_bikesLabel.gridx = 0;
-        gbc_bikesLabel.gridy = 1;
+        gbc_bikesLabel.gridy = 2;
         inflatableBoatRacePanel.add(bikesLabel, gbc_bikesLabel);
 
         bikesProgressBar = new JProgressBar();
@@ -411,7 +481,7 @@ public class VistaParque extends JFrame {
         gbc_bikesProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_bikesProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_bikesProgressBar.gridx = 1;
-        gbc_bikesProgressBar.gridy = 1;
+        gbc_bikesProgressBar.gridy = 2;
         inflatableBoatRacePanel.add(bikesProgressBar, gbc_bikesProgressBar);
 
         JLabel simpleInflatableBoatsLabel = new JLabel("Gomones simples:");
@@ -419,7 +489,7 @@ public class VistaParque extends JFrame {
         gbc_simpleInflatableBoatsLabel.anchor = GridBagConstraints.WEST;
         gbc_simpleInflatableBoatsLabel.insets = new Insets(0, 0, 5, 5);
         gbc_simpleInflatableBoatsLabel.gridx = 0;
-        gbc_simpleInflatableBoatsLabel.gridy = 2;
+        gbc_simpleInflatableBoatsLabel.gridy = 3;
         inflatableBoatRacePanel.add(simpleInflatableBoatsLabel, gbc_simpleInflatableBoatsLabel);
 
         simpleInflatableBoatsProgressBar = new JProgressBar();
@@ -431,7 +501,7 @@ public class VistaParque extends JFrame {
         gbc_simpleInflatableBoatsProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_simpleInflatableBoatsProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_simpleInflatableBoatsProgressBar.gridx = 1;
-        gbc_simpleInflatableBoatsProgressBar.gridy = 2;
+        gbc_simpleInflatableBoatsProgressBar.gridy = 3;
         inflatableBoatRacePanel.add(simpleInflatableBoatsProgressBar, gbc_simpleInflatableBoatsProgressBar);
 
         JLabel doubleInflatableBoatsLabel = new JLabel("Gomones dobles:");
@@ -439,7 +509,7 @@ public class VistaParque extends JFrame {
         gbc_doubleInflatableBoatsLabel.anchor = GridBagConstraints.WEST;
         gbc_doubleInflatableBoatsLabel.insets = new Insets(0, 0, 5, 5);
         gbc_doubleInflatableBoatsLabel.gridx = 0;
-        gbc_doubleInflatableBoatsLabel.gridy = 3;
+        gbc_doubleInflatableBoatsLabel.gridy = 4;
         inflatableBoatRacePanel.add(doubleInflatableBoatsLabel, gbc_doubleInflatableBoatsLabel);
 
         doubleInflatableBoatsProgressBar = new JProgressBar();
@@ -451,7 +521,7 @@ public class VistaParque extends JFrame {
         gbc_doubleInflatableBoatsProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_doubleInflatableBoatsProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_doubleInflatableBoatsProgressBar.gridx = 1;
-        gbc_doubleInflatableBoatsProgressBar.gridy = 3;
+        gbc_doubleInflatableBoatsProgressBar.gridy = 4;
         inflatableBoatRacePanel.add(doubleInflatableBoatsProgressBar, gbc_doubleInflatableBoatsProgressBar);
 
         JScrollPane inflatableBoatRaceScrollPane = new JScrollPane();
@@ -459,7 +529,7 @@ public class VistaParque extends JFrame {
         gbc_inflatableBoatRaceScrollPane.gridwidth = 2;
         gbc_inflatableBoatRaceScrollPane.fill = GridBagConstraints.BOTH;
         gbc_inflatableBoatRaceScrollPane.gridx = 0;
-        gbc_inflatableBoatRaceScrollPane.gridy = 4;
+        gbc_inflatableBoatRaceScrollPane.gridy = 5;
         inflatableBoatRacePanel.add(inflatableBoatRaceScrollPane, gbc_inflatableBoatRaceScrollPane);
 
         inflatableBoatRaceTextArea = new JTextArea();
@@ -641,17 +711,34 @@ public class VistaParque extends JFrame {
         lighthouseScrollPane.setViewportView(lighthouseTextArea);
 
         JPanel southPanel = new JPanel();
-        FlowLayout fl_southPanel = (FlowLayout) southPanel.getLayout();
-        fl_southPanel.setVgap(0);
-        fl_southPanel.setHgap(2);
-        fl_southPanel.setAlignment(FlowLayout.LEFT);
         contentPane.add(southPanel, BorderLayout.SOUTH);
+        southPanel.setLayout(new GridLayout(0, 2, 0, 0));
+
+        JPanel leftSouthPanel = new JPanel();
+        FlowLayout fl_leftSouthPanel = (FlowLayout) leftSouthPanel.getLayout();
+        fl_leftSouthPanel.setHgap(4);
+        fl_leftSouthPanel.setAlignment(FlowLayout.LEFT);
+        fl_leftSouthPanel.setVgap(0);
+        southPanel.add(leftSouthPanel);
 
         JLabel threadCountLabel = new JLabel("Hilos en ejecución:");
-        southPanel.add(threadCountLabel);
+        leftSouthPanel.add(threadCountLabel);
 
         threadCountValueLabel = new JLabel("0");
-        southPanel.add(threadCountValueLabel);
+        leftSouthPanel.add(threadCountValueLabel);
+
+        JPanel rightSouthPanel = new JPanel();
+        FlowLayout fl_rightSouthPanel = (FlowLayout) rightSouthPanel.getLayout();
+        fl_rightSouthPanel.setHgap(4);
+        fl_rightSouthPanel.setAlignment(FlowLayout.RIGHT);
+        fl_rightSouthPanel.setVgap(0);
+        southPanel.add(rightSouthPanel);
+
+        JLabel clockLabel = new JLabel("Hora del parque:");
+        rightSouthPanel.add(clockLabel);
+
+        clockValueLabel = new JLabel("00:00");
+        rightSouthPanel.add(clockValueLabel);
     }
 
     public static final VistaParque getInstancia() {
@@ -752,6 +839,10 @@ public class VistaParque extends JFrame {
         System.out.println(mensaje);
         inflatableBoatRaceTextArea.append(mensaje + "\n");
         inflatableBoatRaceTextArea.setCaretPosition(inflatableBoatRaceTextArea.getDocument().getLength());
+    }
+
+    public synchronized void ubicarTren(int ubicacion) {
+        trainLocationSlider.setValue(ubicacion % 3);
     }
 
     /**
@@ -910,6 +1001,10 @@ public class VistaParque extends JFrame {
             progressBar.setValue(progressBar.getValue() - 1);
             progressBar.setString("Desocupado");
         }
+    }
+
+    public synchronized void actualizarHora(String hora) {
+        clockValueLabel.setText(hora);
     }
 
 }
