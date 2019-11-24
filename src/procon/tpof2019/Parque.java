@@ -105,7 +105,7 @@ public class Parque {
             capacidadRestaurantes += 5;
         }
 
-        carreraGomones = new CarreraGomones(this);
+        carreraGomones = new CarreraGomones();
         faroMirador = new FaroMirador();
     }
 

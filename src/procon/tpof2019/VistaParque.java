@@ -866,7 +866,7 @@ public class VistaParque extends JFrame {
      */
     public synchronized void agregarBicicleta() {
         bikesProgressBar.setValue(bikesProgressBar.getValue() + 1);
-        bikesProgressBar.setString(String.format("Bicicletas: %d/10", bikesProgressBar.getValue()));
+        bikesProgressBar.setString(String.format("%d/10", bikesProgressBar.getValue()));
     }
 
     /**
@@ -874,7 +874,7 @@ public class VistaParque extends JFrame {
      */
     public synchronized void sacarBicicleta() {
         bikesProgressBar.setValue(bikesProgressBar.getValue() - 1);
-        bikesProgressBar.setString(String.format("Bicicletas: %d/10", bikesProgressBar.getValue()));
+        bikesProgressBar.setString(String.format("%d/10", bikesProgressBar.getValue()));
     }
 
     /**
@@ -893,6 +893,24 @@ public class VistaParque extends JFrame {
         simpleInflatableBoatsProgressBar.setValue(simpleInflatableBoatsProgressBar.getValue() - 1);
         simpleInflatableBoatsProgressBar
                 .setString(simpleInflatableBoatsProgressBar.getValue() + "/" + CarreraGomones.CANTIDAD_GOMONES_SIMPLES);
+    }
+
+    /**
+     * Agrega 1 a la barra de gomones dobles.
+     */
+    public synchronized void agregarGomonDoble() {
+        doubleInflatableBoatsProgressBar.setValue(doubleInflatableBoatsProgressBar.getValue() + 1);
+        doubleInflatableBoatsProgressBar
+                .setString(doubleInflatableBoatsProgressBar.getValue() + "/" + CarreraGomones.CANTIDAD_GOMONES_DOBLES);
+    }
+
+    /**
+     * Saca 1 de la barra de gomones dobles.
+     */
+    public synchronized void sacarGomonDoble() {
+        doubleInflatableBoatsProgressBar.setValue(doubleInflatableBoatsProgressBar.getValue() - 1);
+        doubleInflatableBoatsProgressBar
+                .setString(doubleInflatableBoatsProgressBar.getValue() + "/" + CarreraGomones.CANTIDAD_GOMONES_DOBLES);
     }
 
     public synchronized void printRestaurantes(String mensaje) {
