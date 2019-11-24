@@ -69,6 +69,7 @@ public class CarreraGomones {
     private boolean entroPrimerVisitanteAlTren = false;
     private boolean trenVolvio = false;
     private int esperandoVolverEnTren = 0;
+    private int vinieronEnTren = 0;
 
     /**
      * Semáforos para el control de la camioneta.
@@ -236,6 +237,7 @@ public class CarreraGomones {
                 mutex.acquire();
                 visitantesEnElTren--;
                 visitantesEnInicio++;
+                vinieronEnTren++;
 
                 // Se siguen bajando visitantes del tren
                 if (visitantesEnElTren > 0)
@@ -312,6 +314,7 @@ public class CarreraGomones {
         String visitante = Thread.currentThread().getName();
 
         prepararse.acquire();
+        Thread.sleep(Tiempo.entreMinutos(3, 5));
         mutex.acquire();
 
         // Si la carrera se largo por tiempo de espera agotado, esperar la próxima
@@ -349,7 +352,7 @@ public class CarreraGomones {
         visitantesListos++;
 
         // Ya hay gomones listos para empezar
-        if (!activarEspera && gomonesListos == 2) {
+        if (!activarEspera) {
             activarEspera = true;
             hayGomonesListos.release();
         }
@@ -428,7 +431,6 @@ public class CarreraGomones {
         if (bolsosOcupados > 0) {
             vaciarBolsos.release();
         } else { // Sino llevar bolsos desocupados al inicio nuevamente por la camioneta
-            vista.sacarGomonSimple();
             traerBolsos.release();
         }
 
@@ -455,7 +457,13 @@ public class CarreraGomones {
     public void traerBolsosAlInicio() throws InterruptedException {
         traerBolsos.acquire();
         vista.printCarreraGomones(String.format("🚙 %s trae los bolsos y gomones al inicio", Thread.currentThread().getName()));
+
         Thread.sleep(Tiempo.enMinutos(15));
+
+        mutex.acquire();
+        activarEspera = false;
+        prepararVisitantes = true;
+        mutex.release();
         prepararse.release();
     }
 
@@ -466,8 +474,8 @@ public class CarreraGomones {
     public void largarCarrera() throws InterruptedException {
         hayGomonesListos.acquire();
 
-        // Esperar hasta 15 minutos para largar la carrera con todos los gomones
-        if (!largarCarrera.tryAcquire(Tiempo.enMinutos(15), TimeUnit.MILLISECONDS)) {
+        // Esperar hasta 30 minutos para largar la carrera con todos los gomones
+        if (!largarCarrera.tryAcquire(Tiempo.enMinutos(30), TimeUnit.MILLISECONDS)) {
             mutex.acquire();
             prepararVisitantes = false;
             prepararse.tryAcquire();
@@ -478,7 +486,8 @@ public class CarreraGomones {
         mutex.acquire();
         totalDeCarreras++;
 
-        vista.printCarreraGomones(String.format("🏁 Inicia carrera #%d", totalDeCarreras));
+        vista.printCarreraGomones(String.format("🏁 Inicia carrera #%d con %d gomones y %d visitantes", totalDeCarreras,
+                gomonesListos, visitantesListos));
 
         llevarBolsos.release();
         carrera.release(visitantesListos);
