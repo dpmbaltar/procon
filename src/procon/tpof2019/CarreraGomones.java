@@ -1,7 +1,6 @@
 package procon.tpof2019;
 
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,16 +51,24 @@ public class CarreraGomones {
      */
     private final Semaphore bicicletas = new Semaphore(10);
 
+    private final Semaphore largarCarrera = new Semaphore(0);
+
     /**
      * Semáforos para el control del tren.
      */
     private final Semaphore trenVa = new Semaphore(0, true);
     private final Semaphore trenVuelve = new Semaphore(0, true);
     private final Semaphore subirseAlTren = new Semaphore(1, true);
+    private final Semaphore subirseAlTrenVuelta = new Semaphore(0, true);
     private final Semaphore bajarseDelTren = new Semaphore(0, true);
+    private final Semaphore primerVisitante = new Semaphore(0);
     private final Semaphore trenLLeno = new Semaphore(0);
     private final Semaphore esperarVisitantes = new Semaphore(0);
     private final Semaphore traerVisitantes = new Semaphore(0);
+
+    private boolean entroPrimerVisitanteAlTren = false;
+    private boolean trenVolvio = false;
+    private int esperandoVolverEnTren = 0;
 
     /**
      * Semáforos para el control de la camioneta.
@@ -83,12 +90,12 @@ public class CarreraGomones {
     /**
      * Indica la cantidad de lugares disponibles en gomones simples (5 en total).
      */
-    private int lugaresEnGomonesSimplesOcupados = 0;
+    private int gomonesSimplesOcupados = 0;
 
     /**
      * Indica la cantidad de lugares disponibles en gomones dobles (5 * 2 en total).
      */
-    private int lugaresEnGomonesDoblesOcupados = 0;
+    private int gomonesDoblesOcupados = 0;
 
     /**
      * Indica la cantidad de gomones listos para poder empezar una carrera.
@@ -98,7 +105,7 @@ public class CarreraGomones {
     /**
      * Indica la cantidad de visitantes listos a competir (mayor o igual a la cantidad de gomones listos).
      */
-    private int visitantesACompetir = 0;
+    private int visitantesListos = 0;
 
     /**
      * Indica la cantidad de carreras completadas.
@@ -106,24 +113,9 @@ public class CarreraGomones {
     private int totalDeCarreras = 0;
 
     /**
-     * Indica el gomón ganador de una carrera.
-     */
-    private int ganador = -1;
-
-    /**
      * Indica la cantidad de visitantes esperando ir a la carrera en tren.
      */
     private int esperandoIrEnTren = 0;
-
-    /**
-     * Indica la cantidad de visitantes esperando volver de la carrera en tren.
-     */
-    private int esperandoVolverTren = 0;
-
-    /**
-     * Indica la cantidad subiendo al tren (en ida o vuelta).
-     */
-    private int visitantesSubiendoAlTren = 0;
 
     /**
      * Indica la cantidad de visitantes arriba del tren (en ida o vuelta).
@@ -136,11 +128,6 @@ public class CarreraGomones {
     private boolean trenSalio = false;
 
     /**
-     * Indica que el tren está listo para volver de la carrera.
-     */
-    private boolean trenListoVolver = false;
-
-    /**
      * Los bolsos para las pertenencias (10).
      * La cantidad total se debe a que 10 es el máximo de visitantes por carrera, y sucede cuando una carrera inicia
      * con 5 gomones dobles. En el resto de los casos se utilizan como mínimo 5 bolsos.
@@ -148,16 +135,14 @@ public class CarreraGomones {
     private final boolean[] bolsos = new boolean[10];
 
     /**
-     * Los gomones disponibles: 5 simples y 5 dobles.
-     * Índices entre 0 y 4 son simples.
-     * Índices entre 5 y 9 son dobles.
+     * Los gomones simples.
      */
-    private final String[] gomones = new String[10];
+    private final String[] gomonesSimples = new String[5];
 
     /**
-     * Instancia del parque.
+     * Los gomones dobles.
      */
-    private final Parque parque;
+    private final String[][] gomonesDobles = new String[5][2];
 
     /**
      * Vista del parque.
@@ -165,12 +150,12 @@ public class CarreraGomones {
     private final VistaParque vista = VistaParque.getInstancia();
 
     /**
-     * Constructor con el parque.
-     *
-     * @param parque el parque
+     * Constructor.
      */
-    public CarreraGomones(Parque parque) {
-        this.parque = parque;
+    public CarreraGomones() {
+        for (int i = 0; i < gomonesDobles.length; i++) {
+            gomonesDobles[i] = new String[2];
+        }
     }
 
     public boolean irEnBicicleta() throws InterruptedException {
@@ -203,11 +188,6 @@ public class CarreraGomones {
         vista.agregarBicicleta();
         bicicletas.release();
     }
-
-    private boolean entroPrimerVisitanteAlTren = false;
-    private boolean trenVolvio = false;
-    private int esperandoVolverEnTren = 0;
-    private final Semaphore primerVisitante = new Semaphore(0);
 
     /**
      * Visitante va a la carrera en tren, si obtiene un lugar en menos de 30 minutos.
@@ -273,8 +253,6 @@ public class CarreraGomones {
         return vaEnTren;
     }
 
-    private final Semaphore subirseAlTrenVuelta = new Semaphore(0, true);
-
     public void volverEnTren() throws InterruptedException {
         String visitante = Thread.currentThread().getName();
 
@@ -329,75 +307,75 @@ public class CarreraGomones {
      * @return la llave del bolso
      * @throws InterruptedException
      */
-    public int dejarPertenencias() throws InterruptedException {
-        int llave = -1;
+    public int[] prepararse(boolean usaGomonDoble) throws InterruptedException {
+        int[] itemsOcupados = { -1, -1 };
+        String visitante = Thread.currentThread().getName();
 
         prepararse.acquire();
         mutex.acquire();
 
+        // Si la carrera se largo por tiempo de espera agotado, esperar la próxima
+        while (!prepararVisitantes) {
+            mutex.release();
+            prepararse.acquire();
+            mutex.acquire();
+        }
+
         // Utilizar un bolso
         bolsos[bolsosOcupados] = true;
-        llave = bolsosOcupados;
+        itemsOcupados[0] = bolsosOcupados;
         bolsosOcupados++;
-        vista.printCarreraGomones(String.format("👜 %s ocupa un bolso", Thread.currentThread().getName()));
+        vista.printCarreraGomones(String.format("👜 %s ocupa un bolso", visitante));
+
+        if ((usaGomonDoble && hayGomonesDobles()) || (!usaGomonDoble && !hayGomonesSimples())) {
+            itemsOcupados[1] = gomonesDoblesOcupados + 5;
+            //gomonesDobles[gomonesDoblesOcupados][gomonesDoblesOcupados % 2] = visitante;
+            gomonesDoblesOcupados++;
+            vista.printCarreraGomones(String.format("🚣 %s ocupa gomón doble", visitante));
+
+            if ((gomonesDoblesOcupados % 2) == 0) {
+                gomonesListos++;
+                vista.agregarGomonDoble();
+            }
+        } else {
+            itemsOcupados[1] = gomonesSimplesOcupados;
+            //gomonesSimples[gomonesSimplesOcupados] = visitante;
+            gomonesSimplesOcupados++;
+            gomonesListos++;
+            vista.printCarreraGomones(String.format("🚣 %s ocupa gomón simple", visitante));
+            vista.agregarGomonSimple();
+        }
+
+        visitantesListos++;
+
+        // Ya hay gomones listos para empezar
+        if (!activarEspera && gomonesListos == 2) {
+            activarEspera = true;
+            hayGomonesListos.release();
+        }
+
+        // Preparar más visitantes
+        if (hayGomones()) {
+            prepararse.release();
+        } else {
+            largarCarrera.release();
+        }
 
         mutex.release();
 
-        return llave;
+        return itemsOcupados;
     }
 
-    /**
-     * Visitante se sube a un gomón simple o doble.
-     *
-     * @return el gomón al que se subió
-     * @throws InterruptedException
-     */
-    public int subirseAGomon() throws InterruptedException {
-        int gomon = -1;
-        String visitante = Thread.currentThread().getName();
+    private boolean hayGomones() {
+        return hayGomonesSimples() || hayGomonesDobles();
+    }
 
-        mutex.acquire();
+    private boolean hayGomonesSimples() {
+        return gomonesSimplesOcupados < CANTIDAD_GOMONES_SIMPLES;
+    }
 
-        // Elegir gomón doble si ya hay alguien esperando en uno, sino elegir aleatoriamente simple o doble
-        if ((lugaresEnGomonesDoblesOcupados % 2) != 0) {
-            // En este caso, "lugaresEnGomonesDoblesOcupados" es siempre 1, 3, 5, 7 o 9
-            gomon = 5 + (lugaresEnGomonesDoblesOcupados / 2);
-            gomones[gomon] += " y " + visitante;
-            lugaresEnGomonesDoblesOcupados++;
-            gomonesListos++;
-            visitantesACompetir += 2;
-            vista.agregarGomonSimple();
-        } else if ((visitantesEnInicio - visitantesACompetir) > 0 && false/*ThreadLocalRandom.current().nextBoolean()*/) {
-            gomon = 5 + (lugaresEnGomonesDoblesOcupados / 2);
-            gomones[gomon] = visitante;
-            lugaresEnGomonesDoblesOcupados++;
-        } else {
-            gomon = lugaresEnGomonesSimplesOcupados;
-            gomones[gomon] = visitante;
-            lugaresEnGomonesSimplesOcupados++;
-            gomonesListos++;
-            visitantesACompetir++;
-            vista.agregarGomonSimple();
-        }
-
-        vista.printCarreraGomones(String.format("🚣 %s ocupa un gomón %s", visitante, gomon >= 5 ? "doble" : "simple"));
-
-        // Si no hay 5 gomones listos para iniciar la carrera, dejar a otros prepararse
-        if (gomonesListos == 5
-                || (!parque.actividadesAbiertas() && parque.getVisitantes() >= 0
-                        && esperandoIrEnTren == 0 && visitantesEnElTren == 0 && visitantesEnInicio == 0)) {
-            gomonesListos = 0;
-            totalDeCarreras++;
-            llevarBolsos.release();
-            carrera.release(visitantesACompetir);
-            visitantesACompetir = 0;
-        } else {
-            prepararse.release();
-        }
-
-        mutex.release();
-
-        return gomon;
+    private boolean hayGomonesDobles() {
+        return gomonesDoblesOcupados < (CANTIDAD_GOMONES_DOBLES * 2);
     }
 
     /**
@@ -414,44 +392,33 @@ public class CarreraGomones {
         vista.printCarreraGomones(String.format("🏁 %s inicia la carrera #%d", visitante, totalDeCarreras));
         mutex.release();
 
-        Thread.sleep(ThreadLocalRandom.current().nextInt(15, 20) * 100);
+        Thread.sleep(Tiempo.entreMinutos(20, 30));
     }
 
     /**
      * Finaliza la carrera.
      *
-     * @param llaveDeBolso la llave del bolso asignado
-     * @param gomon el gomón utilizado
+     * @param itemsOcupados los items ocupados
      * @throws InterruptedException
      */
-    public void finalizarCarrera(int llaveDeBolso, int gomon) throws InterruptedException {
+    public void finalizarCarrera(int[] itemsOcupados) throws InterruptedException {
         String visitante = Thread.currentThread().getName();
 
-        mutex.acquire();
-
-        // Finalizar la carrera mostrando el ganador
-        if (ganador < 0) {
-            ganador = gomon;
-            vista.printCarreraGomones(String.format("🏁 <<%s gana la carrera #%d>>", gomones[ganador], totalDeCarreras));
-        } else {
-            vista.printCarreraGomones(String.format("🏁 %s finaliza la carrera #%d", visitante, totalDeCarreras));
-        }
-
-        mutex.release();
         vaciarBolsos.acquire(); // La camioneta debe haber llegado para vaciar desocupar los bolsos
         mutex.acquire();
 
         // Liberar gomon (simple o doble, según corresponda)
-        gomones[gomon] = null;
-        if (gomon < 5)
-            lugaresEnGomonesSimplesOcupados--;
-        else
-            lugaresEnGomonesDoblesOcupados--;
-
-        vista.sacarGomonSimple();
+        //gomonesSimples[gomon] = null;
+        if (itemsOcupados[1] < 5) {
+            gomonesSimplesOcupados--;
+            vista.sacarGomonSimple();
+        } else {
+            gomonesDoblesOcupados--;
+            vista.sacarGomonDoble();
+        }
 
         // Desocupar bolso
-        bolsos[llaveDeBolso] = false;
+        bolsos[itemsOcupados[0]] = false;
         bolsosOcupados--;
 
         // Desocupar bolsos si aun hay ocupados en la camioneta
@@ -459,7 +426,6 @@ public class CarreraGomones {
             vaciarBolsos.release();
         } else { // Sino llevar bolsos desocupados al inicio nuevamente por la camioneta
             vista.sacarGomonSimple();
-            ganador = -1;
             traerBolsos.release();
         }
 
@@ -490,11 +456,22 @@ public class CarreraGomones {
         prepararse.release();
     }
 
-    private final Semaphore largarCarrera = new Semaphore(0);
+    private boolean prepararVisitantes = true;
+    private boolean activarEspera = false;
+    private final Semaphore hayGomonesListos = new Semaphore(0);
 
     public void largarCarrera() throws InterruptedException {
-        if (largarCarrera.tryAcquire(Tiempo.enMinutos(15), TimeUnit.MILLISECONDS)) {
+        hayGomonesListos.acquire();
 
+        // Esperar hasta 15 minutos para largar la carrera con todos los gomones
+        if (largarCarrera.tryAcquire(Tiempo.enMinutos(15), TimeUnit.MILLISECONDS)) {
+            mutex.acquire();
+            prepararVisitantes = false;
+            largarCarrera.tryAcquire();
+            carrera.release(visitantesListos);
+            visitantesListos = 0;
+            gomonesListos = 0;
+            mutex.release();
         }
     }
 
