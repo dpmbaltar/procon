@@ -132,7 +132,7 @@ public class CarreraGomones {
      * La cantidad total se debe a que 10 es el máximo de visitantes por carrera, y sucede cuando una carrera inicia
      * con 5 gomones dobles. En el resto de los casos se utilizan como mínimo 5 bolsos.
      */
-    private final boolean[] bolsos = new boolean[10];
+    private final boolean[] bolsos = new boolean[15];
 
     /**
      * Los gomones simples.
@@ -201,7 +201,7 @@ public class CarreraGomones {
 
         // Espera entre 0 y 10 minutos para ir en tren
         if (subirseAlTren.tryAcquire(Tiempo.entreMinutos(0, 10), TimeUnit.MILLISECONDS)) {
-            Thread.sleep(Tiempo.enMinutos(3));
+            Thread.sleep(Tiempo.enMinutos(2));
             mutex.acquire();
 
             // Asegurarse de que el tren aún no ha salido
@@ -335,7 +335,7 @@ public class CarreraGomones {
 
             if ((gomonesDoblesOcupados % 2) == 0) {
                 gomonesListos++;
-                vista.agregarGomonDoble();
+                vista.sacarGomonDoble();
             }
         } else {
             itemsOcupados[1] = gomonesSimplesOcupados;
@@ -343,7 +343,7 @@ public class CarreraGomones {
             gomonesSimplesOcupados++;
             gomonesListos++;
             vista.printCarreraGomones(String.format("🚣 %s ocupa gomón simple", visitante));
-            vista.agregarGomonSimple();
+            vista.sacarGomonSimple();
         }
 
         visitantesListos++;
@@ -358,6 +358,7 @@ public class CarreraGomones {
         if (hayGomones()) {
             prepararse.release();
         } else {
+            prepararVisitantes = false;
             largarCarrera.release();
         }
 
@@ -407,14 +408,16 @@ public class CarreraGomones {
         vaciarBolsos.acquire(); // La camioneta debe haber llegado para vaciar desocupar los bolsos
         mutex.acquire();
 
+        vista.printCarreraGomones(String.format("🏁 %s finaliza la carrera #%d", visitante, totalDeCarreras));
+
         // Liberar gomon (simple o doble, según corresponda)
         //gomonesSimples[gomon] = null;
         if (itemsOcupados[1] < 5) {
             gomonesSimplesOcupados--;
-            vista.sacarGomonSimple();
+            vista.agregarGomonSimple();
         } else {
             gomonesDoblesOcupados--;
-            vista.sacarGomonDoble();
+            vista.agregarGomonDoble();
         }
 
         // Desocupar bolso
@@ -440,7 +443,7 @@ public class CarreraGomones {
     public void llevarBolsosAlFinal() throws InterruptedException {
         llevarBolsos.acquire();
         vista.printCarreraGomones(String.format("🚙 %s lleva los bolsos y bicicletas al final", Thread.currentThread().getName()));
-        Thread.sleep(500);
+        Thread.sleep(Tiempo.enMinutos(15));
         vaciarBolsos.release();
     }
 
@@ -452,7 +455,7 @@ public class CarreraGomones {
     public void traerBolsosAlInicio() throws InterruptedException {
         traerBolsos.acquire();
         vista.printCarreraGomones(String.format("🚙 %s trae los bolsos y gomones al inicio", Thread.currentThread().getName()));
-        Thread.sleep(500);
+        Thread.sleep(Tiempo.enMinutos(15));
         prepararse.release();
     }
 
@@ -464,15 +467,24 @@ public class CarreraGomones {
         hayGomonesListos.acquire();
 
         // Esperar hasta 15 minutos para largar la carrera con todos los gomones
-        if (largarCarrera.tryAcquire(Tiempo.enMinutos(15), TimeUnit.MILLISECONDS)) {
+        if (!largarCarrera.tryAcquire(Tiempo.enMinutos(15), TimeUnit.MILLISECONDS)) {
             mutex.acquire();
             prepararVisitantes = false;
+            prepararse.tryAcquire();
             largarCarrera.tryAcquire();
-            carrera.release(visitantesListos);
-            visitantesListos = 0;
-            gomonesListos = 0;
             mutex.release();
         }
+
+        mutex.acquire();
+        totalDeCarreras++;
+
+        vista.printCarreraGomones(String.format("🏁 Inicia carrera #%d", totalDeCarreras));
+
+        llevarBolsos.release();
+        carrera.release(visitantesListos);
+        visitantesListos = 0;
+        gomonesListos = 0;
+        mutex.release();
     }
 
     /**
