@@ -70,6 +70,9 @@ public class CarreraGomones {
     private boolean trenVolvio = false;
     private int esperandoVolverEnTren = 0;
     private int vinieronEnTren = 0;
+    private boolean prepararVisitantes = true;
+    private boolean activarEspera = false;
+    private final Semaphore hayGomonesListos = new Semaphore(0);
 
     /**
      * Semáforos para el control de la camioneta.
@@ -136,16 +139,6 @@ public class CarreraGomones {
     private final boolean[] bolsos = new boolean[15];
 
     /**
-     * Los gomones simples.
-     */
-    private final String[] gomonesSimples = new String[5];
-
-    /**
-     * Los gomones dobles.
-     */
-    private final String[][] gomonesDobles = new String[5][2];
-
-    /**
      * Vista del parque.
      */
     private final VistaParque vista = VistaParque.getInstancia();
@@ -154,9 +147,6 @@ public class CarreraGomones {
      * Constructor.
      */
     public CarreraGomones() {
-        for (int i = 0; i < gomonesDobles.length; i++) {
-            gomonesDobles[i] = new String[2];
-        }
     }
 
     public boolean irEnBicicleta() throws InterruptedException {
@@ -467,10 +457,6 @@ public class CarreraGomones {
         prepararse.release();
     }
 
-    private boolean prepararVisitantes = true;
-    private boolean activarEspera = false;
-    private final Semaphore hayGomonesListos = new Semaphore(0);
-
     public void largarCarrera() throws InterruptedException {
         hayGomonesListos.acquire();
 
@@ -499,15 +485,15 @@ public class CarreraGomones {
     /**
      * Tren lleva los visitantes al inicio de la carrera.
      *
-     * Consideraciones: el tren espera a que al menos se suba un visitante. Cuando se subió el primero, espera media
-     * hora por más visitantes. Si se llena antes, viaja al inicio de carrera, sino, viaja con los que estén a bordo.
+     * Consideraciones: el tren espera que al menos se suba un visitante. Cuando se subió el primero, espera media hora
+     * por más visitantes. Si se llena antes, viaja al inicio de carrera, sino, viaja con los que estén a bordo.
      *
      * @throws InterruptedException
      */
     public void llevarVisitantes() throws InterruptedException {
         primerVisitante.acquire();
 
-        // Ir al inicio de carrera en 30 minutos luego de subirse un visitante
+        // Ir al inicio de carrera en 30 minutos, luego de subirse el primer visitante
         if (!trenLLeno.tryAcquire(Tiempo.enMinutos(30), TimeUnit.MILLISECONDS)) {
             mutex.acquire();
             trenSalio = true;
@@ -518,19 +504,19 @@ public class CarreraGomones {
         mutex.acquire();
         esperandoIrEnTren = 0;
         esperandoVolverEnTren = visitantesEnElTren;
-        trenVa.release(visitantesEnElTren);
+        trenVa.release(visitantesEnElTren); // Viajan todos a la vez
         mutex.release();
 
-        vista.printCarreraGomones(String.format("🚃 %s va al inicio de carrera", Thread.currentThread().getName()));
+        vista.printCarreraGomones("🚃 Tren va al inicio de carrera");
         Thread.sleep(Tiempo.enMinutos(15));
-        vista.printCarreraGomones(String.format("🚃 %s llega inicio de carrera", Thread.currentThread().getName()));
+        vista.printCarreraGomones("🚃 Tren llega al inicio de carrera");
         vista.ubicarTren(1);
 
-        bajarseDelTren.release();
+        bajarseDelTren.release(); // Los visitantes se bajan en el inicio de carrera
     }
 
     /**
-     * Tren va al final de la carrera a esperar los visitantes.
+     * Tren va al final de la carrera a esperar a los visitantes que trajo.
      *
      * @throws InterruptedException
      */
@@ -562,7 +548,7 @@ public class CarreraGomones {
     }
 
     /**
-     * Devuelve verdadero si hay visitntes en el inicio de la carrera.
+     * Devuelve verdadero si hay visitantes en el inicio de la carrera.
      *
      * @return verdadero si hay visitantes, falso en caso contrario
      * @throws InterruptedException
