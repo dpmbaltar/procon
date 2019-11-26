@@ -68,7 +68,14 @@ public class VistaParque extends JFrame {
     private JTextPane snorkelTextPane;
     private JLabel threadCountValueLabel;
     private JLabel clockValueLabel;
+    private JProgressBar dolphinSwimVisitorsProgressBar;
+    private JProgressBar pool1ProgressBar;
+    private JProgressBar pool2ProgressBar;
+    private JProgressBar pool3ProgressBar;
+    private JProgressBar pool4ProgressBar;
+    private JTextPane dolphinSwimTextPane;
 
+    private SimpleAttributeSet attribs = new SimpleAttributeSet();
     private static final VistaParque instancia = new VistaParque();
 
     /**
@@ -146,6 +153,7 @@ public class VistaParque extends JFrame {
         northPanel.setLayout(gbl_northPanel);
 
         startButton = new JButton("Iniciar");
+        startButton.setMnemonic('I');
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -541,6 +549,93 @@ public class VistaParque extends JFrame {
         inflatableBoatRaceTextArea.setEditable(false);
         inflatableBoatRaceScrollPane.setViewportView(inflatableBoatRaceTextArea);
 
+        JPanel dolphinSwimPanel = new JPanel();
+        dolphinSwimPanel.setBorder(
+                new TitledBorder(null, "Nado con delfines", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        GridBagConstraints gbc_dolphinSwimPanel = new GridBagConstraints();
+        gbc_dolphinSwimPanel.insets = new Insets(0, 0, 5, 0);
+        gbc_dolphinSwimPanel.fill = GridBagConstraints.BOTH;
+        gbc_dolphinSwimPanel.gridx = 3;
+        gbc_dolphinSwimPanel.gridy = 0;
+        activitiesPanel.add(dolphinSwimPanel, gbc_dolphinSwimPanel);
+        GridBagLayout gbl_dolphinSwimPanel = new GridBagLayout();
+        gbl_dolphinSwimPanel.columnWidths = new int[] { 0, 0, 0 };
+        gbl_dolphinSwimPanel.rowHeights = new int[] { 0, 0, 0, 0 };
+        gbl_dolphinSwimPanel.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+        gbl_dolphinSwimPanel.rowWeights = new double[] { 0.0, 0.0, 1.0, Double.MIN_VALUE };
+        dolphinSwimPanel.setLayout(gbl_dolphinSwimPanel);
+
+        JLabel dolphinSwimVisitorsLabel = new JLabel("Visitantes:");
+        GridBagConstraints gbc_dolphinSwimVisitorsLabel = new GridBagConstraints();
+        gbc_dolphinSwimVisitorsLabel.anchor = GridBagConstraints.WEST;
+        gbc_dolphinSwimVisitorsLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_dolphinSwimVisitorsLabel.gridx = 0;
+        gbc_dolphinSwimVisitorsLabel.gridy = 0;
+        dolphinSwimPanel.add(dolphinSwimVisitorsLabel, gbc_dolphinSwimVisitorsLabel);
+
+        dolphinSwimVisitorsProgressBar = new JProgressBar();
+        dolphinSwimVisitorsProgressBar.setString("0");
+        dolphinSwimVisitorsProgressBar.setToolTipText("Cantidad de visitantes nadando con delfines");
+        dolphinSwimVisitorsProgressBar.setStringPainted(true);
+        GridBagConstraints gbc_dolphinSwimVisitorsProgressBar = new GridBagConstraints();
+        gbc_dolphinSwimVisitorsProgressBar.fill = GridBagConstraints.HORIZONTAL;
+        gbc_dolphinSwimVisitorsProgressBar.insets = new Insets(0, 0, 5, 0);
+        gbc_dolphinSwimVisitorsProgressBar.gridx = 1;
+        gbc_dolphinSwimVisitorsProgressBar.gridy = 0;
+        dolphinSwimPanel.add(dolphinSwimVisitorsProgressBar, gbc_dolphinSwimVisitorsProgressBar);
+
+        JPanel poolsPanel = new JPanel();
+        poolsPanel.setBorder(new TitledBorder(null, "Piletas", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        GridBagConstraints gbc_poolsPanel = new GridBagConstraints();
+        gbc_poolsPanel.gridwidth = 2;
+        gbc_poolsPanel.insets = new Insets(0, 0, 5, 0);
+        gbc_poolsPanel.fill = GridBagConstraints.BOTH;
+        gbc_poolsPanel.gridx = 0;
+        gbc_poolsPanel.gridy = 1;
+        dolphinSwimPanel.add(poolsPanel, gbc_poolsPanel);
+        poolsPanel.setLayout(new GridLayout(2, 2, 4, 4));
+
+        pool1ProgressBar = new JProgressBar();
+        pool1ProgressBar.setToolTipText("Pileta 1");
+        pool1ProgressBar.setString("0/10");
+        poolsPanel.add(pool1ProgressBar);
+        pool1ProgressBar.setStringPainted(true);
+        pool1ProgressBar.setMaximum(10);
+
+        pool2ProgressBar = new JProgressBar();
+        pool2ProgressBar.setToolTipText("Pileta 2");
+        pool2ProgressBar.setString("0/10");
+        poolsPanel.add(pool2ProgressBar);
+        pool2ProgressBar.setStringPainted(true);
+        pool2ProgressBar.setMaximum(10);
+
+        pool3ProgressBar = new JProgressBar();
+        pool3ProgressBar.setToolTipText("Pileta 3");
+        pool3ProgressBar.setString("0/10");
+        poolsPanel.add(pool3ProgressBar);
+        pool3ProgressBar.setMaximum(10);
+        pool3ProgressBar.setStringPainted(true);
+
+        pool4ProgressBar = new JProgressBar();
+        pool4ProgressBar.setToolTipText("Pileta 4");
+        pool4ProgressBar.setString("0/10");
+        poolsPanel.add(pool4ProgressBar);
+        pool4ProgressBar.setStringPainted(true);
+        pool4ProgressBar.setMaximum(10);
+
+        JScrollPane dolphinSwimScrollPane = new JScrollPane();
+        GridBagConstraints gbc_dolphinSwimScrollPane = new GridBagConstraints();
+        gbc_dolphinSwimScrollPane.gridwidth = 2;
+        gbc_dolphinSwimScrollPane.fill = GridBagConstraints.BOTH;
+        gbc_dolphinSwimScrollPane.gridx = 0;
+        gbc_dolphinSwimScrollPane.gridy = 2;
+        dolphinSwimPanel.add(dolphinSwimScrollPane, gbc_dolphinSwimScrollPane);
+
+        dolphinSwimTextPane = new JTextPane();
+        dolphinSwimTextPane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+        dolphinSwimTextPane.setEditable(false);
+        dolphinSwimScrollPane.setViewportView(dolphinSwimTextPane);
+
         JPanel restaurantsPanel = new JPanel();
         GridBagConstraints gbc_restaurantsPanel = new GridBagConstraints();
         gbc_restaurantsPanel.fill = GridBagConstraints.BOTH;
@@ -716,8 +811,7 @@ public class VistaParque extends JFrame {
         lighthouseScrollPane.setViewportView(lighthouseTextArea);
 
         JPanel snorkelPanel = new JPanel();
-        snorkelPanel
-                .setBorder(new TitledBorder(null, "Snorkel", TitledBorder.LEADING, TitledBorder.ABOVE_TOP, null, null));
+        snorkelPanel.setBorder(new TitledBorder(null, "Snorkel", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         GridBagConstraints gbc_snorkelPanel = new GridBagConstraints();
         gbc_snorkelPanel.fill = GridBagConstraints.BOTH;
         gbc_snorkelPanel.gridx = 3;
@@ -779,6 +873,7 @@ public class VistaParque extends JFrame {
         snorkelPanel.add(snorkelScrollPane, gbc_snorkelScrollPane);
 
         snorkelTextPane = new JTextPane();
+        snorkelTextPane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         snorkelTextPane.setEditable(false);
         snorkelScrollPane.setViewportView(snorkelTextPane);
 
@@ -1096,8 +1191,6 @@ public class VistaParque extends JFrame {
         clockValueLabel.setText(hora);
     }
 
-    private SimpleAttributeSet attribs = new SimpleAttributeSet();
-
     public synchronized void printSnorkel(String mensaje) {
         System.out.println(mensaje);
 
@@ -1113,14 +1206,14 @@ public class VistaParque extends JFrame {
 
     public synchronized void agregarEquipoSnorkel() {
         snorkelKitProgressBar.setValue(snorkelKitProgressBar.getValue() + 1);
-        snorkelKitProgressBar.setString(String.format("%d/%d", snorkelKitProgressBar.getValue(),
-                Parque.CANTIDAD_EQUIPOS_SNORKEL));
+        snorkelKitProgressBar
+                .setString(String.format("%d/%d", snorkelKitProgressBar.getValue(), Parque.CANTIDAD_EQUIPOS_SNORKEL));
     }
 
     public synchronized void sacarEquipoSnorkel() {
         snorkelKitProgressBar.setValue(snorkelKitProgressBar.getValue() - 1);
-        snorkelKitProgressBar.setString(String.format("%d/%d", snorkelKitProgressBar.getValue(),
-                Parque.CANTIDAD_EQUIPOS_SNORKEL));
+        snorkelKitProgressBar
+                .setString(String.format("%d/%d", snorkelKitProgressBar.getValue(), Parque.CANTIDAD_EQUIPOS_SNORKEL));
     }
 
     public synchronized void agregarVisitanteSnorkel() {
@@ -1140,6 +1233,83 @@ public class VistaParque extends JFrame {
 
         if (value == 0) {
             snorkelVisitorsCountProgressBar.setIndeterminate(false);
+        }
+    }
+
+    public synchronized void printNadoDelfines(String mensaje) {
+        System.out.println(mensaje);
+        try {
+            dolphinSwimTextPane.getStyledDocument().insertString(dolphinSwimTextPane.getStyledDocument().getLength(),
+                    mensaje + "\n", attribs);
+            dolphinSwimTextPane.setCaretPosition(dolphinSwimTextPane.getDocument().getLength());
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void agregarVisitanteNadoDelfines() {
+        int value = dolphinSwimVisitorsProgressBar.getValue() + 1;
+        dolphinSwimVisitorsProgressBar.setValue(value);
+        dolphinSwimVisitorsProgressBar.setString(String.valueOf(value));
+        if (value > 0)
+            dolphinSwimVisitorsProgressBar.setIndeterminate(true);
+    }
+
+    public synchronized void sacarVisitanteNadoDelfines() {
+        int value = dolphinSwimVisitorsProgressBar.getValue() - 1;
+        dolphinSwimVisitorsProgressBar.setValue(value);
+        dolphinSwimVisitorsProgressBar.setString(String.valueOf(value));
+        if (value == 0)
+            dolphinSwimVisitorsProgressBar.setIndeterminate(false);
+    }
+
+    public synchronized void agregarVisitantePileta(int pileta) {
+        JProgressBar progressBar = null;
+
+        switch (pileta) {
+        case 0:
+            progressBar = pool1ProgressBar;
+            break;
+        case 1:
+            progressBar = pool2ProgressBar;
+            break;
+        case 2:
+            progressBar = pool3ProgressBar;
+            break;
+        case 3:
+            progressBar = pool4ProgressBar;
+            break;
+        }
+
+        if (progressBar != null) {
+            int newValue = progressBar.getValue() + 1;
+            progressBar.setValue(newValue);
+            progressBar.setString(String.format("%d/10", newValue));
+        }
+    }
+
+    public synchronized void sacarVisitantePileta(int pileta) {
+        JProgressBar progressBar = null;
+
+        switch (pileta) {
+        case 0:
+            progressBar = pool1ProgressBar;
+            break;
+        case 1:
+            progressBar = pool2ProgressBar;
+            break;
+        case 2:
+            progressBar = pool3ProgressBar;
+            break;
+        case 3:
+            progressBar = pool4ProgressBar;
+            break;
+        }
+
+        if (progressBar != null) {
+            int newValue = progressBar.getValue() - 1;
+            progressBar.setValue(newValue);
+            progressBar.setString(String.format("%d/10", newValue));
         }
     }
 
