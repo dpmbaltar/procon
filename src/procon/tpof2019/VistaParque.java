@@ -23,11 +23,14 @@ import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
 
 public class VistaParque extends JFrame {
 
@@ -60,6 +63,9 @@ public class VistaParque extends JFrame {
     private JProgressBar slide1ProgressBar;
     private JProgressBar slide2ProgressBar;
     private JTextArea lighthouseTextArea;
+    private JProgressBar snorkelKitProgressBar;
+    private JProgressBar snorkelVisitorsCountProgressBar;
+    private JTextPane snorkelTextPane;
     private JLabel threadCountValueLabel;
     private JLabel clockValueLabel;
 
@@ -114,16 +120,13 @@ public class VistaParque extends JFrame {
      * Create the frame.
      */
     private VistaParque() {
-        /*try {
-            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            // If Nimbus is not available, you can set the GUI to another look and feel.
-        }*/
+        /*
+         * try { for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) { if
+         * ("Nimbus".equals(info.getName())) {
+         * UIManager.setLookAndFeel(info.getClassName()); break; } } } catch (Exception
+         * e) { // If Nimbus is not available, you can set the GUI to another look and
+         * feel. }
+         */
 
         setTitle("Parque");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -239,9 +242,9 @@ public class VistaParque extends JFrame {
         JPanel activitiesPanel = new JPanel();
         contentPane.add(activitiesPanel);
         GridBagLayout gbl_activitiesPanel = new GridBagLayout();
-        gbl_activitiesPanel.columnWidths = new int[] { 0, 0, 0 };
+        gbl_activitiesPanel.columnWidths = new int[] { 0, 0, 0, 0 };
         gbl_activitiesPanel.rowHeights = new int[] { 255, 255, 0 };
-        gbl_activitiesPanel.columnWeights = new double[] { 1.0, 1.0, 1.0 };
+        gbl_activitiesPanel.columnWeights = new double[] { 1.0, 1.0, 1.0, 1.0 };
         gbl_activitiesPanel.rowWeights = new double[] { 1.0, 1.0, Double.MIN_VALUE };
         activitiesPanel.setLayout(gbl_activitiesPanel);
 
@@ -404,6 +407,7 @@ public class VistaParque extends JFrame {
 
         JPanel inflatableBoatRacePanel = new JPanel();
         GridBagConstraints gbc_inflatableBoatRacePanel = new GridBagConstraints();
+        gbc_inflatableBoatRacePanel.insets = new Insets(0, 0, 0, 5);
         gbc_inflatableBoatRacePanel.gridheight = 2;
         gbc_inflatableBoatRacePanel.fill = GridBagConstraints.BOTH;
         gbc_inflatableBoatRacePanel.gridx = 2;
@@ -709,6 +713,73 @@ public class VistaParque extends JFrame {
         lighthouseTextArea = new JTextArea();
         lighthouseTextArea.setEditable(false);
         lighthouseScrollPane.setViewportView(lighthouseTextArea);
+
+        JPanel snorkelPanel = new JPanel();
+        snorkelPanel
+                .setBorder(new TitledBorder(null, "Snorkel", TitledBorder.LEADING, TitledBorder.ABOVE_TOP, null, null));
+        GridBagConstraints gbc_snorkelPanel = new GridBagConstraints();
+        gbc_snorkelPanel.fill = GridBagConstraints.BOTH;
+        gbc_snorkelPanel.gridx = 3;
+        gbc_snorkelPanel.gridy = 1;
+        activitiesPanel.add(snorkelPanel, gbc_snorkelPanel);
+        GridBagLayout gbl_snorkelPanel = new GridBagLayout();
+        gbl_snorkelPanel.columnWidths = new int[] { 75, 0, 0 };
+        gbl_snorkelPanel.rowHeights = new int[] { 0, 0, 0, 0 };
+        gbl_snorkelPanel.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+        gbl_snorkelPanel.rowWeights = new double[] { 0.0, 0.0, 1.0, Double.MIN_VALUE };
+        snorkelPanel.setLayout(gbl_snorkelPanel);
+
+        JLabel snorkelKitCountLabel = new JLabel("Equipos:");
+        GridBagConstraints gbc_snorkelKitCountLabel = new GridBagConstraints();
+        gbc_snorkelKitCountLabel.anchor = GridBagConstraints.WEST;
+        gbc_snorkelKitCountLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_snorkelKitCountLabel.gridx = 0;
+        gbc_snorkelKitCountLabel.gridy = 0;
+        snorkelPanel.add(snorkelKitCountLabel, gbc_snorkelKitCountLabel);
+
+        snorkelKitProgressBar = new JProgressBar();
+        snorkelKitProgressBar.setToolTipText("Cantidad de equipos disponibles");
+        snorkelKitProgressBar.setString("0/20");
+        snorkelKitProgressBar.setValue(20);
+        snorkelKitProgressBar.setStringPainted(true);
+        snorkelKitProgressBar.setMaximum(20);
+        GridBagConstraints gbc_snorkelKitProgressBar = new GridBagConstraints();
+        gbc_snorkelKitProgressBar.fill = GridBagConstraints.HORIZONTAL;
+        gbc_snorkelKitProgressBar.insets = new Insets(0, 0, 5, 0);
+        gbc_snorkelKitProgressBar.gridx = 1;
+        gbc_snorkelKitProgressBar.gridy = 0;
+        snorkelPanel.add(snorkelKitProgressBar, gbc_snorkelKitProgressBar);
+
+        JLabel snorkelVisitorsCountLabel = new JLabel("Visitantes:");
+        GridBagConstraints gbc_snorkelVisitorsCountLabel = new GridBagConstraints();
+        gbc_snorkelVisitorsCountLabel.anchor = GridBagConstraints.WEST;
+        gbc_snorkelVisitorsCountLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_snorkelVisitorsCountLabel.gridx = 0;
+        gbc_snorkelVisitorsCountLabel.gridy = 1;
+        snorkelPanel.add(snorkelVisitorsCountLabel, gbc_snorkelVisitorsCountLabel);
+
+        snorkelVisitorsCountProgressBar = new JProgressBar();
+        snorkelVisitorsCountProgressBar.setString("0");
+        snorkelVisitorsCountProgressBar.setToolTipText("Cantidad de visitantes haciendo Snorkel");
+        snorkelVisitorsCountProgressBar.setStringPainted(true);
+        GridBagConstraints gbc_snorkelVisitorsCountProgressBar = new GridBagConstraints();
+        gbc_snorkelVisitorsCountProgressBar.fill = GridBagConstraints.HORIZONTAL;
+        gbc_snorkelVisitorsCountProgressBar.insets = new Insets(0, 0, 5, 0);
+        gbc_snorkelVisitorsCountProgressBar.gridx = 1;
+        gbc_snorkelVisitorsCountProgressBar.gridy = 1;
+        snorkelPanel.add(snorkelVisitorsCountProgressBar, gbc_snorkelVisitorsCountProgressBar);
+
+        JScrollPane snorkelScrollPane = new JScrollPane();
+        GridBagConstraints gbc_snorkelScrollPane = new GridBagConstraints();
+        gbc_snorkelScrollPane.gridwidth = 2;
+        gbc_snorkelScrollPane.fill = GridBagConstraints.BOTH;
+        gbc_snorkelScrollPane.gridx = 0;
+        gbc_snorkelScrollPane.gridy = 2;
+        snorkelPanel.add(snorkelScrollPane, gbc_snorkelScrollPane);
+
+        snorkelTextPane = new JTextPane();
+        snorkelTextPane.setEditable(false);
+        snorkelScrollPane.setViewportView(snorkelTextPane);
 
         JPanel southPanel = new JPanel();
         contentPane.add(southPanel, BorderLayout.SOUTH);
@@ -1023,6 +1094,53 @@ public class VistaParque extends JFrame {
 
     public synchronized void actualizarHora(String hora) {
         clockValueLabel.setText(hora);
+    }
+
+    private SimpleAttributeSet attribs = new SimpleAttributeSet();
+
+    public synchronized void printSnorkel(String mensaje) {
+        System.out.println(mensaje);
+
+        try {
+            snorkelTextPane.getStyledDocument().insertString(snorkelTextPane.getStyledDocument().getLength(),
+                    mensaje + "\n", attribs);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
+        snorkelTextPane.setCaretPosition(snorkelTextPane.getDocument().getLength());
+    }
+
+    public synchronized void agregarEquipoSnorkel() {
+        snorkelKitProgressBar.setValue(snorkelKitProgressBar.getValue() + 1);
+        snorkelKitProgressBar.setString(String.format("%d/%d", snorkelKitProgressBar.getValue(),
+                Parque.CANTIDAD_EQUIPOS_SNORKEL));
+    }
+
+    public synchronized void sacarEquipoSnorkel() {
+        snorkelKitProgressBar.setValue(snorkelKitProgressBar.getValue() - 1);
+        snorkelKitProgressBar.setString(String.format("%d/%d", snorkelKitProgressBar.getValue(),
+                Parque.CANTIDAD_EQUIPOS_SNORKEL));
+    }
+
+    public synchronized void agregarVisitanteSnorkel() {
+        int value = snorkelVisitorsCountProgressBar.getValue() + 1;
+        snorkelVisitorsCountProgressBar.setValue(value);
+        snorkelVisitorsCountProgressBar.setString(String.valueOf(value));
+
+        if (value > 0) {
+            snorkelVisitorsCountProgressBar.setIndeterminate(true);
+        }
+    }
+
+    public synchronized void sacarVisitanteSnorkel() {
+        int value = snorkelVisitorsCountProgressBar.getValue() - 1;
+        snorkelVisitorsCountProgressBar.setValue(value);
+        snorkelVisitorsCountProgressBar.setString(String.valueOf(value));
+
+        if (value == 0) {
+            snorkelVisitorsCountProgressBar.setIndeterminate(false);
+        }
     }
 
 }

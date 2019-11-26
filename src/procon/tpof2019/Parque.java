@@ -37,6 +37,11 @@ public class Parque {
     public static final int CANTIDAD_MOLINETES = 5;
 
     /**
+     * Cantidad de equipos de snorkel por defecto.
+     */
+    public static final int CANTIDAD_EQUIPOS_SNORKEL = 20;
+
+    /**
      * Indica si el parque está abierto o cerrado.
      */
     private boolean abierto = false;
@@ -65,6 +70,11 @@ public class Parque {
      * La actividad "Faro-Mirador con vista a 40 m de altura y descenso en tobogán".
      */
     private final FaroMirador faroMirador;
+
+    /**
+     * La actividad "Disfruta de Snorkel ilimitado".
+     */
+    private final Snorkel snorkel;
 
     /**
      * Molinetes de la entrada al parque (5 en total, se liberan al abrir el parque).
@@ -107,6 +117,7 @@ public class Parque {
 
         carreraGomones = new CarreraGomones();
         faroMirador = new FaroMirador();
+        snorkel = new Snorkel(CANTIDAD_EQUIPOS_SNORKEL);
     }
 
     /**
@@ -144,6 +155,15 @@ public class Parque {
      */
     public synchronized FaroMirador getFaroMirador() {
         return faroMirador;
+    }
+
+    /**
+     * Devuelve la instancia de Snorkel.
+     *
+     * @return instancia de Snorkel
+     */
+    public synchronized Snorkel getSnorkel() {
+        return snorkel;
     }
 
     /**

@@ -52,9 +52,9 @@ public class Visitante implements Runnable {
 
             while (parque.actividadesAbiertas()) {
                 actividad = ThreadLocalRandom.current().nextInt(0, 10);
-
+                irASnorkel();
                 // Realizar actividad
-                switch (actividad) {
+                /*switch (actividad) {
                 case 0:
                     irACarreraDeGomones();
                     break;
@@ -69,9 +69,9 @@ public class Visitante implements Runnable {
                     break;
                 default:
                     irAlShop();
-                }
+                }*/
 
-                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+                Thread.sleep(Tiempo.entreMinutos(15, 30));
             }
 
             parque.finalizarVisita();
@@ -90,13 +90,14 @@ public class Visitante implements Runnable {
 
         try {
             shop.entrar();
-            Thread.sleep(ThreadLocalRandom.current().nextInt(10, 20) * 100);
+            Thread.sleep(Tiempo.entreMinutos(30, 90));
 
+            // Comprar souvenir
             if (comprar) {
                 caja = shop.comprar();
-                Thread.sleep(ThreadLocalRandom.current().nextInt(0, 2) * 100);
+                Thread.sleep(Tiempo.entreMinutos(5, 10));
                 shop.pagar(caja);
-                Thread.sleep(ThreadLocalRandom.current().nextInt(1, 3) * 100);
+                Thread.sleep(Tiempo.entreMinutos(0, 10));
             }
 
             shop.salir();
@@ -113,7 +114,7 @@ public class Visitante implements Runnable {
 
         try {
             restaurante.entrar();
-            Thread.sleep(ThreadLocalRandom.current().nextInt(15, 20) * 100);
+            Thread.sleep(Tiempo.entreHoras(1, 2));
             restaurante.salir();
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
@@ -127,15 +128,22 @@ public class Visitante implements Runnable {
         CarreraGomones carrera = parque.getCarreraGomones();
         int llaveDeBolso = -1;
         int gomon = -1;
+        int[] itemsOcupados = { -1, -1 };
         boolean irEnTren = ThreadLocalRandom.current().nextBoolean();
+        boolean quiereGomonDoble = ThreadLocalRandom.current().nextBoolean();
 
         try {
-            carrera.ir(irEnTren);
-            llaveDeBolso = carrera.dejarPertenencias();
-            gomon = carrera.subirseAGomon();
-            carrera.iniciarCarrera();
-            carrera.finalizarCarrera(llaveDeBolso, gomon);
-            carrera.volver(irEnTren);
+            if (irEnTren && carrera.irEnTren()) {
+                itemsOcupados = carrera.prepararse(quiereGomonDoble);
+                carrera.iniciarCarrera();
+                carrera.finalizarCarrera(itemsOcupados);
+                carrera.volverEnTren();
+            } else if (carrera.irEnBicicleta()) {
+                itemsOcupados = carrera.prepararse(quiereGomonDoble);
+                carrera.iniciarCarrera();
+                carrera.finalizarCarrera(itemsOcupados);
+                carrera.volverEnBicicleta();
+            }
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -149,11 +157,27 @@ public class Visitante implements Runnable {
         int tobogan = -1;
 
         try {
-            faroMirador.iniciarActividad();
             faroMirador.iniciarAscensoPorEscalera();
             faroMirador.finalizarAscensoPorEscalera();
             tobogan = faroMirador.iniciarDescensoEnTobogan();
             faroMirador.finalizarDescensoEnTobogan(tobogan);
+        } catch (InterruptedException e) {
+            Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    /**
+     * Ir a la actividad "Disfruta de Snorkel ilimitado".
+     */
+    private void irASnorkel() {
+        Snorkel snorkel = parque.getSnorkel();
+
+        try {
+            if (snorkel.adquirirEquipo()) {
+                snorkel.iniciar();
+                snorkel.finalizar();
+                snorkel.devolverEquipo();
+            }
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
