@@ -157,6 +157,7 @@ public class VistaParque extends JFrame {
                 inflatableBoatRaceTextArea.setText(null);
                 restaurantsTextArea.setText(null);
                 lighthouseTextArea.setText(null);
+                snorkelTextPane.setText(null);
 
                 new Thread(new Runnable() {
                     @Override
@@ -820,7 +821,6 @@ public class VistaParque extends JFrame {
         mainProgressBar.setVisible(false);
         startButton.setEnabled(true);
         visitorsCountSpinner.setEnabled(true);
-
     }
 
     public synchronized void printParque(String mensaje) {
