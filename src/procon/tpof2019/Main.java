@@ -1,6 +1,8 @@
 package procon.tpof2019;
 
 import java.awt.EventQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
 
@@ -11,12 +13,11 @@ public class Main {
      */
     public static void iniciar(int cantidadVisitantes) {
         Parque parque = new Parque();
-        Reloj reloj = new Reloj(parque, Parque.HORA_ABRE, 0);
         Tren tren = new Tren(parque);
         Camioneta camioneta = new Camioneta(parque);
         AdministradorCarrera administradorCarrera = new AdministradorCarrera(parque);
         AdministradorTobogan administradorTobogan = new AdministradorTobogan(parque);
-        Thread hiloReloj = new Thread(reloj, "Reloj del Parque");
+        Thread hiloReloj = new Thread(new Reloj(parque, Parque.HORA_ABRE, 0), "Reloj del Parque");
         Thread hiloAdministrador = new Thread(new Administrador(parque), "Administrador");
         Thread hiloTren = new Thread(tren, "Tren");
         Thread hiloCamioneta = new Thread(camioneta, "Camioneta");
@@ -46,10 +47,11 @@ public class Main {
             administradorTobogan.finalizar();
             tren.parar();
             camioneta.parar();
+
             System.out.println("<<Finalizado>>");
             VistaParque.getInstancia().finalizar();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -61,7 +63,7 @@ public class Main {
                     VistaParque frame = VistaParque.getInstancia();
                     frame.setVisible(true);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
                 }
             }
         });

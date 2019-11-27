@@ -15,6 +15,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Snorkel {
 
     /**
+     * Cantidad de equipos de snorkel.
+     */
+    public static final int CANTIDAD_EQUIPOS_SNORKEL = 20;
+
+    /**
      * La cantidad de equipos completos.
      */
     private int equiposDisponibles;
@@ -38,6 +43,13 @@ public class Snorkel {
      * Vista del parque.
      */
     private final VistaParque vista = VistaParque.getInstancia();
+
+    /**
+     * Constructor vacío.
+     */
+    public Snorkel() {
+        this(CANTIDAD_EQUIPOS_SNORKEL);
+    }
 
     /**
      * Constructor con la cantidad de equipos.

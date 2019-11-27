@@ -4,45 +4,72 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Reloj del parque.
+ * Reloj del parque (actualiza el {@link Tiempo} del parque).
+ *
+ * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
  */
 public class Reloj implements Runnable {
 
-    private int horas;
-    private int minutos;
+    /**
+     * La hora actual.
+     */
+    private int hora;
+
+    /**
+     * El minuto actual.
+     */
+    private int minuto;
+
+    /**
+     * Parque.
+     */
     private final Parque parque;
+
+    /**
+     * Vista del parque.
+     */
     private final VistaParque vista = VistaParque.getInstancia();
 
+    /**
+     * Constructor con el parque, la hora y minuto iniciales.
+     *
+     * @param parque el parque
+     * @param hora la hora inicial
+     * @param minuto el minuto inicial
+     */
     public Reloj(Parque parque, int hora, int minuto) {
         this.parque = parque;
-        this.horas = (0 <= hora && hora <= 23) ? hora : 0;
-        this.minutos = (0 <= minuto && minuto <= 59) ? minuto : 0;
+        this.hora = (0 <= hora && hora <= 23) ? hora : 0;
+        this.minuto = (0 <= minuto && minuto <= 59) ? minuto : 0;
     }
 
+    /**
+     * Actualiza la hora cada un "minuto" (según la duración de hora establecida en el {@link Tiempo}).
+     */
     @Override
     public void run() {
         try {
-            Hora hora = parque.getHora();
+            Tiempo tiempo = parque.getTiempo();
 
-            while (parque.estaAbierto() || parque.getVisitantes() > 0 || (hora.getHora() - Parque.HORA_ABRE) < 9) {
+            while (parque.estaAbierto() || parque.getVisitantes() > 0 || (tiempo.getHora() - Parque.HORA_ABRE) < 9) {
                 Thread.sleep(Tiempo.enMinutos(1));
-                minutos++;
+                minuto++;
 
-                if (minutos == 60) {
-                    minutos = 0;
-                    horas++;
+                if (minuto == 60) {
+                    minuto = 0;
+                    hora++;
 
-                    if (horas == 24) {
-                        horas = 0;
+                    if (hora == 24) {
+                        hora = 0;
                     }
                 }
 
                 // Actualiza la hora del parque
-                hora.setHora(horas);
-                hora.setMinuto(minutos);
+                tiempo.setHora(hora);
+                tiempo.setMinuto(minuto);
 
                 //if ((minutos % 5) == 0) {
-                    vista.actualizarHora(String.format("%02d:%02d", horas, minutos));
+                    vista.actualizarHora(String.format("%02d:%02d", hora, minuto));
                 //}
             }
         } catch (InterruptedException e) {

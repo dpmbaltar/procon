@@ -3,7 +3,10 @@ package procon.tpof2019;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Relación entre el tiempo real y el que transcurre en el parque.
+ * El tiempo del parque (actualizado por el {@link Reloj} del parque).
+ * Estáticamente, establece la relación entre el tiempo real y el que transcurre en el parque (en milisegundos).
+ *
+ * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
  */
 public final class Tiempo {
 
@@ -16,6 +19,67 @@ public final class Tiempo {
      * Duración de hora (en milisegundos).
      */
     private static int duracion = DURACION_DE_HORA;
+
+    /**
+     * La hora (entre 0 y 23).
+     */
+    private int hora;
+
+    /**
+     * El minuto (entre 0 y 59).
+     */
+    private int minuto;
+
+    /**
+     * Constructor vacío, con hora cero y minuto cero.
+     */
+    public Tiempo() {
+        this(0, 0);
+    }
+
+    /**
+     * Constructor con la hora y el minuto.
+     *
+     * @param hora la hora
+     * @param minuto el minuto
+     */
+    public Tiempo(int hora, int minuto) {
+        this.hora = hora;
+        this.minuto = minuto;
+    }
+
+    /**
+     * Devuelve la hora.
+     *
+     * @return la hora
+     */
+    public synchronized int getHora() {
+        return hora;
+    }
+    /**
+     * Establece la hora.
+     *
+     * @param hora la hora
+     */
+    public synchronized void setHora(int hora) {
+        this.hora = hora;
+    }
+    /**
+     * Devuelve el minuto.
+     *
+     * @return el minuto
+     */
+    public synchronized int getMinuto() {
+        return minuto;
+    }
+    /**
+     * Establece el minuto.
+     *
+     * @param minuto el minuto
+     */
+    public synchronized void setMinuto(int minuto) {
+        this.minuto = minuto;
+    }
 
     /**
      * Establece duración de hora.

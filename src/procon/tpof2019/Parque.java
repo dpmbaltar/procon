@@ -2,7 +2,6 @@ package procon.tpof2019;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.Semaphore;
 
 /**
  * Parque ecológico, clase principal desde donde se accede a las actividades.
@@ -12,17 +11,17 @@ import java.util.concurrent.Semaphore;
 public class Parque {
 
     /**
-     * Hora de abertura el parque.
+     * Hora que abre el parque.
      */
     public static final int HORA_ABRE = 9;
 
     /**
-     * Hora de cierre del parque.
+     * Hora que cierra el parque.
      */
     public static final int HORA_CIERRA = 18;
 
     /**
-     * Hora de cierre de actividades del parque.
+     * Hora que el parque cierra el ingreso a las actividades.
      */
     public static final int HORA_CIERRA_ACTIVIDADES = 17;
 
@@ -37,11 +36,6 @@ public class Parque {
     public static final int CANTIDAD_MOLINETES = 5;
 
     /**
-     * Cantidad de equipos de snorkel por defecto.
-     */
-    public static final int CANTIDAD_EQUIPOS_SNORKEL = 20;
-
-    /**
      * Indica si el parque está abierto o cerrado.
      */
     private boolean abierto = false;
@@ -52,9 +46,14 @@ public class Parque {
     private boolean actividadesAbiertas = false;
 
     /**
-     * La hora del parque.
+     * Molinetes de la entrada al parque.
      */
-    private final Hora hora = new Hora();
+    private int molinetes = CANTIDAD_MOLINETES;
+
+    /**
+     * El tiempo del parque.
+     */
+    private final Tiempo tiempo = new Tiempo();
 
     /**
      * El shop del parque.
@@ -87,11 +86,6 @@ public class Parque {
     private final NadoDelfines nadoDelfines;
 
     /**
-     * Molinetes de la entrada al parque (5 en total, se liberan al abrir el parque).
-     */
-    private final Semaphore molinetes = new Semaphore(0, true);
-
-    /**
      * Utilizada para iniciar el tour hacia el parque.
      */
     private final CyclicBarrier iniciarTour = new CyclicBarrier(CAPACIDAD_TOUR);
@@ -111,6 +105,9 @@ public class Parque {
      */
     private int visitantes = 0;
 
+    /**
+     * Vista del parque.
+     */
     private final VistaParque vista = VistaParque.getInstancia();
 
     /**
@@ -127,17 +124,17 @@ public class Parque {
 
         carreraGomones = new CarreraGomones();
         faroMirador = new FaroMirador();
-        snorkel = new Snorkel(CANTIDAD_EQUIPOS_SNORKEL);
+        snorkel = new Snorkel();
         nadoDelfines = new NadoDelfines();
     }
 
     /**
-     * Devuelve la hora del parque.
+     * Devuelve el tiempo del parque.
      *
-     * @return la hora
+     * @return el tiempo
      */
-    public synchronized Hora getHora() {
-        return hora;
+    public synchronized Tiempo getTiempo() {
+        return tiempo;
     }
 
     /**
@@ -210,7 +207,6 @@ public class Parque {
     public synchronized void abrir() {
         abierto = true;
         actividadesAbiertas = true;
-        molinetes.release(CANTIDAD_MOLINETES);
         vista.printParque("<<PARQUE ABIERTO>>");
     }
 
@@ -279,9 +275,10 @@ public class Parque {
      * @throws BrokenBarrierException
      */
     public void iniciarTour() throws InterruptedException, BrokenBarrierException {
-        vista.printTour(String.format("%s inicia viaje al parque en tour", Thread.currentThread().getName()));
+        vista.printParque(String.format("%s inicia viaje al parque en tour", Thread.currentThread().getName()));
         iniciarTour.await();
-        Thread.sleep(1000);
+
+        Thread.sleep(Tiempo.enHoras(1));
     }
 
     /**
@@ -303,18 +300,25 @@ public class Parque {
     public void entrar() throws InterruptedException {
         String visitante = Thread.currentThread().getName();
 
-        vista.printParque(String.format("%s llega a los molinetes", visitante));
-        molinetes.acquire();
-        vista.agregarVisitanteMolinete();
+        synchronized (this) {
+            vista.printParque(String.format("%s llega a los molinetes", visitante));
+
+            while (!abierto || molinetes == 0)
+                this.wait();
+
+            molinetes--;
+            vista.agregarVisitanteMolinete();
+        }
 
         Thread.sleep(Tiempo.entreMinutos(1, 5));
 
-        vista.printParque(String.format("%s entra al parque", visitante));
-        vista.sacarVisitanteMolinete();
-        molinetes.release();
-
         synchronized (this) {
+            molinetes++;
             visitantes++;
+            this.notifyAll();
+
+            vista.printParque(String.format("%s entra al parque", visitante));
+            vista.sacarVisitanteMolinete();
             vista.agregarVisitante();
         }
     }

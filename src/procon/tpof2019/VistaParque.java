@@ -1179,13 +1179,13 @@ public class VistaParque extends JFrame {
     public synchronized void agregarEquipoSnorkel() {
         snorkelKitProgressBar.setValue(snorkelKitProgressBar.getValue() + 1);
         snorkelKitProgressBar
-                .setString(String.format("%d/%d", snorkelKitProgressBar.getValue(), Parque.CANTIDAD_EQUIPOS_SNORKEL));
+                .setString(String.format("%d/%d", snorkelKitProgressBar.getValue(), Snorkel.CANTIDAD_EQUIPOS_SNORKEL));
     }
 
     public synchronized void sacarEquipoSnorkel() {
         snorkelKitProgressBar.setValue(snorkelKitProgressBar.getValue() - 1);
         snorkelKitProgressBar
-                .setString(String.format("%d/%d", snorkelKitProgressBar.getValue(), Parque.CANTIDAD_EQUIPOS_SNORKEL));
+                .setString(String.format("%d/%d", snorkelKitProgressBar.getValue(), Snorkel.CANTIDAD_EQUIPOS_SNORKEL));
     }
 
     public synchronized void agregarVisitanteSnorkel() {
