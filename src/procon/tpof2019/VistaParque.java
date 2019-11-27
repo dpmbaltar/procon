@@ -88,34 +88,6 @@ public class VistaParque extends JFrame {
                 try {
                     VistaParque frame = VistaParque.getInstancia();
                     frame.setVisible(true);
-                    new Thread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                VistaParque vista = VistaParque.getInstancia();
-                                int hora = 0;
-                                int minuto = 0;
-
-                                while (true) {
-                                    Thread.sleep(Tiempo.enMinutos(1));
-
-                                    minuto++;
-                                    if (minuto == 60) {
-                                        minuto = 0;
-                                        hora++;
-                                        if (hora == 24)
-                                            hora = 0;
-                                    }
-
-                                    vista.actualizarHora(String.format("%02d:%02d", hora, minuto));
-                                }
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                    }).start();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

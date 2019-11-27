@@ -52,6 +52,11 @@ public class Parque {
     private boolean actividadesAbiertas = false;
 
     /**
+     * La hora del parque.
+     */
+    private final Hora hora = new Hora();
+
+    /**
      * El shop del parque.
      */
     private final Shop shop = new Shop();
@@ -124,6 +129,15 @@ public class Parque {
         faroMirador = new FaroMirador();
         snorkel = new Snorkel(CANTIDAD_EQUIPOS_SNORKEL);
         nadoDelfines = new NadoDelfines();
+    }
+
+    /**
+     * Devuelve la hora del parque.
+     *
+     * @return la hora
+     */
+    public synchronized Hora getHora() {
+        return hora;
     }
 
     /**

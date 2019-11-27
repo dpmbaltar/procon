@@ -11,10 +11,12 @@ public class Main {
      */
     public static void iniciar(int cantidadVisitantes) {
         Parque parque = new Parque();
+        Reloj reloj = new Reloj(parque, Parque.HORA_ABRE, 0);
         Tren tren = new Tren(parque);
         Camioneta camioneta = new Camioneta(parque);
         AdministradorCarrera administradorCarrera = new AdministradorCarrera(parque);
         AdministradorTobogan administradorTobogan = new AdministradorTobogan(parque);
+        Thread hiloReloj = new Thread(reloj, "Reloj del Parque");
         Thread hiloAdministrador = new Thread(new Administrador(parque), "Administrador");
         Thread hiloTren = new Thread(tren, "Tren");
         Thread hiloCamioneta = new Thread(camioneta, "Camioneta");
@@ -26,6 +28,7 @@ public class Main {
             visitantes[i] = new Thread(new Visitante(parque), "Visitante-" + (i + 1));
 
         // Iniciar hilos
+        hiloReloj.start();
         hiloAdministrador.start();
         hiloTren.start();
         hiloCamioneta.start();
