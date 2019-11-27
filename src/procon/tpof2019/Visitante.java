@@ -224,8 +224,8 @@ public class Visitante implements Runnable {
         try {
             lugar = nadoDelfines.adquirirLugar();
 
-            if (lugar == 0) {
-                nadoDelfines.iniciar(0);
+            if (lugar >= 0) {
+                nadoDelfines.iniciar(lugar);
                 nadoDelfines.finalizar();
             }
         } catch (InterruptedException e) {

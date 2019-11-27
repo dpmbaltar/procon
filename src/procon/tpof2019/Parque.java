@@ -125,7 +125,7 @@ public class Parque {
         carreraGomones = new CarreraGomones();
         faroMirador = new FaroMirador();
         snorkel = new Snorkel();
-        nadoDelfines = new NadoDelfines();
+        nadoDelfines = new NadoDelfines(new int[] {11, 14});
     }
 
     /**

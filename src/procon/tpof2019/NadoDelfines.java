@@ -10,38 +10,68 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class NadoDelfines {
 
-    public static final int CAPACIDAD_PILETAS = 10;
+
     public static final int CANTIDAD_PILETAS = 4;
-    public static final int CANTIDAD_HORARIOS = 4;
+    public static final int CAPACIDAD_PILETAS = 10;
 
     /**
-     * Matríz con los horarios y lugares adquiridos.
+     * Los horarios de la actividad.
+     */
+    private final int horarios[];
+
+    /**
+     * Matríz de lugares adquiridos por horario.
      */
     private final int lugares[][];
     private final boolean inicio[];
+    private final int ultimoLugar;
+    private int proximoLugar;
     private final Lock mutex;
     private final Condition[] piletasListas;
-    private int ultimoLugar = 0;
 
     /**
      * Vista del parque.
      */
     private final VistaParque vista = VistaParque.getInstancia();
 
-    public NadoDelfines() {
-        lugares = new int[CANTIDAD_HORARIOS][CANTIDAD_PILETAS];
-        inicio = new boolean[CANTIDAD_PILETAS];
-        mutex = new ReentrantLock();
-        piletasListas = new Condition[CANTIDAD_PILETAS];
+    /**
+     * Constructor con los horarios de la actividad.
+     *
+     * @param horarios los horarios de inicio de la actividad
+     */
+    public NadoDelfines(int horarios[]) {
+        this.horarios = horarios;
+        this.lugares = new int[horarios.length][CANTIDAD_PILETAS];
+        this.inicio = new boolean[CANTIDAD_PILETAS];
+        this.ultimoLugar = horarios.length * CANTIDAD_PILETAS * CAPACIDAD_PILETAS;
+        this.proximoLugar = 0;
+        this.mutex = new ReentrantLock();
+        this.piletasListas = new Condition[CANTIDAD_PILETAS];
 
-        for (int i = 0; i < piletasListas.length; i++)
-            piletasListas[i] = mutex.newCondition();
+        for (int i = 0; i < this.piletasListas.length; i++)
+            this.piletasListas[i] = this.mutex.newCondition();
     }
 
+    /**
+     * Intenta adquirir un lugar en un horario disponible de la actividad, y devueve -1 si no hay lugar en alguno de
+     * los horarios establecidos, o un entero mayor o igual a cero indicando el lugar adquirido.
+     *
+     * @return un entero indicando el lugar, o -1 si no pudo adquirir uno
+     */
     public int adquirirLugar() {
-        int lugarAsignado = -1;
-        // TODO Auto-generated method stub
-        return lugarAsignado;
+        int lugarAdquirido = -1;
+
+        mutex.lock();
+        try {
+            if (proximoLugar < ultimoLugar) {
+                lugarAdquirido = proximoLugar;
+                proximoLugar++;
+            }
+        } finally {
+            mutex.unlock();
+        }
+
+        return lugarAdquirido;
     }
 
     /**
@@ -54,10 +84,10 @@ public class NadoDelfines {
         mutex.lock();
         try {
             String visitante = Thread.currentThread().getName();
-            int horario = (lugar / CAPACIDAD_PILETAS) / CANTIDAD_HORARIOS;
+            int horario = (lugar / (CAPACIDAD_PILETAS * CANTIDAD_PILETAS));
             int pileta = (lugar / CAPACIDAD_PILETAS) % CANTIDAD_PILETAS;
 
-            // Esperar hasta que la actividad en la pileta asignada inicie
+            // Esperar a que inicie la actividad en la pileta asignada
             while (!inicio[pileta])
                 piletasListas[pileta].await();
 
