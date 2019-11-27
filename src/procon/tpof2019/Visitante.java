@@ -39,12 +39,13 @@ public class Visitante implements Runnable {
         int actividad = -1;
 
         try {
+            //irAlParque();
             if (parque.iniciarVisita()) {
                 parque.iniciarTour();
                 parque.finalizarTour();
             } else {
                 parque.irParticular();
-                Thread.sleep(ThreadLocalRandom.current().nextInt(5, 10) * 100);
+                Thread.sleep(Tiempo.entreMinutos(30, 60));
             }
 
             Thread.sleep(ThreadLocalRandom.current().nextInt(0, 10) * 100);
@@ -81,9 +82,33 @@ public class Visitante implements Runnable {
             }
 
             parque.finalizarVisita();
+            //volverDelParque();
         } catch (InterruptedException | BrokenBarrierException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
+    }
+
+    /**
+     * Ir al parque.
+     *
+     * @throws InterruptedException
+     */
+    private void irAlParque() throws InterruptedException {
+        //TODO: irAlParque()
+        Tour tour;// = parque.getTour();
+        VistaParque vista = VistaParque.getInstancia();
+        String visitante = Thread.currentThread().getName();
+
+        vista.printParque(String.format("%s va al parque", visitante));
+        Thread.sleep(Tiempo.entreMinutos(30, 60));
+        vista.printParque(String.format("%s llega al parque", visitante));
+    }
+
+    /**
+     * Irse del parque.
+     */
+    private void volverDelParque() {
+        //TODO: volverDelParque()
     }
 
     /**

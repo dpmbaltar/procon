@@ -51,6 +51,11 @@ public class Parque {
     private int molinetes = CANTIDAD_MOLINETES;
 
     /**
+     * Cantidad de visitantes que están en el parque.
+     */
+    private int visitantes = 0;
+
+    /**
      * El tiempo del parque.
      */
     private final Tiempo tiempo = new Tiempo();
@@ -99,11 +104,6 @@ public class Parque {
      * Indica la cantidad de visitantes listos para iniciar el tour.
      */
     private int visitantesEnTour = 0;
-
-    /**
-     * Cantidad de visitantes que está en el parque.
-     */
-    private int visitantes = 0;
 
     /**
      * Vista del parque.
@@ -264,6 +264,7 @@ public class Parque {
     /**
      * Ir al parque en particular.
      */
+    @Deprecated
     public void irParticular() {
         vista.printParque(String.format("%s viaja al parque en particular", Thread.currentThread().getName()));
     }

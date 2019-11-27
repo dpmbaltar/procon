@@ -896,6 +896,16 @@ public class VistaParque extends JFrame {
         parkTextArea.setCaretPosition(parkTextArea.getDocument().getLength());
     }
 
+    public synchronized void agregarVisitanteTour() {
+        tourBusProgressBar.setValue(tourBusProgressBar.getValue() + 1);
+        tourBusProgressBar.setString(tourBusProgressBar.getValue() + "/" + Tour.CAPACIDAD_TOUR);
+    }
+
+    public synchronized void sacarVisitanteTour() {
+        tourBusProgressBar.setValue(tourBusProgressBar.getValue() - 1);
+        tourBusProgressBar.setString(tourBusProgressBar.getValue() + "/" + Tour.CAPACIDAD_TOUR);
+    }
+
     public synchronized void agregarVisitanteMolinete() {
         pinwheelProgressBar.setValue(pinwheelProgressBar.getValue() + 1);
         pinwheelProgressBar.setString(pinwheelProgressBar.getValue() + "/" + Parque.CANTIDAD_MOLINETES);
