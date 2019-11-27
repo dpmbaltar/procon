@@ -77,6 +77,11 @@ public class Parque {
     private final Snorkel snorkel;
 
     /**
+     * La actividad "Nado con delfines".
+     */
+    private final NadoDelfines nadoDelfines;
+
+    /**
      * Molinetes de la entrada al parque (5 en total, se liberan al abrir el parque).
      */
     private final Semaphore molinetes = new Semaphore(0, true);
@@ -118,6 +123,7 @@ public class Parque {
         carreraGomones = new CarreraGomones();
         faroMirador = new FaroMirador();
         snorkel = new Snorkel(CANTIDAD_EQUIPOS_SNORKEL);
+        nadoDelfines = new NadoDelfines();
     }
 
     /**
@@ -164,6 +170,15 @@ public class Parque {
      */
     public synchronized Snorkel getSnorkel() {
         return snorkel;
+    }
+
+    /**
+     * Devuelve la instancia de NadoDelfines.
+     *
+     * @return instancia de NadoDelfines
+     */
+    public synchronized NadoDelfines getNadoDelfines() {
+        return nadoDelfines;
     }
 
     /**

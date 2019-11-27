@@ -52,7 +52,7 @@ public class Visitante implements Runnable {
 
             while (parque.actividadesAbiertas()) {
                 actividad = ThreadLocalRandom.current().nextInt(0, 10);
-                irASnorkel();
+                irANadoConDelfines();
                 // Realizar actividad
                 /*switch (actividad) {
                 case 0:
@@ -67,11 +67,17 @@ public class Visitante implements Runnable {
                 case 2:
                     irAFaroMirador();
                     break;
+                case 3:
+                    irASnorkel();
+                    break;
+                case 4:
+                    irANadoConDelfines();
+                    break;
                 default:
                     irAlShop();
                 }*/
 
-                Thread.sleep(Tiempo.entreMinutos(15, 30));
+                Thread.sleep(Tiempo.entreMinutos(0, 10));
             }
 
             parque.finalizarVisita();
@@ -181,6 +187,27 @@ public class Visitante implements Runnable {
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
+    }
+
+    /**
+     * Ir a la actividad "Nado con delfines".
+     */
+    private int irANadoConDelfines() {
+        NadoDelfines nadoDelfines = parque.getNadoDelfines();
+        int lugar = -1;
+
+        try {
+            lugar = nadoDelfines.adquirirLugar();
+
+            if (lugar == 0) {
+                nadoDelfines.iniciar(0);
+                nadoDelfines.finalizar();
+            }
+        } catch (InterruptedException e) {
+            Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
+        }
+
+        return lugar;
     }
 
 }
