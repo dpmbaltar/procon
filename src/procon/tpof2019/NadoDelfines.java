@@ -26,8 +26,10 @@ public class NadoDelfines {
     private final boolean inicio[];
     private final int ultimoLugar;
     private int proximoLugar;
+    private final Tiempo tiempo;
     private final Lock mutex;
-    private final Condition[] piletasListas;
+    private final Condition[] piletaInicia;
+    private final Condition[] piletaFinaliza;
 
     /**
      * Vista del parque.
@@ -39,17 +41,29 @@ public class NadoDelfines {
      *
      * @param horarios los horarios de inicio de la actividad
      */
-    public NadoDelfines(int horarios[]) {
+    public NadoDelfines(Tiempo tiempo, int horarios[]) {
+        this.tiempo = tiempo;
         this.horarios = horarios;
         this.lugares = new int[horarios.length][CANTIDAD_PILETAS];
         this.inicio = new boolean[CANTIDAD_PILETAS];
         this.ultimoLugar = horarios.length * CANTIDAD_PILETAS * CAPACIDAD_PILETAS;
         this.proximoLugar = 0;
         this.mutex = new ReentrantLock();
-        this.piletasListas = new Condition[CANTIDAD_PILETAS];
+        this.piletaInicia = new Condition[CANTIDAD_PILETAS];
+        this.piletaFinaliza = new Condition[CANTIDAD_PILETAS];
 
-        for (int i = 0; i < this.piletasListas.length; i++)
-            this.piletasListas[i] = this.mutex.newCondition();
+        for (int i = 0; i < CANTIDAD_PILETAS; i++) {
+            this.piletaInicia[i] = this.mutex.newCondition();
+            this.piletaFinaliza[i] = this.mutex.newCondition();
+        }
+    }
+
+    private int obtenerHorario(int lugar) {
+        return lugar / (CAPACIDAD_PILETAS * CANTIDAD_PILETAS);
+    }
+
+    private int obtenerPileta(int lugar) {
+        return (lugar / CAPACIDAD_PILETAS) % CANTIDAD_PILETAS;
     }
 
     /**
@@ -59,19 +73,22 @@ public class NadoDelfines {
      * @return un entero indicando el lugar, o -1 si no pudo adquirir uno
      */
     public int adquirirLugar() {
-        int lugarAdquirido = -1;
+        int lugar = -1;
 
         mutex.lock();
         try {
             if (proximoLugar < ultimoLugar) {
-                lugarAdquirido = proximoLugar;
+                int horario = obtenerHorario(proximoLugar);
+                int pileta = obtenerPileta(proximoLugar);
+                lugares[horario][pileta]++;
+                lugar = proximoLugar;
                 proximoLugar++;
             }
         } finally {
             mutex.unlock();
         }
 
-        return lugarAdquirido;
+        return lugar;
     }
 
     /**
@@ -80,16 +97,16 @@ public class NadoDelfines {
      * @param lugar el lugar adquirido
      * @throws InterruptedException
      */
-    public void iniciar(int lugar) throws InterruptedException {
+    public void entrarPileta(int lugar) throws InterruptedException {
         mutex.lock();
         try {
             String visitante = Thread.currentThread().getName();
-            int horario = (lugar / (CAPACIDAD_PILETAS * CANTIDAD_PILETAS));
-            int pileta = (lugar / CAPACIDAD_PILETAS) % CANTIDAD_PILETAS;
+            int horario = obtenerHorario(lugar);
+            int pileta = obtenerPileta(lugar);
 
             // Esperar a que inicie la actividad en la pileta asignada
             while (!inicio[pileta])
-                piletasListas[pileta].await();
+                piletaInicia[pileta].await();
 
             vista.printNadoDelfines(String.format("%s inicia en pileta %d a las %d hs", visitante, pileta, horario));
             vista.agregarVisitanteNadoDelfines();
@@ -99,9 +116,46 @@ public class NadoDelfines {
         }
     }
 
-    public void finalizar() {
-        // TODO Auto-generated method stub
+    /**
+     * Visitante finaliza la actividad.
+     *
+     * @param lugar el lugar adquirido
+     * @throws InterruptedException
+     */
+    public void salirPileta(int lugar) throws InterruptedException {
+        mutex.lock();
+        try {
+            String visitante = Thread.currentThread().getName();
+            int horario = obtenerHorario(lugar);
+            int pileta = obtenerPileta(lugar);
 
+            // Esperar a que finalice la actividad en la pileta asignada
+            while (!inicio[pileta])
+                piletaFinaliza[pileta].await();
+
+            lugares[horario][pileta]--;
+            vista.printNadoDelfines(String.format("%s finaliza en pileta %d", visitante, pileta));
+            vista.sacarVisitanteNadoDelfines();
+            vista.sacarVisitantePileta(pileta);
+        } finally {
+            mutex.unlock();
+        }
+    }
+
+    public void iniciar() {
+        mutex.lock();
+        try {
+            String administrador = Thread.currentThread().getName();
+            int hora = tiempo.getHora();
+
+            // TODO: Agregar política del parque (no iniciar si no hay al menos 3 piletas completas)
+            for (int i = 0; i < lugares[0].length; i++)
+                piletaInicia[i].signalAll();
+
+            vista.printNadoDelfines(String.format("%s inicia a las %02d horas", administrador, hora));
+        } finally {
+            mutex.unlock();
+        }
     }
 
 }

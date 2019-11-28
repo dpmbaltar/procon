@@ -225,8 +225,8 @@ public class Visitante implements Runnable {
             lugar = nadoDelfines.adquirirLugar();
 
             if (lugar >= 0) {
-                nadoDelfines.iniciar(lugar);
-                nadoDelfines.finalizar();
+                nadoDelfines.entrarPileta(lugar);
+                nadoDelfines.salirPileta(lugar);
             }
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
