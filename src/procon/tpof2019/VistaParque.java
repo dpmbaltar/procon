@@ -138,6 +138,7 @@ public class VistaParque extends JFrame {
                 restaurantsTextArea.setText(null);
                 lighthouseTextArea.setText(null);
                 snorkelTextPane.setText(null);
+                dolphinSwimTextPane.setText(null);
 
                 new Thread(new Runnable() {
                     @Override
