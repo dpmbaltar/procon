@@ -279,8 +279,8 @@ public class Parque {
             if (!finalizo) {
                 vista.printParque(String.format("%s llega a los molinetes", visitante));
 
-                while (!abierto || molinetes == 0)
-                    this.wait();
+                while ((!finalizo && !abierto) || molinetes == 0)
+                    this.wait(Tiempo.enMinutos(15));
 
                 molinetes--;
                 vista.agregarVisitanteMolinete();

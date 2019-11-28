@@ -50,7 +50,7 @@ public class Visitante implements Runnable {
             VistaParque.getInstancia().agregarHilo();
             irAlParque();
 
-            //if (parque.entrar()) {
+            if (parque.entrar()) {
                 int actividad = -1;
 
                 // Ir a las actividades mientras estén abiertas
@@ -72,7 +72,7 @@ public class Visitante implements Runnable {
                         irASnorkel();
                         break;
                     case 4:
-                        //irANadoConDelfines();
+                        irANadoConDelfines();
                         break;
                     default:
                         irAlShop();
@@ -81,8 +81,8 @@ public class Visitante implements Runnable {
                     Thread.sleep(Tiempo.entreMinutos(0, 10));
                 }
 
-                //parque.salir();
-                //}
+                parque.salir();
+            }
 
             volverDelParque();
             VistaParque.getInstancia().sacarHilo();
