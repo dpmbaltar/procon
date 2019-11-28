@@ -33,6 +33,11 @@ public class Visitante implements Runnable {
     private int lugarNadoDelfines = -1;
 
     /**
+     * Indica si ya realizó la actividad "Nado con delfines".
+     */
+    private boolean realizoNadoDelfines = false;
+
+    /**
      * Constructor con el parque.
      *
      * @param parque el parque
@@ -77,8 +82,6 @@ public class Visitante implements Runnable {
                     default:
                         irAlShop();
                     }
-
-                    Thread.sleep(Tiempo.entreMinutos(0, 10));
                 }
 
                 parque.salir();
@@ -100,18 +103,22 @@ public class Visitante implements Runnable {
         int actividad = ThreadLocalRandom.current().nextInt(0, 6);
         int horaActual = parque.getTiempo().getHora();
 
+        if (!realizoNadoDelfines && ThreadLocalRandom.current().nextInt(0, 100) > 90) {
+            actividad = 4;
+        }
+
         if (lugarNadoDelfines >= 0) {
             int horaInicio = parque.getNadoDelfines().obtenerHorarioInicio(lugarNadoDelfines);
             int horasRestantes = horaInicio - horaActual;
 
             // Si ya es la hora de inicio, entonces pierde el lugar
-            // Si falta menos de 1 hora y media, ir a la actividad a nado con delfines
+            // Si falta menos de 2 horas, ir a la actividad a nado con delfines
             if (horasRestantes <= 0) {
                 lugarNadoDelfines = -1;
-            } else if (horasRestantes == 1 && parque.getTiempo().getMinuto() <= 30) {
+            } else if (horasRestantes <= 2) {
                 actividad = 4;
             }
-        } else if (paseRestaurantes == 2 && horaActual >= 12) {
+        } else if (paseRestaurantes == 2 && horaActual >= 12 && ThreadLocalRandom.current().nextBoolean()) {
             actividad = 1;
         }
 
@@ -132,9 +139,9 @@ public class Visitante implements Runnable {
         // Si no fue en tour, ir en particular
         if (!enTour) {
             vista.printParque(String.format("%s va al parque en particular", visitante));
-            Thread.sleep(Tiempo.entreMinutos(30, 60));
+            Thread.sleep(Tiempo.entreMinutos(30, 45));
             vista.printParque(String.format("%s llega al parque en particular", visitante));
-            Thread.sleep(Tiempo.entreMinutos(5, 10));
+            Thread.sleep(Tiempo.enMinutos(5));
         }
     }
 
@@ -265,7 +272,7 @@ public class Visitante implements Runnable {
         NadoDelfines nadoDelfines = parque.getNadoDelfines();
 
         try {
-            if (lugarNadoDelfines < 0) {
+            if (!realizoNadoDelfines && lugarNadoDelfines < 0) {
                 lugarNadoDelfines = nadoDelfines.adquirirLugar();
             }
 
@@ -274,13 +281,14 @@ public class Visitante implements Runnable {
                 int horaInicio = nadoDelfines.obtenerHorarioInicio(lugarNadoDelfines);
                 int horasRestantes = horaInicio - horaActual;
 
-                // Esperar por la actividad si falta menos de hora y media
-                if ((horasRestantes < 1 || (horasRestantes == 1 && parque.getTiempo().getMinuto() > 30))) {
+                // Esperar por la actividad si falta menos de 2 horas
+                if (horasRestantes <= 2) {
 
                     // Está por iniciar, ir a la actividad
                     if (nadoDelfines.entrarPileta(lugarNadoDelfines)) {
                         nadoDelfines.salirPileta(lugarNadoDelfines);
                         lugarNadoDelfines = -1;
+                        realizoNadoDelfines = true;
                     }
                 }
             }

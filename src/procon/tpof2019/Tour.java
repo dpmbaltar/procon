@@ -60,9 +60,9 @@ public class Tour {
 
         if (iniciaTour) {
             iniciarTour.await();
-            Thread.sleep(Tiempo.enHoras(1));
+            Thread.sleep(Tiempo.enMinutos(45));
             ingresarAlParque.await();
-            Thread.sleep(Tiempo.enMinutos(10));
+            Thread.sleep(Tiempo.enMinutos(5));
         }
 
         return iniciaTour;

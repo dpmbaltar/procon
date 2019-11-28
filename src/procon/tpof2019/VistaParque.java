@@ -1281,6 +1281,30 @@ public class VistaParque extends JFrame {
             dolphinSwimVisitorsProgressBar.setIndeterminate(false);
     }
 
+    public synchronized void establecerVisitantesPileta(int pileta, int valor) {
+        JProgressBar progressBar = null;
+
+        switch (pileta) {
+        case 0:
+            progressBar = pool1ProgressBar;
+            break;
+        case 1:
+            progressBar = pool2ProgressBar;
+            break;
+        case 2:
+            progressBar = pool3ProgressBar;
+            break;
+        case 3:
+            progressBar = pool4ProgressBar;
+            break;
+        }
+
+        if (progressBar != null) {
+            progressBar.setValue(valor);
+            progressBar.setString(String.format("%d/10", valor));
+        }
+    }
+
     public synchronized void agregarVisitantePileta(int pileta) {
         JProgressBar progressBar = null;
 

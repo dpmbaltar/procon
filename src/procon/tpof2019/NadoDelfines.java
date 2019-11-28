@@ -162,7 +162,6 @@ public class NadoDelfines {
                     vista.printNadoDelfines(String.format("%s inicia en pileta %d a las %02d:%02d hs", visitante,
                             (numeroPileta + 1), hora, minuto));
                 } else {
-                    lugares[numeroHorario][numeroPileta]--;
                     vista.printNadoDelfines(String.format("%s no inicia en pileta %d a las %02d:%02d hs (cancelado)",
                             visitante, (numeroPileta + 1), hora, minuto));
                     vista.sacarVisitanteNadoDelfines();
@@ -193,7 +192,6 @@ public class NadoDelfines {
             while (inicio[pileta])
                 piletaFinaliza[pileta].await();
 
-            lugares[horario][pileta]--;
             vista.printNadoDelfines(String.format("%s finaliza en pileta %d", visitante, (pileta + 1)));
             vista.sacarVisitanteNadoDelfines();
             vista.sacarVisitantePileta(pileta);
@@ -214,6 +212,7 @@ public class NadoDelfines {
             String administrador = Thread.currentThread().getName();
             int hora = tiempo.getHora();
             int piletasCompletas = 0;
+            int cantidadVisitantes = 0;
 
             // Esperar a que sea el horario
             while (hora < horarios[horario]) {
@@ -223,17 +222,25 @@ public class NadoDelfines {
                 hora = tiempo.getHora();
             }
 
-            // Verificar piletas completas
+            // Verificar cantidad de visitantes
             for (int i = 0; i < lugares[horario].length; i++) {
-                if (lugares[horario][i] == 10) {
-                    piletasCompletas++;
-                }
+                cantidadVisitantes += lugares[horario][i];
             }
 
             int minuto = tiempo.getMinuto();
 
             // Iniciar actividad si de las n piletas, al menos n - 1 piletas estén completas
-            if (piletasCompletas >= (lugares[horario].length - 1)) {
+            if (cantidadVisitantes > ((lugares[horario].length - 1) * CAPACIDAD_PILETAS)) {
+                int nuevaCantidad = 0;
+
+                // Reacomodar visitantes en piletas
+                for (int i = 0; i < lugares[horario].length; i++) {
+                    nuevaCantidad = cantidadVisitantes >= 10 ? 10 : cantidadVisitantes;
+                    lugares[horario][i] = nuevaCantidad;
+                    //vista.establecerVisitantesPileta(i, nuevaCantidad);
+                    cantidadVisitantes-= 10;
+                }
+
                 for (int i = 0; i < piletaInicia.length; i++) {
                     inicio[i] = true;
                     piletaInicia[i].signalAll();
@@ -270,6 +277,7 @@ public class NadoDelfines {
             for (int i = 0; i < piletaFinaliza.length; i++) {
                 inicio[i] = false;
                 cancelado[i] = false;
+                lugares[horario][i] = 0;
                 piletaFinaliza[i].signalAll();
             }
 
