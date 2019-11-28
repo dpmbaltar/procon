@@ -23,6 +23,11 @@ public class Visitante implements Runnable {
     private int paseRestaurantes = 2;
 
     /**
+     * Lugar adquirido para "Nado con delfines".
+     */
+    private int lugarNadoDelfines = -1;
+
+    /**
      * Constructor con el parque.
      *
      * @param parque el parque
@@ -51,8 +56,9 @@ public class Visitante implements Runnable {
             Thread.sleep(ThreadLocalRandom.current().nextInt(0, 10) * 100);
             parque.entrar();
 
+            // Ir a las actividades mientras estén abiertas
             while (parque.actividadesAbiertas()) {
-                actividad = ThreadLocalRandom.current().nextInt(0, 10);
+                actividad = elegirActividad();
                 irANadoConDelfines();
                 // Realizar actividad
                 /*switch (actividad) {
@@ -89,6 +95,31 @@ public class Visitante implements Runnable {
     }
 
     /**
+     * Selecciona la actividad a realizar.
+     *
+     * @return la actividad elegida
+     */
+    private int elegirActividad() {
+        int actividad = ThreadLocalRandom.current().nextInt(0, 6);
+
+        if (lugarNadoDelfines >= 0) {
+            int horaActual = parque.getTiempo().getHora();
+            int horaInicio = parque.getNadoDelfines().obtenerHorarioInicio(lugarNadoDelfines);
+            int horasRestantes = horaInicio - horaActual;
+
+            // Si ya es la hora de inicio, entonces pierde el lugar
+            // Si falta menos de 1 hora y media, ir a la actividad a nado con delfines
+            if (horasRestantes <= 0) {
+                lugarNadoDelfines = -1;
+            } else if (horasRestantes == 1 && parque.getTiempo().getMinuto() <= 30) {
+                actividad = 4;
+            }
+        }
+
+        return actividad;
+    }
+
+    /**
      * Ir al parque.
      *
      * @throws InterruptedException
@@ -121,7 +152,7 @@ public class Visitante implements Runnable {
 
         try {
             shop.entrar();
-            Thread.sleep(Tiempo.entreMinutos(30, 90));
+            Thread.sleep(Tiempo.entreMinutos(30, 60));
 
             // Comprar souvenir
             if (comprar) {
@@ -145,7 +176,7 @@ public class Visitante implements Runnable {
 
         try {
             restaurante.entrar();
-            Thread.sleep(Tiempo.entreHoras(1, 2));
+            Thread.sleep(Tiempo.entreMinutos(45, 60));
             restaurante.salir();
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
@@ -217,23 +248,32 @@ public class Visitante implements Runnable {
     /**
      * Ir a la actividad "Nado con delfines".
      */
-    private int irANadoConDelfines() {
+    private void irANadoConDelfines() {
         NadoDelfines nadoDelfines = parque.getNadoDelfines();
-        int lugar = -1;
 
         try {
-            lugar = nadoDelfines.adquirirLugar();
+            if (lugarNadoDelfines < 0) {
+                lugarNadoDelfines = nadoDelfines.adquirirLugar();
+            }
 
-            if (lugar >= 0) {
-                if (nadoDelfines.entrarPileta(lugar)) {
-                    nadoDelfines.salirPileta(lugar);
+            if (lugarNadoDelfines >= 0) {
+                int horaActual = parque.getTiempo().getHora();
+                int horaInicio = nadoDelfines.obtenerHorarioInicio(lugarNadoDelfines);
+                int horasRestantes = horaInicio - horaActual;
+
+                // Esperar por la actividad si falta menos de hora y media
+                if ((horasRestantes < 1 || (horasRestantes == 1 && parque.getTiempo().getMinuto() > 30))) {
+
+                    // Está por iniciar, ir a la actividad
+                    if (nadoDelfines.entrarPileta(lugarNadoDelfines)) {
+                        nadoDelfines.salirPileta(lugarNadoDelfines);
+                        lugarNadoDelfines = -1;
+                    }
                 }
             }
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
-
-        return lugar;
     }
 
 }

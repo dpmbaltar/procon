@@ -117,7 +117,6 @@ public class NadoDelfines {
             if (hora < horarios[horarios.length - 1] && proximoLugar < ultimoLugar) {
                 int horario = obtenerHorario(proximoLugar);
                 int pileta = obtenerPileta(proximoLugar);
-                lugares[horario][pileta]++;
                 lugar = proximoLugar;
                 proximoLugar++;
             }
@@ -145,25 +144,32 @@ public class NadoDelfines {
             int numeroHorario = obtenerHorario(lugar);
             int numeroPileta = obtenerPileta(lugar);
 
-            // Esperar a que inicie la actividad en la pileta asignada
-            while (hora < horarios[numeroHorario] || (!inicio[numeroPileta] && !cancelado[numeroPileta])) {
-                piletaInicia[numeroPileta].await();
-                hora = tiempo.getHora();
-            }
-
-            int minuto = tiempo.getMinuto();
-
-            // La actividad puede haber sido cancelada
-            if (inicio[numeroPileta]) {
-                entroPileta = true;
-                vista.printNadoDelfines(String.format("%s inicia en pileta %d a las %02d:%02d hs", visitante,
-                        numeroPileta, hora, minuto));
+            // Si llega tarde, pierde la actividad
+            if (hora < horarios[numeroHorario] && !inicio[numeroPileta]) {
+                lugares[numeroHorario][numeroPileta]++;
                 vista.agregarVisitanteNadoDelfines();
                 vista.agregarVisitantePileta(numeroPileta);
-            } else {
-                lugares[numeroHorario][numeroPileta]--;
-                vista.printNadoDelfines(String.format("%s no inicia en pileta %d a las %02d:%02d hs (cancelado)",
-                        visitante, numeroPileta, hora, minuto));
+
+                // Esperar a que inicie la actividad en la pileta asignada
+                while (hora < horarios[numeroHorario] || (!inicio[numeroPileta] && !cancelado[numeroPileta])) {
+                    piletaInicia[numeroPileta].await();
+                    hora = tiempo.getHora();
+                }
+
+                int minuto = tiempo.getMinuto();
+
+                // La actividad puede haber sido cancelada
+                if (inicio[numeroPileta]) {
+                    entroPileta = true;
+                    vista.printNadoDelfines(String.format("%s inicia en pileta %d a las %02d:%02d hs", visitante,
+                            numeroPileta, hora, minuto));
+                } else {
+                    lugares[numeroHorario][numeroPileta]--;
+                    vista.printNadoDelfines(String.format("%s no inicia en pileta %d a las %02d:%02d hs (cancelado)",
+                            visitante, numeroPileta, hora, minuto));
+                    vista.sacarVisitanteNadoDelfines();
+                    vista.sacarVisitantePileta(numeroPileta);
+                }
             }
         } finally {
             mutex.unlock();
@@ -282,6 +288,16 @@ public class NadoDelfines {
      */
     public int[] getHorarios() {
         return horarios;
+    }
+
+    /**
+     * Devuelve la hora de inicio para un lugar asignado.
+     *
+     * @param lugar el lugar asignado
+     * @return la hora de inicio
+     */
+    public int obtenerHorarioInicio(int lugar) {
+        return horarios[obtenerHorario(lugar)];
     }
 
     /**
