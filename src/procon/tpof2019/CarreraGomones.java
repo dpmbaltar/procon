@@ -165,6 +165,7 @@ public class CarreraGomones {
             mutex.acquire();
             visitantesEnInicio++;
             vista.printCarreraGomones(String.format("🚲 %s llega al inicio", visitante));
+            vista.agregarVisitanteCarreraGomones();
             mutex.release();
         }
 
@@ -173,6 +174,7 @@ public class CarreraGomones {
 
     public void volverEnBicicleta() throws InterruptedException {
         vista.printCarreraGomones(String.format("🚲 %s vuelve en bici", Thread.currentThread().getName()));
+        vista.sacarVisitanteCarreraGomones();
 
         Thread.sleep(Tiempo.entreMinutos(20, 30));
 
@@ -237,6 +239,7 @@ public class CarreraGomones {
 
                 vista.printCarreraGomones(String.format("🚃 %s baja del tren (%d/15)", visitante, visitantesEnElTren));
                 vista.sacarPasajero();
+                vista.agregarVisitanteCarreraGomones();
             }
 
             mutex.release();
@@ -288,6 +291,7 @@ public class CarreraGomones {
 
             vista.printCarreraGomones(String.format("🚃 %s baja del tren (%d/15)", visitante, visitantesEnElTren));
             vista.sacarPasajero();
+            vista.sacarVisitanteCarreraGomones();
         }
 
         mutex.release();

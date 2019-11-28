@@ -46,42 +46,46 @@ public class Visitante implements Runnable {
      */
     @Override
     public void run() {
-        int actividad = -1;
-
         try {
+            VistaParque.getInstancia().agregarHilo();
             irAlParque();
-            parque.entrar();
 
-            // Ir a las actividades mientras estén abiertas
-            while (parque.actividadesAbiertas()) {
-                actividad = elegirActividad();
+            //if (parque.entrar()) {
+                int actividad = -1;
 
-                // Realizar actividad
-                switch (actividad) {
-                case 0:
-                    irACarreraDeGomones();
-                    break;
-                case 1:
-                    irAlRestaurante();
-                    break;
-                case 2:
-                    irAFaroMirador();
-                    break;
-                case 3:
-                    irASnorkel();
-                    break;
-                case 4:
-                    irANadoConDelfines();
-                    break;
-                default:
-                    irAlShop();
+                // Ir a las actividades mientras estén abiertas
+                while (parque.actividadesAbiertas()) {
+                    actividad = elegirActividad();
+
+                    // Realizar actividad
+                    switch (actividad) {
+                    case 0:
+                        irACarreraDeGomones();
+                        break;
+                    case 1:
+                        irAlRestaurante();
+                        break;
+                    case 2:
+                        irAFaroMirador();
+                        break;
+                    case 3:
+                        irASnorkel();
+                        break;
+                    case 4:
+                        //irANadoConDelfines();
+                        break;
+                    default:
+                        irAlShop();
+                    }
+
+                    Thread.sleep(Tiempo.entreMinutos(0, 10));
                 }
 
-                Thread.sleep(Tiempo.entreMinutos(0, 10));
-            }
+                //parque.salir();
+                //}
 
-            parque.salir();
             volverDelParque();
+            VistaParque.getInstancia().sacarHilo();
         } catch (InterruptedException | BrokenBarrierException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }

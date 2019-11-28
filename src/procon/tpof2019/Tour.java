@@ -78,7 +78,7 @@ public class Tour {
         finalizarTour.await();
 
         synchronized (this) {
-            cantidadVisitantes--;
+            //cantidadVisitantes--;
             vista.printParque(String.format("%s finaliza tour", Thread.currentThread().getName()));
             vista.sacarVisitanteTour();
         }

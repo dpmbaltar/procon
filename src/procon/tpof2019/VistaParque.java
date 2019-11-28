@@ -50,6 +50,7 @@ public class VistaParque extends JFrame {
     private JTextField cashRegister1TextField;
     private JTextField cashRegister2TextField;
     private JTextArea shopTextArea;
+    private JLabel ibrVisitorsCountLabel;
     private JSlider trainLocationSlider;
     private JProgressBar trainProgressBar;
     private JProgressBar bikesProgressBar;
@@ -400,10 +401,25 @@ public class VistaParque extends JFrame {
                 new TitledBorder(null, "Carrera de gomones", TitledBorder.LEADING, TitledBorder.ABOVE_TOP, null, null));
         GridBagLayout gbl_inflatableBoatRacePanel = new GridBagLayout();
         gbl_inflatableBoatRacePanel.columnWidths = new int[] { 75, 0, 0 };
-        gbl_inflatableBoatRacePanel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0 };
+        gbl_inflatableBoatRacePanel.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
         gbl_inflatableBoatRacePanel.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
-        gbl_inflatableBoatRacePanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
+        gbl_inflatableBoatRacePanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
         inflatableBoatRacePanel.setLayout(gbl_inflatableBoatRacePanel);
+
+        JLabel ibrVisitorsLabel = new JLabel("Visitantes:");
+        GridBagConstraints gbc_ibrVisitorsLabel = new GridBagConstraints();
+        gbc_ibrVisitorsLabel.anchor = GridBagConstraints.WEST;
+        gbc_ibrVisitorsLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_ibrVisitorsLabel.gridx = 0;
+        gbc_ibrVisitorsLabel.gridy = 0;
+        inflatableBoatRacePanel.add(ibrVisitorsLabel, gbc_ibrVisitorsLabel);
+
+        ibrVisitorsCountLabel = new JLabel("0");
+        GridBagConstraints gbc_ibrVisitorsCountLabel = new GridBagConstraints();
+        gbc_ibrVisitorsCountLabel.insets = new Insets(0, 0, 5, 0);
+        gbc_ibrVisitorsCountLabel.gridx = 1;
+        gbc_ibrVisitorsCountLabel.gridy = 0;
+        inflatableBoatRacePanel.add(ibrVisitorsCountLabel, gbc_ibrVisitorsCountLabel);
 
         JPanel trainLocationPanel = new JPanel();
         GridBagConstraints gbc_trainLocationPanel = new GridBagConstraints();
@@ -411,7 +427,7 @@ public class VistaParque extends JFrame {
         gbc_trainLocationPanel.insets = new Insets(0, 0, 5, 0);
         gbc_trainLocationPanel.fill = GridBagConstraints.BOTH;
         gbc_trainLocationPanel.gridx = 0;
-        gbc_trainLocationPanel.gridy = 0;
+        gbc_trainLocationPanel.gridy = 1;
         inflatableBoatRacePanel.add(trainLocationPanel, gbc_trainLocationPanel);
 
         trainLocationSlider = new JSlider();
@@ -437,7 +453,7 @@ public class VistaParque extends JFrame {
         gbc_trainLabel.anchor = GridBagConstraints.WEST;
         gbc_trainLabel.insets = new Insets(0, 0, 5, 5);
         gbc_trainLabel.gridx = 0;
-        gbc_trainLabel.gridy = 1;
+        gbc_trainLabel.gridy = 2;
         inflatableBoatRacePanel.add(trainLabel, gbc_trainLabel);
 
         trainProgressBar = new JProgressBar();
@@ -448,7 +464,7 @@ public class VistaParque extends JFrame {
         gbc_trainProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_trainProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_trainProgressBar.gridx = 1;
-        gbc_trainProgressBar.gridy = 1;
+        gbc_trainProgressBar.gridy = 2;
         inflatableBoatRacePanel.add(trainProgressBar, gbc_trainProgressBar);
 
         JLabel bikesLabel = new JLabel("Bicicletas:");
@@ -456,7 +472,7 @@ public class VistaParque extends JFrame {
         gbc_bikesLabel.anchor = GridBagConstraints.WEST;
         gbc_bikesLabel.insets = new Insets(0, 0, 5, 5);
         gbc_bikesLabel.gridx = 0;
-        gbc_bikesLabel.gridy = 2;
+        gbc_bikesLabel.gridy = 3;
         inflatableBoatRacePanel.add(bikesLabel, gbc_bikesLabel);
 
         bikesProgressBar = new JProgressBar();
@@ -468,7 +484,7 @@ public class VistaParque extends JFrame {
         gbc_bikesProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_bikesProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_bikesProgressBar.gridx = 1;
-        gbc_bikesProgressBar.gridy = 2;
+        gbc_bikesProgressBar.gridy = 3;
         inflatableBoatRacePanel.add(bikesProgressBar, gbc_bikesProgressBar);
 
         JLabel simpleInflatableBoatsLabel = new JLabel("Gomones simples:");
@@ -476,7 +492,7 @@ public class VistaParque extends JFrame {
         gbc_simpleInflatableBoatsLabel.anchor = GridBagConstraints.WEST;
         gbc_simpleInflatableBoatsLabel.insets = new Insets(0, 0, 5, 5);
         gbc_simpleInflatableBoatsLabel.gridx = 0;
-        gbc_simpleInflatableBoatsLabel.gridy = 3;
+        gbc_simpleInflatableBoatsLabel.gridy = 4;
         inflatableBoatRacePanel.add(simpleInflatableBoatsLabel, gbc_simpleInflatableBoatsLabel);
 
         simpleInflatableBoatsProgressBar = new JProgressBar();
@@ -488,7 +504,7 @@ public class VistaParque extends JFrame {
         gbc_simpleInflatableBoatsProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_simpleInflatableBoatsProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_simpleInflatableBoatsProgressBar.gridx = 1;
-        gbc_simpleInflatableBoatsProgressBar.gridy = 3;
+        gbc_simpleInflatableBoatsProgressBar.gridy = 4;
         inflatableBoatRacePanel.add(simpleInflatableBoatsProgressBar, gbc_simpleInflatableBoatsProgressBar);
 
         JLabel doubleInflatableBoatsLabel = new JLabel("Gomones dobles:");
@@ -496,7 +512,7 @@ public class VistaParque extends JFrame {
         gbc_doubleInflatableBoatsLabel.anchor = GridBagConstraints.WEST;
         gbc_doubleInflatableBoatsLabel.insets = new Insets(0, 0, 5, 5);
         gbc_doubleInflatableBoatsLabel.gridx = 0;
-        gbc_doubleInflatableBoatsLabel.gridy = 4;
+        gbc_doubleInflatableBoatsLabel.gridy = 5;
         inflatableBoatRacePanel.add(doubleInflatableBoatsLabel, gbc_doubleInflatableBoatsLabel);
 
         doubleInflatableBoatsProgressBar = new JProgressBar();
@@ -508,7 +524,7 @@ public class VistaParque extends JFrame {
         gbc_doubleInflatableBoatsProgressBar.fill = GridBagConstraints.HORIZONTAL;
         gbc_doubleInflatableBoatsProgressBar.insets = new Insets(0, 0, 5, 0);
         gbc_doubleInflatableBoatsProgressBar.gridx = 1;
-        gbc_doubleInflatableBoatsProgressBar.gridy = 4;
+        gbc_doubleInflatableBoatsProgressBar.gridy = 5;
         inflatableBoatRacePanel.add(doubleInflatableBoatsProgressBar, gbc_doubleInflatableBoatsProgressBar);
 
         JScrollPane inflatableBoatRaceScrollPane = new JScrollPane();
@@ -516,7 +532,7 @@ public class VistaParque extends JFrame {
         gbc_inflatableBoatRaceScrollPane.gridwidth = 2;
         gbc_inflatableBoatRaceScrollPane.fill = GridBagConstraints.BOTH;
         gbc_inflatableBoatRaceScrollPane.gridx = 0;
-        gbc_inflatableBoatRaceScrollPane.gridy = 5;
+        gbc_inflatableBoatRaceScrollPane.gridy = 6;
         inflatableBoatRacePanel.add(inflatableBoatRaceScrollPane, gbc_inflatableBoatRaceScrollPane);
 
         inflatableBoatRaceTextArea = new JTextArea();
@@ -991,6 +1007,14 @@ public class VistaParque extends JFrame {
         inflatableBoatRaceTextArea.setCaretPosition(inflatableBoatRaceTextArea.getDocument().getLength());
     }
 
+    public synchronized void agregarVisitanteCarreraGomones() {
+        ibrVisitorsCountLabel.setText(String.valueOf(Integer.valueOf(ibrVisitorsCountLabel.getText()) + 1));
+    }
+
+    public synchronized void sacarVisitanteCarreraGomones() {
+        ibrVisitorsCountLabel.setText(String.valueOf(Integer.valueOf(ibrVisitorsCountLabel.getText()) - 1));
+    }
+
     public synchronized void ubicarTren(int ubicacion) {
         trainLocationSlider.setValue(ubicacion % 3);
     }
@@ -1307,4 +1331,11 @@ public class VistaParque extends JFrame {
         }
     }
 
+    public synchronized void agregarHilo() {
+        threadCountValueLabel.setText(String.valueOf(Integer.valueOf(threadCountValueLabel.getText()) + 1));
+    }
+
+    public synchronized void sacarHilo() {
+        threadCountValueLabel.setText(String.valueOf(Integer.valueOf(threadCountValueLabel.getText()) - 1));
+    }
 }

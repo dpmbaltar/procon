@@ -35,6 +35,11 @@ public class Parque {
     public static final int CANTIDAD_MOLINETES = 5;
 
     /**
+     * Indica que el parque ya abrió y cerro en el día.
+     */
+    public boolean finalizo = false;
+
+    /**
      * Indica si el parque está abierto o cerrado.
      */
     private boolean abierto = false;
@@ -239,6 +244,7 @@ public class Parque {
      */
     public synchronized void cerrar() {
         abierto = false;
+        finalizo = true;
         vista.printParque("<<PARQUE CERRADO>>");
     }
 
@@ -265,30 +271,38 @@ public class Parque {
      *
      * @throws InterruptedException
      */
-    public void entrar() throws InterruptedException {
+    public boolean entrar() throws InterruptedException {
+        boolean entra = false;
         String visitante = Thread.currentThread().getName();
 
         synchronized (this) {
-            vista.printParque(String.format("%s llega a los molinetes", visitante));
+            if (!finalizo) {
+                vista.printParque(String.format("%s llega a los molinetes", visitante));
 
-            while (!abierto || molinetes == 0)
-                this.wait();
+                while (!abierto || molinetes == 0)
+                    this.wait();
 
-            molinetes--;
-            vista.agregarVisitanteMolinete();
+                molinetes--;
+                vista.agregarVisitanteMolinete();
+                entra = true;
+            }
         }
 
-        Thread.sleep(Tiempo.entreMinutos(5, 10));
+        if (entra) {
+            Thread.sleep(Tiempo.entreMinutos(5, 10));
 
-        synchronized (this) {
-            molinetes++;
-            visitantes++;
-            this.notifyAll();
+            synchronized (this) {
+                molinetes++;
+                visitantes++;
+                this.notifyAll();
 
-            vista.printParque(String.format("%s entra al parque", visitante));
-            vista.sacarVisitanteMolinete();
-            vista.agregarVisitante();
+                vista.printParque(String.format("%s entra al parque", visitante));
+                vista.sacarVisitanteMolinete();
+                vista.agregarVisitante();
+            }
         }
+
+        return entra;
     }
 
     /**
