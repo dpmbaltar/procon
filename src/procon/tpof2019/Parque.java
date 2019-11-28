@@ -1,6 +1,5 @@
 package procon.tpof2019;
 
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
 /**
@@ -58,12 +57,17 @@ public class Parque {
     /**
      * El tiempo del parque.
      */
-    private final Tiempo tiempo = new Tiempo();
+    private final Tiempo tiempo;
+
+    /**
+     * El tour de visita.
+     */
+    private final Tour tour;
 
     /**
      * El shop del parque.
      */
-    private final Shop shop = new Shop();
+    private final Shop shop;
 
     /**
      * Los restaurantes del parque.
@@ -122,6 +126,9 @@ public class Parque {
             capacidadRestaurantes += 5;
         }
 
+        tiempo = new Tiempo();
+        tour = new Tour();
+        shop = new Shop();
         carreraGomones = new CarreraGomones();
         faroMirador = new FaroMirador();
         snorkel = new Snorkel();
@@ -135,6 +142,15 @@ public class Parque {
      */
     public synchronized Tiempo getTiempo() {
         return tiempo;
+    }
+
+    /**
+     * Devuelve el tour del parque.
+     *
+     * @return el tour
+     */
+    public synchronized Tour getTour() {
+        return tour;
     }
 
     /**
@@ -245,55 +261,6 @@ public class Parque {
     }
 
     /**
-     * Inicia la visita hacia el parque.
-     *
-     * @return verdadero si va en tour, falso en caso contrario
-     * @throws InterruptedException
-     */
-    public synchronized boolean iniciarVisita() throws InterruptedException {
-        boolean enTour = false;
-
-        if (visitantesEnTour < CAPACIDAD_TOUR) {
-            visitantesEnTour++;
-            enTour = true;
-        }
-
-        return enTour;
-    }
-
-    /**
-     * Ir al parque en particular.
-     */
-    @Deprecated
-    public void irParticular() {
-        vista.printParque(String.format("%s viaja al parque en particular", Thread.currentThread().getName()));
-    }
-
-    /**
-     * Iniciar tour (ir al parque).
-     *
-     * @throws InterruptedException
-     * @throws BrokenBarrierException
-     */
-    public void iniciarTour() throws InterruptedException, BrokenBarrierException {
-        vista.printParque(String.format("%s inicia viaje al parque en tour", Thread.currentThread().getName()));
-        iniciarTour.await();
-
-        Thread.sleep(Tiempo.enHoras(1));
-    }
-
-    /**
-     * Finalizar tour (llegar al parque).
-     *
-     * @throws InterruptedException
-     * @throws BrokenBarrierException
-     */
-    public void finalizarTour() throws InterruptedException, BrokenBarrierException {
-        finalizarTour.await();
-        vista.printParque(String.format("%s llega al parque en tour", Thread.currentThread().getName()));
-    }
-
-    /**
      * Entra al parque a través de los molinetes.
      *
      * @throws InterruptedException
@@ -311,7 +278,7 @@ public class Parque {
             vista.agregarVisitanteMolinete();
         }
 
-        Thread.sleep(Tiempo.entreMinutos(1, 5));
+        Thread.sleep(Tiempo.entreMinutos(5, 10));
 
         synchronized (this) {
             molinetes++;
@@ -325,10 +292,10 @@ public class Parque {
     }
 
     /**
-     * Finaliza visita en el parque.
+     * Visitante sale del parque.
      */
-    public synchronized void finalizarVisita() {
-        vista.printParque(String.format("%s finaliza visita al parque", Thread.currentThread().getName()));
+    public synchronized void salir() {
+        vista.printParque(String.format("%s sale del parque", Thread.currentThread().getName()));
         vista.sacarVisitante();
         visitantes--;
     }

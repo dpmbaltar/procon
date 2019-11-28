@@ -31,6 +31,11 @@ public class Tour {
     private final CyclicBarrier finalizarTour = new CyclicBarrier(CAPACIDAD_TOUR);
 
     /**
+     * Cantidad de visitantes en el tour.
+     */
+    private int cantidadVisitantes = 0;
+
+    /**
      * Vista del parque.
      */
     private final VistaParque vista = VistaParque.getInstancia();
@@ -41,14 +46,26 @@ public class Tour {
      * @throws InterruptedException
      * @throws BrokenBarrierException
      */
-    public void iniciar() throws InterruptedException, BrokenBarrierException {
-        vista.printParque(String.format("%s inicia tour", Thread.currentThread().getName()));
-        vista.agregarVisitanteTour();
-        iniciarTour.await();
+    public boolean iniciar() throws InterruptedException, BrokenBarrierException {
+        boolean iniciaTour = false;
 
-        Thread.sleep(Tiempo.enHoras(1));
+        synchronized (this) {
+            if (cantidadVisitantes < CAPACIDAD_TOUR) {
+                cantidadVisitantes++;
+                iniciaTour = true;
+                vista.printParque(String.format("%s inicia tour", Thread.currentThread().getName()));
+                vista.agregarVisitanteTour();
+            }
+        }
 
-        ingresarAlParque.await();
+        if (iniciaTour) {
+            iniciarTour.await();
+            Thread.sleep(Tiempo.enHoras(1));
+            ingresarAlParque.await();
+            Thread.sleep(Tiempo.enMinutos(10));
+        }
+
+        return iniciaTour;
     }
 
     /**
@@ -59,8 +76,12 @@ public class Tour {
      */
     public void finalizar() throws InterruptedException, BrokenBarrierException {
         finalizarTour.await();
-        vista.printParque(String.format("%s finaliza tour", Thread.currentThread().getName()));
-        vista.sacarVisitanteTour();
+
+        synchronized (this) {
+            cantidadVisitantes--;
+            vista.printParque(String.format("%s finaliza tour", Thread.currentThread().getName()));
+            vista.sacarVisitanteTour();
+        }
     }
 
 }

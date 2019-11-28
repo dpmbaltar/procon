@@ -18,6 +18,11 @@ public class Visitante implements Runnable {
     private final Parque parque;
 
     /**
+     * Indica si el visitante va y vuelve en tour.
+     */
+    private boolean enTour = false;
+
+    /**
      * Cantidad de pases a los restaurantes.
      */
     private int paseRestaurantes = 2;
@@ -44,16 +49,7 @@ public class Visitante implements Runnable {
         int actividad = -1;
 
         try {
-            //irAlParque();
-            if (parque.iniciarVisita()) {
-                parque.iniciarTour();
-                parque.finalizarTour();
-            } else {
-                parque.irParticular();
-                Thread.sleep(Tiempo.entreMinutos(30, 60));
-            }
-
-            Thread.sleep(ThreadLocalRandom.current().nextInt(0, 10) * 100);
+            irAlParque();
             parque.entrar();
 
             // Ir a las actividades mientras estén abiertas
@@ -84,8 +80,8 @@ public class Visitante implements Runnable {
                 Thread.sleep(Tiempo.entreMinutos(0, 10));
             }
 
-            parque.finalizarVisita();
-            //volverDelParque();
+            parque.salir();
+            volverDelParque();
         } catch (InterruptedException | BrokenBarrierException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -122,23 +118,36 @@ public class Visitante implements Runnable {
      * Ir al parque.
      *
      * @throws InterruptedException
+     * @throws BrokenBarrierException
      */
-    private void irAlParque() throws InterruptedException {
-        //TODO: irAlParque()
-        Tour tour;// = parque.getTour();
+    private void irAlParque() throws InterruptedException, BrokenBarrierException {
         VistaParque vista = VistaParque.getInstancia();
         String visitante = Thread.currentThread().getName();
+        enTour = parque.getTour().iniciar();
 
-        vista.printParque(String.format("%s va al parque", visitante));
-        Thread.sleep(Tiempo.entreMinutos(30, 60));
-        vista.printParque(String.format("%s llega al parque", visitante));
+        // Si no fue en tour, ir en particular
+        if (!enTour) {
+            vista.printParque(String.format("%s va al parque en particular", visitante));
+            Thread.sleep(Tiempo.entreMinutos(30, 60));
+            vista.printParque(String.format("%s llega al parque en particular", visitante));
+            Thread.sleep(Tiempo.entreMinutos(5, 10));
+        }
     }
 
     /**
      * Irse del parque.
+     *
+     * @throws BrokenBarrierException
+     * @throws InterruptedException
      */
-    private void volverDelParque() {
-        //TODO: volverDelParque()
+    private void volverDelParque() throws InterruptedException, BrokenBarrierException {
+        VistaParque vista = VistaParque.getInstancia();
+
+        if (enTour) {
+            parque.getTour().finalizar();
+        } else {
+            vista.printParque(String.format("%s deja el parque en particular", Thread.currentThread().getName()));
+        }
     }
 
     /**
