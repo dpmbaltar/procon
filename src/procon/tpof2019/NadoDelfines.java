@@ -142,7 +142,6 @@ public class NadoDelfines {
         try {
             String visitante = Thread.currentThread().getName();
             int hora = tiempo.getHora();
-            int minuto = tiempo.getMinuto();
             int numeroHorario = obtenerHorario(lugar);
             int numeroPileta = obtenerPileta(lugar);
 
@@ -152,7 +151,7 @@ public class NadoDelfines {
                 hora = tiempo.getHora();
             }
 
-            minuto = tiempo.getMinuto();
+            int minuto = tiempo.getMinuto();
 
             // La actividad puede haber sido cancelada
             if (inicio[numeroPileta]) {
@@ -162,6 +161,7 @@ public class NadoDelfines {
                 vista.agregarVisitanteNadoDelfines();
                 vista.agregarVisitantePileta(numeroPileta);
             } else {
+                lugares[numeroHorario][numeroPileta]--;
                 vista.printNadoDelfines(String.format("%s no inicia en pileta %d a las %02d:%02d hs (cancelado)",
                         visitante, numeroPileta, hora, minuto));
             }
@@ -209,19 +209,15 @@ public class NadoDelfines {
         try {
             String administrador = Thread.currentThread().getName();
             int hora = tiempo.getHora();
-            int minuto = tiempo.getMinuto();
             int piletasCompletas = 0;
 
             // Esperar a que sea el horario
             while (hora < horarios[horario]) {
                 mutex.unlock();
-                //Thread.sleep(Tiempo.enMinutos(15));
                 tiempo.dormir(horarios[horario]); // campos tiempo y horarios son finales, y horario un argumento
                 mutex.lock();
                 hora = tiempo.getHora();
             }
-
-            minuto = tiempo.getMinuto();
 
             // Verificar piletas completas
             for (int i = 0; i < lugares[horario].length; i++) {
@@ -229,6 +225,8 @@ public class NadoDelfines {
                     piletasCompletas++;
                 }
             }
+
+            int minuto = tiempo.getMinuto();
 
             // Iniciar actividad si de las n piletas, al menos n - 1 piletas estén completas
             if (piletasCompletas >= (lugares[horario].length - 1)) {
