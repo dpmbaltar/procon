@@ -115,8 +115,6 @@ public class NadoDelfines {
 
             // Adquirir lugar solo si aún hay horarios y lugares disponibles
             if (hora < horarios[horarios.length - 1] && proximoLugar < ultimoLugar) {
-                int horario = obtenerHorario(proximoLugar);
-                int pileta = obtenerPileta(proximoLugar);
                 lugar = proximoLugar;
                 proximoLugar++;
             }
@@ -162,11 +160,11 @@ public class NadoDelfines {
                 if (inicio[numeroPileta]) {
                     entroPileta = true;
                     vista.printNadoDelfines(String.format("%s inicia en pileta %d a las %02d:%02d hs", visitante,
-                            numeroPileta, hora, minuto));
+                            (numeroPileta + 1), hora, minuto));
                 } else {
                     lugares[numeroHorario][numeroPileta]--;
                     vista.printNadoDelfines(String.format("%s no inicia en pileta %d a las %02d:%02d hs (cancelado)",
-                            visitante, numeroPileta, hora, minuto));
+                            visitante, (numeroPileta + 1), hora, minuto));
                     vista.sacarVisitanteNadoDelfines();
                     vista.sacarVisitantePileta(numeroPileta);
                 }
@@ -196,7 +194,7 @@ public class NadoDelfines {
                 piletaFinaliza[pileta].await();
 
             lugares[horario][pileta]--;
-            vista.printNadoDelfines(String.format("%s finaliza en pileta %d", visitante, pileta));
+            vista.printNadoDelfines(String.format("%s finaliza en pileta %d", visitante, (pileta + 1)));
             vista.sacarVisitanteNadoDelfines();
             vista.sacarVisitantePileta(pileta);
         } finally {
