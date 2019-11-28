@@ -185,7 +185,7 @@ public class NadoDelfines {
         mutex.lock();
         try {
             String visitante = Thread.currentThread().getName();
-            int horario = obtenerHorario(lugar);
+            //int horario = obtenerHorario(lugar);
             int pileta = obtenerPileta(lugar);
 
             // Esperar a que finalice la actividad en la pileta asignada
@@ -211,7 +211,6 @@ public class NadoDelfines {
         try {
             String administrador = Thread.currentThread().getName();
             int hora = tiempo.getHora();
-            int piletasCompletas = 0;
             int cantidadVisitantes = 0;
 
             // Esperar a que sea el horario

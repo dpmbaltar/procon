@@ -69,7 +69,6 @@ public class CarreraGomones {
     private boolean entroPrimerVisitanteAlTren = false;
     private boolean trenVolvio = false;
     private int esperandoVolverEnTren = 0;
-    private int vinieronEnTren = 0;
     private boolean prepararVisitantes = true;
     private boolean activarEspera = false;
     private final Semaphore hayGomonesListos = new Semaphore(0);
@@ -229,7 +228,6 @@ public class CarreraGomones {
                 mutex.acquire();
                 visitantesEnElTren--;
                 visitantesEnInicio++;
-                vinieronEnTren++;
 
                 // Se siguen bajando visitantes del tren
                 if (visitantesEnElTren > 0)

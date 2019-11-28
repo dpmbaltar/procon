@@ -1,7 +1,5 @@
 package procon.tpof2019;
 
-import java.util.concurrent.CyclicBarrier;
-
 /**
  * Parque ecológico, clase principal desde donde se accede a las actividades.
  *
@@ -37,7 +35,7 @@ public class Parque {
     /**
      * Indica que el parque ya abrió y cerro en el día.
      */
-    public boolean finalizo = false;
+    private boolean finalizado = false;
 
     /**
      * Indica si el parque está abierto o cerrado.
@@ -98,21 +96,6 @@ public class Parque {
      * La actividad "Nado con delfines".
      */
     private final NadoDelfines nadoDelfines;
-
-    /**
-     * Utilizada para iniciar el tour hacia el parque.
-     */
-    private final CyclicBarrier iniciarTour = new CyclicBarrier(CAPACIDAD_TOUR);
-
-    /**
-     * Utilizada para finalizar el tour en el parque.
-     */
-    private final CyclicBarrier finalizarTour = new CyclicBarrier(CAPACIDAD_TOUR);
-
-    /**
-     * Indica la cantidad de visitantes listos para iniciar el tour.
-     */
-    private int visitantesEnTour = 0;
 
     /**
      * Vista del parque.
@@ -244,8 +227,17 @@ public class Parque {
      */
     public synchronized void cerrar() {
         abierto = false;
-        finalizo = true;
+        finalizado = true;
         vista.printParque("<<PARQUE CERRADO>>");
+    }
+
+    /**
+     * Devuelve verdadero si el parque abrió y cerró, de lo contrario falso.
+     *
+     * @return verdadero si el parque abrió y cerró, de lo contrario falso
+     */
+    public synchronized boolean finalizado() {
+        return finalizado;
     }
 
     /**
@@ -276,10 +268,10 @@ public class Parque {
         String visitante = Thread.currentThread().getName();
 
         synchronized (this) {
-            if (!finalizo) {
+            if (!finalizado) {
                 vista.printParque(String.format("%s llega a los molinetes", visitante));
 
-                while ((!finalizo && !abierto) || molinetes == 0)
+                while ((!finalizado && !abierto) || molinetes == 0)
                     this.wait(Tiempo.enMinutos(15));
 
                 molinetes--;
