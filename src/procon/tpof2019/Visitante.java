@@ -59,17 +59,14 @@ public class Visitante implements Runnable {
             // Ir a las actividades mientras estén abiertas
             while (parque.actividadesAbiertas()) {
                 actividad = elegirActividad();
-                irANadoConDelfines();
+
                 // Realizar actividad
-                /*switch (actividad) {
+                switch (actividad) {
                 case 0:
                     irACarreraDeGomones();
                     break;
                 case 1:
-                    if (paseRestaurantes > 0) {
-                        irAlRestaurante();
-                        paseRestaurantes--;
-                    }
+                    irAlRestaurante();
                     break;
                 case 2:
                     irAFaroMirador();
@@ -82,7 +79,7 @@ public class Visitante implements Runnable {
                     break;
                 default:
                     irAlShop();
-                }*/
+                }
 
                 Thread.sleep(Tiempo.entreMinutos(0, 10));
             }
@@ -101,9 +98,9 @@ public class Visitante implements Runnable {
      */
     private int elegirActividad() {
         int actividad = ThreadLocalRandom.current().nextInt(0, 6);
+        int horaActual = parque.getTiempo().getHora();
 
         if (lugarNadoDelfines >= 0) {
-            int horaActual = parque.getTiempo().getHora();
             int horaInicio = parque.getNadoDelfines().obtenerHorarioInicio(lugarNadoDelfines);
             int horasRestantes = horaInicio - horaActual;
 
@@ -114,6 +111,8 @@ public class Visitante implements Runnable {
             } else if (horasRestantes == 1 && parque.getTiempo().getMinuto() <= 30) {
                 actividad = 4;
             }
+        } else if (paseRestaurantes == 2 && horaActual >= 12) {
+            actividad = 1;
         }
 
         return actividad;
@@ -172,14 +171,17 @@ public class Visitante implements Runnable {
      * Ir al restaurante a almorzar o merendar.
      */
     private void irAlRestaurante() {
-        Restaurante restaurante = parque.getRestaurante(ThreadLocalRandom.current().nextInt(0, 3));
+        if (paseRestaurantes > 0) {
+            paseRestaurantes--;
 
-        try {
-            restaurante.entrar();
-            Thread.sleep(Tiempo.entreMinutos(45, 60));
-            restaurante.salir();
-        } catch (InterruptedException e) {
-            Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
+            try {
+                Restaurante restaurante = parque.getRestaurante(ThreadLocalRandom.current().nextInt(0, 3));
+                restaurante.entrar();
+                Thread.sleep(Tiempo.entreMinutos(45, 60));
+                restaurante.salir();
+            } catch (InterruptedException e) {
+                Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
+            }
         }
     }
 
@@ -188,8 +190,6 @@ public class Visitante implements Runnable {
      */
     private void irACarreraDeGomones() {
         CarreraGomones carrera = parque.getCarreraGomones();
-        int llaveDeBolso = -1;
-        int gomon = -1;
         int[] itemsOcupados = { -1, -1 };
         boolean irEnTren = ThreadLocalRandom.current().nextBoolean();
         boolean quiereGomonDoble = ThreadLocalRandom.current().nextBoolean();
