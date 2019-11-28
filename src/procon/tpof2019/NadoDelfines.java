@@ -152,6 +152,8 @@ public class NadoDelfines {
                 hora = tiempo.getHora();
             }
 
+            minuto = tiempo.getMinuto();
+
             // La actividad puede haber sido cancelada
             if (inicio[numeroPileta]) {
                 entroPileta = true;
@@ -213,10 +215,13 @@ public class NadoDelfines {
             // Esperar a que sea el horario
             while (hora < horarios[horario]) {
                 mutex.unlock();
-                Thread.sleep(Tiempo.enMinutos(15));
+                //Thread.sleep(Tiempo.enMinutos(15));
+                tiempo.dormir(horarios[horario]); // campos tiempo y horarios son finales, y horario un argumento
                 mutex.lock();
                 hora = tiempo.getHora();
             }
+
+            minuto = tiempo.getMinuto();
 
             // Verificar piletas completas
             for (int i = 0; i < lugares[horario].length; i++) {

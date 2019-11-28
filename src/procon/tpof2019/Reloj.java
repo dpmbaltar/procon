@@ -68,9 +68,11 @@ public class Reloj implements Runnable {
                 tiempo.setHora(hora);
                 tiempo.setMinuto(minuto);
 
-                //if ((minutos % 5) == 0) {
+                // Despertar cada 5 minutos
+                if ((minuto % 5) == 0) {
+                    tiempo.despertar(hora);
                     vista.actualizarHora(String.format("%02d:%02d", hora, minuto));
-                //}
+                }
             }
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);

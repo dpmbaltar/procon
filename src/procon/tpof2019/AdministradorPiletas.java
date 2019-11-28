@@ -3,27 +3,42 @@ package procon.tpof2019;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Administra el inicio y final de actividad en las piletas de "Nado con delfines".
+ *
+ * @author Diego P. M. Baltar {@literal <dpmbaltar@gmail.com>}
+ */
 public class AdministradorPiletas implements Runnable {
 
+    /**
+     * El parque.
+     */
     private final Parque parque;
 
+    /**
+     * Constructor con el parque.
+     *
+     * @param parque el parque
+     */
     public AdministradorPiletas(Parque parque) {
         this.parque = parque;
     }
 
+    /**
+     * Administra las piletas.
+     */
     @Override
     public void run() {
         try {
-            Tiempo tiempo = parque.getTiempo();
             NadoDelfines nadoDelfines = parque.getNadoDelfines();
+            int[] horarios = nadoDelfines.getHorarios();
 
-            //while (parque.estaAbierto() || parque.getVisitantes() > 0 || (Parque.HORA_ABRE < tiempo.getHora() && tiempo.getHora() < Parque.HORA_CIERRA)) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < horarios.length; i++) {
                 nadoDelfines.iniciar(i);
                 nadoDelfines.finalizar(i);
             }
 
-            VistaParque.getInstancia().printNadoDelfines("<<Adm. Piletas finaliza>>");
+            VistaParque.getInstancia().printNadoDelfines("<<Adm. de Piletas finaliza>>");
         } catch (InterruptedException e) {
             Logger.getLogger(Visitante.class.getName()).log(Level.SEVERE, null, e);
         }

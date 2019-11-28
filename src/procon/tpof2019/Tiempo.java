@@ -31,6 +31,11 @@ public final class Tiempo {
     private int minuto;
 
     /**
+     * Cantidad de hilos "durmiendo" hasta cierta hora.
+     */
+    private int[] durmiendo = new int[24];
+
+    /**
      * Constructor vacío, con hora cero y minuto cero.
      */
     public Tiempo() {
@@ -46,6 +51,31 @@ public final class Tiempo {
     public Tiempo(int hora, int minuto) {
         this.hora = hora;
         this.minuto = minuto;
+    }
+
+    /**
+     * "Dormirse" hasta que sea la hora especificada.
+     *
+     * @param hora la hora hasta donde dormir
+     * @throws InterruptedException
+     */
+    public synchronized void dormir(int hora) throws InterruptedException {
+        durmiendo[hora]++;
+
+        while (this.hora != hora)
+            wait();
+
+        durmiendo[hora]--;
+    }
+
+    /**
+     * Despierta a los que "duermen" hasta la hora especificada.
+     *
+     * @param hora la hora
+     */
+    public synchronized void despertar(int hora) {
+        if (durmiendo[hora] > 0)
+            notifyAll();
     }
 
     /**

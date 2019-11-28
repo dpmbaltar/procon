@@ -31,6 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 public class VistaParque extends JFrame {
 
@@ -1222,6 +1223,16 @@ public class VistaParque extends JFrame {
     public synchronized void printNadoDelfines(String mensaje) {
         System.out.println(mensaje);
         try {
+            SimpleAttributeSet attribs = null;
+
+            if (mensaje.startsWith("<<") && mensaje.endsWith(">>")) {
+                attribs = new SimpleAttributeSet();
+                attribs.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE);
+                attribs.addAttribute(StyleConstants.CharacterConstants.Italic, Boolean.TRUE);
+            } else {
+                attribs = this.attribs;
+            }
+
             dolphinSwimTextPane.getStyledDocument().insertString(dolphinSwimTextPane.getStyledDocument().getLength(),
                     mensaje + "\n", attribs);
             dolphinSwimTextPane.setCaretPosition(dolphinSwimTextPane.getDocument().getLength());
