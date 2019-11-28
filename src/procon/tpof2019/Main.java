@@ -17,12 +17,14 @@ public class Main {
         Camioneta camioneta = new Camioneta(parque);
         AdministradorCarrera administradorCarrera = new AdministradorCarrera(parque);
         AdministradorTobogan administradorTobogan = new AdministradorTobogan(parque);
+        AdministradorPiletas administradorPiletas = new AdministradorPiletas(parque);
         Thread hiloReloj = new Thread(new Reloj(parque, Parque.HORA_ABRE, 0), "Reloj del Parque");
         Thread hiloAdministrador = new Thread(new Administrador(parque), "Administrador");
         Thread hiloTren = new Thread(tren, "Tren");
         Thread hiloCamioneta = new Thread(camioneta, "Camioneta");
         Thread hiloAdmCarrera = new Thread(administradorCarrera, "Adm. Carrera de Gomones");
         Thread hiloAdmTobogan = new Thread(administradorTobogan, "Adm. Toboganes");
+        Thread hiloAdmPiletas = new Thread(administradorPiletas, "Adm. Piletas");
         Thread[] visitantes = new Thread[cantidadVisitantes];
 
         for (int i = 0; i < visitantes.length; i++)
@@ -35,6 +37,7 @@ public class Main {
         hiloCamioneta.start();
         hiloAdmCarrera.start();
         hiloAdmTobogan.start();
+        hiloAdmPiletas.start();
 
         for (int i = 0; i < visitantes.length; i++)
             visitantes[i].start();

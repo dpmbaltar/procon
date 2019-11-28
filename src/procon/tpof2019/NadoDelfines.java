@@ -1,5 +1,6 @@
 package procon.tpof2019;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,6 +31,7 @@ public class NadoDelfines {
     private final Lock mutex;
     private final Condition[] piletaInicia;
     private final Condition[] piletaFinaliza;
+    private final Condition iniciarHorario;
 
     /**
      * Vista del parque.
@@ -49,6 +51,7 @@ public class NadoDelfines {
         this.ultimoLugar = horarios.length * CANTIDAD_PILETAS * CAPACIDAD_PILETAS;
         this.proximoLugar = 0;
         this.mutex = new ReentrantLock();
+        this.iniciarHorario = mutex.newCondition();
         this.piletaInicia = new Condition[CANTIDAD_PILETAS];
         this.piletaFinaliza = new Condition[CANTIDAD_PILETAS];
 
@@ -101,16 +104,21 @@ public class NadoDelfines {
         mutex.lock();
         try {
             String visitante = Thread.currentThread().getName();
-            int horario = obtenerHorario(lugar);
-            int pileta = obtenerPileta(lugar);
+            int hora = tiempo.getHora();
+            int minuto = tiempo.getMinuto();
+            int numHorario = obtenerHorario(lugar);
+            int numPileta = obtenerPileta(lugar);
 
             // Esperar a que inicie la actividad en la pileta asignada
-            while (!inicio[pileta])
-                piletaInicia[pileta].await();
+            while (hora < horarios[numHorario] || !inicio[numPileta]) {
+                piletaInicia[numPileta].await();
+                hora = tiempo.getHora();
+            }
 
-            vista.printNadoDelfines(String.format("%s inicia en pileta %d a las %d hs", visitante, pileta, horario));
+            vista.printNadoDelfines(String.format("%s inicia en pileta %d a las %02d:%02d hs", visitante, numPileta,
+                    hora, minuto));
             vista.agregarVisitanteNadoDelfines();
-            vista.agregarVisitantePileta(pileta);
+            vista.agregarVisitantePileta(numPileta);
         } finally {
             mutex.unlock();
         }
@@ -130,7 +138,7 @@ public class NadoDelfines {
             int pileta = obtenerPileta(lugar);
 
             // Esperar a que finalice la actividad en la pileta asignada
-            while (!inicio[pileta])
+            while (inicio[pileta])
                 piletaFinaliza[pileta].await();
 
             lugares[horario][pileta]--;
@@ -142,17 +150,46 @@ public class NadoDelfines {
         }
     }
 
-    public void iniciar() {
+    public void iniciar(int horario) throws InterruptedException {
         mutex.lock();
         try {
             String administrador = Thread.currentThread().getName();
             int hora = tiempo.getHora();
+            int minuto = tiempo.getMinuto();
+
+            // Esperar a que sea el horario
+            while (hora < horarios[horario]) {
+                iniciarHorario.await(Tiempo.enMinutos(15), TimeUnit.MILLISECONDS);
+                hora = tiempo.getHora();
+            }
 
             // TODO: Agregar política del parque (no iniciar si no hay al menos 3 piletas completas)
-            for (int i = 0; i < lugares[0].length; i++)
+            for (int i = 0; i < piletaInicia.length; i++) {
+                inicio[i] = true;
                 piletaInicia[i].signalAll();
+            }
 
-            vista.printNadoDelfines(String.format("%s inicia a las %02d horas", administrador, hora));
+            vista.printNadoDelfines(String.format("%s inicia a las %02d:%02d hs", administrador, hora, minuto));
+        } finally {
+            mutex.unlock();
+        }
+
+        Thread.sleep(Tiempo.enMinutos(45));
+    }
+
+    public void finalizar(int horario) {
+        mutex.lock();
+        try {
+            String administrador = Thread.currentThread().getName();
+            int hora = tiempo.getHora();
+            int minuto = tiempo.getMinuto();
+
+            for (int i = 0; i < piletaFinaliza.length; i++) {
+                inicio[i] = false;
+                piletaFinaliza[i].signalAll();
+            }
+
+            vista.printNadoDelfines(String.format("%s finaliza a las %02d:%02d hs", administrador, hora, minuto));
         } finally {
             mutex.unlock();
         }
