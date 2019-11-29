@@ -47,13 +47,6 @@ public class FaroMirador {
     }
 
     /**
-     * Devuelve verdadero si hay visitantes, falso en caso contrario.
-     */
-    public synchronized boolean hayVisitantes() {
-        return !escalera.isEmpty();
-    }
-
-    /**
      * Asigna un tobogan al próximo visitante que quiera descender en tobogán.
      *
      * @param tobogan si no es 0 o 1, el resultado es: abs(tobogan) mod 2
