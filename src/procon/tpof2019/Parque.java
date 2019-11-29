@@ -23,11 +23,6 @@ public class Parque {
     public static final int HORA_CIERRA_ACTIVIDADES = 17;
 
     /**
-     * Cantidad máxima de visitantes por tour.
-     */
-    public static final int CAPACIDAD_TOUR = 25;
-
-    /**
      * Cantidad de molinetes de la entrada al parque.
      */
     public static final int CANTIDAD_MOLINETES = 5;

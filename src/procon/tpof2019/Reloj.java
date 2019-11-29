@@ -51,7 +51,7 @@ public class Reloj implements Runnable {
         try {
             Tiempo tiempo = parque.getTiempo();
 
-            while (parque.estaAbierto() || parque.getVisitantes() > 0 || (tiempo.getHora() - Parque.HORA_ABRE) < 9) {
+            while (!parque.finalizado() || parque.getVisitantes() > 0) {
                 Thread.sleep(Tiempo.enMinutos(1));
                 minuto++;
 
