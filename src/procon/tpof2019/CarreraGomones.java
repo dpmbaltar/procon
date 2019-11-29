@@ -51,6 +51,10 @@ public class CarreraGomones {
      */
     private final Semaphore bicicletas = new Semaphore(10);
 
+    /**
+     * Semáforos para el control de largada de carrera.
+     */
+    private final Semaphore hayGomonesListos = new Semaphore(0);
     private final Semaphore largarCarrera = new Semaphore(0);
 
     /**
@@ -66,12 +70,17 @@ public class CarreraGomones {
     private final Semaphore esperarVisitantes = new Semaphore(0);
     private final Semaphore traerVisitantes = new Semaphore(0);
 
+    /**
+     * Variables del uso del tren.
+     */
     private boolean entroPrimerVisitanteAlTren = false;
-    private boolean trenVolvio = false;
+    private int esperandoIrEnTren = 0;
     private int esperandoVolverEnTren = 0;
+    private int visitantesEnElTren = 0;
+    private boolean trenSalio = false;
+    private boolean trenVolvio = false;
     private boolean prepararVisitantes = true;
     private boolean activarEspera = false;
-    private final Semaphore hayGomonesListos = new Semaphore(0);
 
     /**
      * Semáforos para el control de la camioneta.
@@ -114,21 +123,6 @@ public class CarreraGomones {
      * Indica la cantidad de carreras completadas.
      */
     private int totalDeCarreras = 0;
-
-    /**
-     * Indica la cantidad de visitantes esperando ir a la carrera en tren.
-     */
-    private int esperandoIrEnTren = 0;
-
-    /**
-     * Indica la cantidad de visitantes arriba del tren (en ida o vuelta).
-     */
-    private int visitantesEnElTren = 0;
-
-    /**
-     * Indica que el tren está listo para ir a la carrera.
-     */
-    private boolean trenSalio = false;
 
     /**
      * Los bolsos para las pertenencias (10).
@@ -459,6 +453,11 @@ public class CarreraGomones {
         prepararse.release();
     }
 
+    /**
+     * Administrador inicia la carrera.
+     *
+     * @throws InterruptedException
+     */
     public void largarCarrera() throws InterruptedException {
         hayGomonesListos.acquire();
 
